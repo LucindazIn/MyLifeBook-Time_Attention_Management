@@ -1,0 +1,5 @@
+{
+  "name": "Feather Schedule",
+  "description": "An elegant, feather-light scheduling app that builds agendas from documents and gives every day a unique name.",
+  "requestFramePermissions": ["microphone"]
+}

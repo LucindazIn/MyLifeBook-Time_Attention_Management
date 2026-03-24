@@ -1,0 +1,157 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+
+  --color-border: var(--app-border);
+  --color-input: var(--app-border);
+  --color-ring: var(--app-accent);
+  --color-background: var(--app-bg);
+  --color-foreground: var(--app-text);
+  --color-muted-foreground: var(--app-muted);
+  --color-surface: var(--app-surface);
+  --color-field: var(--app-field);
+
+  --color-primary: var(--app-accent);
+  --color-primary-foreground: var(--app-text);
+
+  --color-secondary: var(--app-surface);
+  --color-secondary-foreground: var(--app-text);
+
+  --color-destructive: #FFB7B2;
+  --color-destructive-foreground: var(--app-text);
+
+  --color-muted: var(--app-field);
+  --color-accent: var(--app-accent);
+  --color-accent-foreground: var(--app-text);
+
+  --color-popover: var(--app-surface);
+  --color-popover-foreground: var(--app-text);
+
+  --color-card: var(--app-surface);
+  --color-card-foreground: var(--app-text);
+}
+
+/* -------- App theme tokens (default = artsy) -------- */
+:root {
+  --app-bg: #F5F2ED;
+  --app-surface: #EAE4D9;
+  --app-field: #E0DED5;
+  --app-border: rgba(0, 0, 0, 0.08);
+  --app-text: #4A3E3E;
+  --app-text-secondary: #5C524E;
+  --app-accent: #8C6B5E;
+  --app-muted: #5C524E;
+  --app-selection-bg: #e0d8d0;
+  --app-selection-text: #4A3E3E;
+  --app-card-radius: 1rem;
+  --app-card-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  --app-text-glow: none;
+}
+
+[data-theme="tech"] {
+  --app-bg: #0D0D15;
+  --app-surface: #1A1A2E;
+  --app-field: rgba(255, 255, 255, 0.05);
+  --app-border: rgba(255, 255, 255, 0.1);
+  --app-text: #E0E0FF;
+  --app-text-secondary: #B8B8E0;
+  --app-accent: #00F3FF;
+  --app-muted: #B8B8E0;
+  --app-selection-bg: rgba(0, 243, 255, 0.2);
+  --app-selection-text: #E0E0FF;
+  --app-card-radius: 0.5rem;
+  --app-card-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
+  --app-text-glow: 0 0 5px rgba(0, 243, 255, 0.5);
+}
+
+[data-theme="anime"] {
+  --app-bg: #FFF0F5;
+  --app-surface: #FFFFFF;
+  --app-field: #FFFFFF;
+  --app-border: rgba(0, 0, 0, 0.1);
+  --app-text: #5C4B76;
+  --app-text-secondary: #6B5B7B;
+  --app-accent: #FF7DA8;
+  --app-muted: #6B5B7B;
+  --app-selection-bg: #ffe4ec;
+  --app-selection-text: #5C4B76;
+  --app-card-radius: 1.25rem;
+  --app-card-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --app-text-glow: none;
+}
+
+/* Minimalist: inverted — near-black canvas, off-white type */
+[data-theme="minimalist"] {
+  --app-bg: #0a0a0a;
+  --app-surface: #141414;
+  --app-field: #1a1a1a;
+  --app-border: rgba(255, 255, 255, 0.1);
+  --app-text: #f0ede6;
+  --app-text-secondary: #c8c4bc;
+  --app-accent: #8a8580;
+  --app-muted: #9c9890;
+  --app-selection-bg: rgba(255, 255, 255, 0.14);
+  --app-selection-text: #f5f2eb;
+  --app-card-radius: 0.5rem;
+  --app-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --app-text-glow: none;
+}
+
+[data-theme="nature"] {
+  --app-bg: #F0F4EF;
+  --app-surface: #E2E8E0;
+  --app-field: #E2E8E0;
+  --app-border: rgba(0, 0, 0, 0.06);
+  --app-text: #2D3A2D;
+  --app-text-secondary: #3D4A3D;
+  --app-accent: #6B8E23;
+  --app-muted: #3D4A3D;
+  --app-selection-bg: #d4e5d0;
+  --app-selection-text: #2D3A2D;
+  --app-card-radius: 1.5rem;
+  --app-card-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --app-text-glow: none;
+}
+
+[data-theme="retro"] {
+  --app-bg: #2B2B2B;
+  --app-surface: #3D3D3D;
+  --app-field: #3D3D3D;
+  --app-border: rgba(255, 255, 255, 0.12);
+  --app-text: #FFD700;
+  --app-text-secondary: #E0C040;
+  --app-accent: #FF4500;
+  --app-muted: #E0C040;
+  --app-selection-bg: rgba(255, 215, 0, 0.25);
+  --app-selection-text: #2B2B2B;
+  --app-card-radius: 0.25rem;
+  --app-card-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --app-text-glow: none;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--app-bg);
+  color: var(--app-text);
+}
+
+/* Tech theme: optional subtle text glow on headings and serif text */
+[data-theme="tech"] h1,
+[data-theme="tech"] h2,
+[data-theme="tech"] h3,
+[data-theme="tech"] .font-serif {
+  text-shadow: var(--app-text-glow);
+}
+/* Disable glow on empty state title for cleaner look */
+[data-theme="tech"] .empty-state-title {
+  text-shadow: none;
+}
+
+::selection {
+  background: var(--app-selection-bg);
+  color: var(--app-selection-text);
+}

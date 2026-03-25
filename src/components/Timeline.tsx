@@ -145,7 +145,11 @@ export const Timeline: React.FC<TimelineProps> = ({
                   className={cn(
                     "absolute -left-[29px] top-7 w-3 h-3 rounded-full bg-surface border-2 border-accent z-10 shadow-sm transition-colors"
                   )}
-                  style={(roleColor || event.label?.color) ? { borderColor: roleColor || event.label?.color } : undefined}
+                  style={
+                    event.label?.color || roleColor
+                      ? { borderColor: event.label?.color || roleColor }
+                      : undefined
+                  }
                 />
               )}
               

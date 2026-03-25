@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScheduleEvent, AppLanguage } from '@/types';
+import { ScheduleEvent, AppLanguage, TimeDisplayFormat } from '@/types';
 import { StatsSummaryView } from '@/components/StatsSummaryView';
 import { LongTermGoalsCard } from '@/components/LongTermGoalsCard';
 import { RoleEnergyCard } from '@/components/RoleEnergyCard';
@@ -16,6 +16,7 @@ export interface CollectionViewProps {
   dayVibes?: Record<string, { energy?: number; mood?: number; focus?: number }>;
   completedInstances: Record<string, boolean>;
   language: AppLanguage;
+  timeDisplay: TimeDisplayFormat;
   journalEntries: Record<string, string>;
 }
 
@@ -26,11 +27,12 @@ export const CollectionView: React.FC<CollectionViewProps> = ({
   dayVibes = {},
   completedInstances,
   language,
+  timeDisplay,
   journalEntries,
 }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-5 gap-6 md:gap-8 max-w-6xl mx-auto px-4">
-      {/* Left column: 概览 + 长期目标 + 角色能量 + 事件平衡 */}
+      {/* Left column: 概览 + 长期目标 + 角色能量 + 事件标签分析 */}
       <div className="md:col-span-2 space-y-6">
         <div
           className="rounded-2xl p-6 border bg-surface"
@@ -51,6 +53,7 @@ export const CollectionView: React.FC<CollectionViewProps> = ({
             events={events}
             completedInstances={completedInstances}
             language={language}
+            timeDisplay={timeDisplay}
           />
         </div>
         <div

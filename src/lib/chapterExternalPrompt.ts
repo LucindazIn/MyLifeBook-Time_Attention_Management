@@ -101,7 +101,7 @@ ${roleBlock ? roleBlock + '\n\n' : ''}任务：
 **章节内容**
 第一人称；长度不少于 500 个字符且不超过 2000 个字符（.length）；正文内可使用 Markdown：**双星号**包裹关键句；可选用 ==双等号== 表示高亮。
 
-**封装为 JSON**：将上述「章节名」与「章节内容」合并为**一个** JSON 对象（单行或多行均可），**不要用 markdown 代码块包裹**。两个键名固定为英文字段名 chapterTitle 与 narrativeSummary（便于粘贴回人生之书），键名本身不必翻译。
+**封装为 JSON**：将上述「章节名」与「章节内容」合并为**一个** JSON 对象（单行或多行均可），**不要用 markdown 代码块包裹**。两个键名固定为英文字段名 chapterTitle 与 narrativeSummary（便于粘贴回人生之书），键名本身不必翻译。章节内容中若需出现英文双引号，在 JSON 字符串内须写成 \\"（反斜杠加双引号）转义，否则会导致用户粘贴后无法解析。
 
 **固定提示行（在 JSON 之后）**：JSON 结束后，先连续输出**两个空行**（即两段换行之间留出两行空白），再单独一行输出下面这句话，**纯文本，不属于 JSON**，一字不差：
 现在可以将上方内容复制回人生之书中保存本章。
@@ -135,7 +135,7 @@ One line; **at most 60 characters** (JavaScript string .length).
 **Chapter Content**
 First person; **at least 500 and at most 2000 characters** (.length); you may use **bold** and ==highlight== in the text.
 
-**Wrap as JSON**: Combine the above **Chapter Name** and **Chapter Content** into **one** JSON object (single or multi-line). **Do not** wrap it in a markdown code block. Use the ASCII key names chapterTitle and narrativeSummary (for pasting back into My Life Book). The chapterTitle value corresponds to **Chapter Name**; narrativeSummary corresponds to **Chapter Content**.
+**Wrap as JSON**: Combine the above **Chapter Name** and **Chapter Content** into **one** JSON object (single or multi-line). **Do not** wrap it in a markdown code block. Use the ASCII key names chapterTitle and narrativeSummary (for pasting back into My Life Book). The chapterTitle value corresponds to **Chapter Name**; narrativeSummary corresponds to **Chapter Content**. If the narrative must include a literal double-quote character, escape it as \\" (backslash then quote) inside the JSON string so pasting back parses correctly.
 
 **Fixed reminder line (after the JSON)**: After the JSON, output **two blank lines** (two empty lines between the JSON and the next line), then on its own line output the following **plain text**, **not** part of JSON, **verbatim**:
 You Can Now Copy The Above Into My Life Book To Save This Chapter.

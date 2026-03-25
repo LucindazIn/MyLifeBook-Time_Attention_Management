@@ -1,7 +1,7 @@
 -- Supabase schema for My Life Book / 人生之书 (online-first, full history)
 -- Includes: events, event_tags, event_instance_completions, day_meta, daily_quotes, devices, subscriptions
 -- RLS: all private to auth.uid()
--- RPC: register_device (free=1 device cap in V1)
+-- RPC: register_device (per-user cap via subscriptions.max_devices, default 8)
 
 -- Enable extensions
 create extension if not exists pgcrypto;
@@ -232,7 +232,7 @@ for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
 create table if not exists public.subscriptions (
   user_id uuid primary key references auth.users(id) on delete cascade,
   tier text not null default 'free',
-  max_devices int not null default 1,
+  max_devices int not null default 8,
   status text not null default 'active',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -255,7 +255,7 @@ create policy subscriptions_update_own on public.subscriptions
 for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- -----------------------------
--- devices + register_device RPC (free=1 enforcement)
+-- devices + register_device RPC (max_devices enforcement)
 -- -----------------------------
 create table if not exists public.devices (
   id uuid primary key default gen_random_uuid(),
@@ -302,7 +302,7 @@ begin
 
   select s.max_devices into max_devices from public.subscriptions s where s.user_id = uid;
   if max_devices is null then
-    max_devices := 1;
+    max_devices := 8;
   end if;
 
   select count(*) into active_count

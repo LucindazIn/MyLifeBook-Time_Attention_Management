@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Check, RefreshCw, Calendar, Clock } from 'lucide-react';
-import { format } from 'date-fns';
+import { X, Check, RefreshCw, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ScheduleEvent, AppLanguage } from '@/types';
+import { ScheduleEvent, AppLanguage, TimeDisplayFormat } from '@/types';
+import { formatEventClockLine } from '@/lib/formatEventClock';
 import { cn } from '@/lib/utils';
 
 interface ScheduleSuggestionModalProps {
@@ -15,6 +15,7 @@ interface ScheduleSuggestionModalProps {
   isRegenerating: boolean;
   mode: 'chill' | 'productive' | null;
   language: AppLanguage;
+  timeDisplay: TimeDisplayFormat;
 }
 
 export const ScheduleSuggestionModal: React.FC<ScheduleSuggestionModalProps> = ({
@@ -25,7 +26,8 @@ export const ScheduleSuggestionModal: React.FC<ScheduleSuggestionModalProps> = (
   onRegenerate,
   isRegenerating,
   mode,
-  language
+  language,
+  timeDisplay,
 }) => {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
@@ -63,109 +65,136 @@ export const ScheduleSuggestionModal: React.FC<ScheduleSuggestionModalProps> = (
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm">
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
+          />
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-[35.84rem] overflow-hidden border border-slate-100"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
           >
-            {/* Header */}
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <div>
-                <h2 className="text-xl font-serif font-bold text-slate-800">{labels.title}</h2>
-                <p className="text-sm text-slate-500">{labels.subtitle}</p>
-              </div>
-              <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full hover:bg-slate-200/50">
-                <X className="w-5 h-5 text-slate-400" />
-              </Button>
-            </div>
-
-            {/* Content */}
-            <div className="p-6 max-h-[60vh] overflow-y-auto">
-              {suggestions.length === 0 ? (
-                <div className="text-center py-12 text-slate-400">
-                  {labels.empty}
+            <div
+              className="w-full max-w-[35.84rem] rounded-[2rem] shadow-2xl p-0 pointer-events-auto border overflow-hidden flex flex-col max-h-[90vh]"
+              style={{ background: 'var(--app-surface)', borderColor: 'var(--app-border)' }}
+            >
+              {/* Header — align with AddEventModal */}
+              <div className="p-6 pb-4 flex items-center justify-between border-b" style={{ borderColor: 'var(--app-border)' }}>
+                <div>
+                  <h2 className="text-xl font-serif font-bold" style={{ color: 'var(--app-text)' }}>
+                    {labels.title}
+                  </h2>
+                  <p className="text-sm text-muted-foreground mt-0.5">{labels.subtitle}</p>
                 </div>
-              ) : (
-                <div className="space-y-3">
-                  {suggestions.map((event) => {
-                    const isSelected = selectedIds.includes(event.id);
-                    return (
-                      <div 
-                        key={event.id}
-                        onClick={() => toggleSelection(event.id)}
-                        className={cn(
-                          "relative p-4 rounded-xl border-2 transition-all cursor-pointer group hover:shadow-md",
-                          isSelected 
-                            ? "border-indigo-500 bg-indigo-50/30" 
-                            : "border-slate-100 bg-white hover:border-indigo-200"
-                        )}
-                      >
-                        <div className="flex items-start gap-3">
-                          <div className={cn(
-                            "w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 transition-colors",
-                            isSelected 
-                              ? "bg-indigo-500 border-indigo-500 text-white" 
-                              : "border-slate-300 group-hover:border-indigo-400"
-                          )}>
-                            {isSelected && <Check className="w-3 h-3" />}
-                          </div>
-                          
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start gap-3 mb-1">
-                              <h3 className={cn(
-                                "flex-1 min-w-0 font-medium text-slate-800 pr-1",
-                                isSelected ? "text-indigo-900" : "text-slate-600"
-                              )}>
-                                {event.title}
-                              </h3>
-                              <div className="shrink-0 whitespace-nowrap inline-flex items-center text-xs font-medium tabular-nums text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">
-                                <Clock className="w-3 h-3 mr-1 shrink-0" />
-                                {format(new Date(event.startTime), 'HH:mm')} – {event.endTime ? format(new Date(event.endTime), 'HH:mm') : ''}
-                              </div>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="p-2 rounded-full transition-colors hover:bg-field"
+                  aria-label="Close"
+                >
+                  <X className="w-5 h-5 text-muted-foreground" />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="p-6 max-h-[60vh] overflow-y-auto">
+                {suggestions.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">{labels.empty}</div>
+                ) : (
+                  <div className="space-y-3">
+                    {suggestions.map((event) => {
+                      const isSelected = selectedIds.includes(event.id);
+                      return (
+                        <div
+                          key={event.id}
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => toggleSelection(event.id)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              toggleSelection(event.id);
+                            }
+                          }}
+                          className={cn(
+                            'relative p-4 rounded-xl border-2 transition-all cursor-pointer group hover:shadow-md',
+                            isSelected
+                              ? 'border-accent bg-accent/20 ring-1 ring-accent'
+                              : 'border-border bg-field hover:border-accent'
+                          )}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div
+                              className={cn(
+                                'w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 transition-colors',
+                                isSelected
+                                  ? 'bg-accent border-accent text-primary-foreground'
+                                  : 'border-border group-hover:border-accent'
+                              )}
+                            >
+                              {isSelected && <Check className="w-3 h-3" />}
                             </div>
-                            {event.description && (
-                              <p className="text-sm text-slate-500 line-clamp-2">
-                                {event.description}
-                              </p>
-                            )}
+
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start gap-3 mb-1">
+                                <h3
+                                  className={cn(
+                                    'flex-1 min-w-0 font-medium pr-1 text-foreground',
+                                    isSelected && 'text-accent'
+                                  )}
+                                >
+                                  {event.title}
+                                </h3>
+                                <div className="shrink-0 whitespace-nowrap inline-flex items-center text-xs font-medium tabular-nums text-muted-foreground bg-field border border-border px-2.5 py-1 rounded-md">
+                                  <Clock className="w-3 h-3 mr-1 shrink-0" />
+                                  {formatEventClockLine(new Date(event.startTime), timeDisplay)} –{' '}
+                                  {event.endTime ? formatEventClockLine(new Date(event.endTime), timeDisplay) : ''}
+                                </div>
+                              </div>
+                              {event.description && (
+                                <p className="text-sm text-muted-foreground line-clamp-2">{event.description}</p>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
 
-            {/* Footer */}
-            <div className="p-6 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center gap-4">
-              <Button 
-                variant="outline" 
-                onClick={onRegenerate} 
-                disabled={isRegenerating}
-                className="text-slate-600 hover:text-indigo-600 hover:bg-indigo-50"
+              {/* Footer */}
+              <div
+                className="p-6 border-t flex flex-wrap justify-between items-center gap-4 bg-field/50"
+                style={{ borderColor: 'var(--app-border)' }}
               >
-                <RefreshCw className={cn("w-4 h-4 mr-2", isRegenerating && "animate-spin")} />
-                {labels.regenerate}
-              </Button>
-              
-              <div className="flex gap-2">
-                <Button variant="ghost" onClick={onClose} className="text-slate-500 hover:text-slate-700">
-                  {labels.cancel}
-                </Button>
-                <Button 
-                  onClick={handleConfirm} 
-                  disabled={selectedIds.length === 0 || isRegenerating}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200"
+                <Button
+                  variant="outline"
+                  onClick={onRegenerate}
+                  disabled={isRegenerating}
+                  className="border-border text-foreground hover:bg-field hover:text-accent"
                 >
-                  {labels.add} ({selectedIds.length})
+                  <RefreshCw className={cn('w-4 h-4 mr-2', isRegenerating && 'animate-spin')} />
+                  {labels.regenerate}
                 </Button>
+
+                <div className="flex gap-2">
+                  <Button variant="ghost" onClick={onClose} className="text-muted-foreground hover:text-foreground">
+                    {labels.cancel}
+                  </Button>
+                  <Button onClick={handleConfirm} disabled={selectedIds.length === 0 || isRegenerating}>
+                    {labels.add} ({selectedIds.length})
+                  </Button>
+                </div>
               </div>
             </div>
           </motion.div>
-        </div>
+        </>
       )}
     </AnimatePresence>
   );

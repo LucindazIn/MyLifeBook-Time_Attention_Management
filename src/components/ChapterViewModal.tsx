@@ -1,40 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Save, Edit3, Download, Trash2, Copy, ClipboardPaste } from 'lucide-react';
-import type { AppLanguage } from '@/types';
+import { Save, Download, Trash2, Copy, ClipboardPaste, X } from 'lucide-react';
+import type { AppLanguage, ScheduleEvent } from '@/types';
+import { ChapterPeriodStatusSection } from '@/components/ChapterPeriodStatusSection';
 import type { SavedChapter, ChapterDraft } from '@/lib/chaptersStorage';
 import { updateChapter, MAX_CHAPTER_SUMMARY_CHARS } from '@/lib/chaptersStorage';
 import { parseChapterAiPaste } from '@/lib/parseChapterAiPaste';
-import { formatPeriodWeekLabel } from '@/lib/dateRange';
+import { formatChapterModalPeriodBracket } from '@/lib/dateRange';
 import { cn } from '@/lib/utils';
+
+/** 弹窗内可选操作：默认中性，悬停/按下强调色 */
+const MODAL_CHOICE_BTN =
+  'inline-flex items-center gap-1.5 text-xs font-medium rounded-lg px-3 py-2 border border-border bg-transparent text-muted-foreground transition-colors hover:border-accent hover:text-accent hover:bg-accent/10 active:bg-accent/20 active:border-accent active:text-accent';
+
+const MODAL_DELETE_BTN =
+  'inline-flex items-center gap-1.5 text-xs font-medium rounded-lg px-3 py-2 border border-border bg-transparent text-rose-600 dark:text-rose-400 transition-colors hover:border-rose-500 hover:bg-rose-500/10 active:bg-rose-500/20 active:border-rose-500';
+
+/**
+ * 左侧 JSON 与「粘贴 AI 回复」同高：固定可视高度（与 rows=2 量级一致），长内容在框内滚动。
+ * 粘贴框可 resize-y 略拉高；JSON 仅滚动不拉伸。
+ */
+const MODAL_LEFT_SCROLL_BOX =
+  'w-full min-w-0 text-xs leading-normal font-mono rounded-lg border border-border px-3 py-2 bg-field h-28 max-h-28 overflow-y-auto shrink-0 box-border';
 
 function isSavedChapter(ch: SavedChapter | ChapterDraft | null): ch is SavedChapter {
   return ch != null && 'id' in ch && typeof (ch as SavedChapter).id === 'string' && (ch as SavedChapter).id !== '';
-}
-
-/** Render narrative summary with **bold** and ==highlight== as HTML-like emphasis */
-function renderSummaryWithMarkdown(text: string): React.ReactNode {
-  if (!text) return null;
-  const parts: React.ReactNode[] = [];
-  const re = /\*\*([^*]+)\*\*|==([^=]+)==/g;
-  let lastIndex = 0;
-  let match;
-  let key = 0;
-  while ((match = re.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      parts.push(<React.Fragment key={key++}>{text.slice(lastIndex, match.index)}</React.Fragment>);
-    }
-    if (match[1] != null) {
-      parts.push(<strong key={key++}>{match[1]}</strong>);
-    } else if (match[2] != null) {
-      parts.push(<mark key={key++} className="bg-accent/20 rounded px-0.5">{match[2]}</mark>);
-    }
-    lastIndex = re.lastIndex;
-  }
-  if (lastIndex < text.length) {
-    parts.push(<React.Fragment key={key++}>{text.slice(lastIndex)}</React.Fragment>);
-  }
-  return parts.length ? parts : text;
 }
 
 export interface ChapterViewModalProps {
@@ -46,12 +36,18 @@ export interface ChapterViewModalProps {
   onDelete?: (chapterId: string) => void;
   language: AppLanguage;
   onExportTxt?: (chapter: SavedChapter) => void;
-  /** Shown directly under the modal title (external AI workflow). */
+  /** External AI workflow line; top of left column above export/copy buttons. */
   chapterWorkflowHint?: string | null;
   onExportPeriodBundle?: () => void;
   onCopyPeriodBundle?: () => void;
   copyFeedback?: string | null;
-  chapterOpenMode?: 'view' | 'edit';
+  /** 与章节周期对齐的合集数据，用于「本期状态数据」板块 */
+  periodStats?: {
+    events: ScheduleEvent[];
+    completedInstances: Record<string, boolean>;
+  } | null;
+  /** 本期导出 JSON（无标题；与「粘贴 AI 回复」同高框内滚动） */
+  periodExportJson?: string | null;
 }
 
 export const ChapterViewModal: React.FC<ChapterViewModalProps> = ({
@@ -67,31 +63,52 @@ export const ChapterViewModal: React.FC<ChapterViewModalProps> = ({
   onExportPeriodBundle,
   onCopyPeriodBundle,
   copyFeedback,
-  chapterOpenMode = 'view',
+  periodStats = null,
+  periodExportJson = null,
 }) => {
   const isZh = language === 'zh';
-  const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState('');
   const [editSummary, setEditSummary] = useState('');
+  const [baselineTitle, setBaselineTitle] = useState('');
+  const [baselineSummary, setBaselineSummary] = useState('');
   const [pasteRaw, setPasteRaw] = useState('');
   const [pasteError, setPasteError] = useState<string | null>(null);
   const [pasteFeedback, setPasteFeedback] = useState<string | null>(null);
 
   useEffect(() => {
-    if (chapter) {
-      setEditTitle(chapter.chapterTitles[0] ?? '');
-      setEditSummary(chapter.narrativeSummary);
-      setIsEditing(chapterOpenMode === 'edit');
-    }
-  }, [chapter, chapterOpenMode]);
-
-  useEffect(() => {
-    if (open) {
+    if (open && chapter) {
+      const t = chapter.chapterTitles[0] ?? '';
+      const s = chapter.narrativeSummary;
+      setEditTitle(t);
+      setEditSummary(s);
+      setBaselineTitle(t);
+      setBaselineSummary(s);
       setPasteRaw('');
       setPasteError(null);
       setPasteFeedback(null);
     }
-  }, [open]);
+  }, [open, chapter]);
+
+  const isDirty = editTitle !== baselineTitle || editSummary !== baselineSummary;
+
+  const tryClose = useCallback(() => {
+    if (isDirty) {
+      const ok = window.confirm(
+        isZh ? '有未保存的修改，确定放弃并关闭？' : 'You Have Unsaved Changes. Discard And Close?'
+      );
+      if (!ok) return;
+    }
+    onClose();
+  }, [isDirty, isZh, onClose]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') tryClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open, tryClose]);
 
   const handleSave = () => {
     if (!chapter) return;
@@ -106,7 +123,9 @@ export const ChapterViewModal: React.FC<ChapterViewModalProps> = ({
       });
       if (updated) {
         onSave?.(updated);
-        setIsEditing(false);
+        setBaselineTitle(editTitle);
+        setBaselineSummary(editSummary);
+        onClose();
       }
     } else {
       const draft: ChapterDraft = {
@@ -121,7 +140,9 @@ export const ChapterViewModal: React.FC<ChapterViewModalProps> = ({
         reflectionQuestions: questions,
       };
       onSaveNew?.(draft);
-      setIsEditing(false);
+      setBaselineTitle(editTitle);
+      setBaselineSummary(editSummary);
+      onClose();
     }
   };
 
@@ -138,7 +159,6 @@ export const ChapterViewModal: React.FC<ChapterViewModalProps> = ({
     }
     setEditTitle(r.chapterTitle);
     setEditSummary(r.narrativeSummary);
-    setIsEditing(true);
     setPasteError(null);
     setPasteFeedback(isZh ? '已填入，可检查后保存' : 'Filled In. Review And Save.');
     window.setTimeout(() => setPasteFeedback(null), 3500);
@@ -146,207 +166,205 @@ export const ChapterViewModal: React.FC<ChapterViewModalProps> = ({
 
   if (!open) return null;
 
-  const displayTitle = isEditing ? editTitle : (chapter?.chapterTitles[0] ?? '');
-  const displaySummary = isEditing ? editSummary : (chapter?.narrativeSummary ?? '');
-  const periodWeekLabel = chapter?.periodStart && chapter?.periodKey != null
-    ? formatPeriodWeekLabel(chapter.periodStart, chapter.periodKey, isZh)
-    : '';
+  const periodBracket =
+    chapter?.periodStart && chapter?.periodKey != null
+      ? formatChapterModalPeriodBracket(chapter.periodStart, chapter.periodEnd, chapter.periodKey, isZh)
+      : '';
 
   const showPeriodExport = !!(onExportPeriodBundle || onCopyPeriodBundle);
 
+  const summaryCharCount = editSummary.length;
+
   const modalContent = (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="chapter-modal-title"
     >
+      <div className="absolute inset-0 bg-black/50" onClick={tryClose} role="presentation" />
       <div
-        className="absolute inset-0 bg-black/50"
-        onClick={onClose}
-        onKeyDown={(e) => e.key === 'Escape' && onClose()}
-      />
-      <div
-        className="relative w-full max-w-[35.84rem] max-h-[90vh] overflow-y-auto rounded-2xl border shadow-xl flex flex-col"
+        className="relative w-full max-w-[min(72rem,98vw)] max-h-[min(92vh,880px)] min-h-0 flex flex-col rounded-2xl border shadow-xl overflow-hidden"
         style={{
           backgroundColor: 'var(--app-surface)',
           borderColor: 'var(--app-border)',
         }}
+        onClick={(e) => e.stopPropagation()}
       >
-        <div className="sticky top-0 flex items-center justify-between gap-4 p-4 border-b shrink-0" style={{ borderColor: 'var(--app-border)' }}>
-          <h2 id="chapter-modal-title" className="text-base font-semibold truncate flex items-center gap-2" style={{ color: 'var(--app-text)' }}>
-            {((chapter?.chapterTitles?.[0] ?? '').trim() || chapter?.periodLabel) ?? (isZh ? '章节' : 'Chapter')}
-          </h2>
-          <div className="flex items-center gap-2">
-            {periodWeekLabel && (
-              <span className="text-xs" style={{ color: 'var(--app-muted)' }}>
-                {periodWeekLabel}
+        <div className="flex items-center justify-between gap-3 p-4 border-b shrink-0" style={{ borderColor: 'var(--app-border)' }}>
+          <h2
+            id="chapter-modal-title"
+            className="text-base font-semibold min-w-0 flex-1 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5"
+            style={{ color: 'var(--app-text)' }}
+          >
+            <span>{chapter?.periodLabel ?? (isZh ? '章节' : 'Chapter')}</span>
+            {periodBracket ? (
+              <span className="text-sm font-normal" style={{ color: 'var(--app-muted)' }}>
+                {periodBracket}
               </span>
-            )}
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-2 rounded-lg hover:bg-field transition-colors"
-              style={{ color: 'var(--app-muted)' }}
-              aria-label={isZh ? '关闭' : 'Close'}
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+            ) : null}
+          </h2>
+          <button
+            type="button"
+            onClick={tryClose}
+            className="shrink-0 rounded-lg p-1.5 transition-colors hover:bg-field"
+            style={{ color: 'var(--app-muted)' }}
+            aria-label={isZh ? '关闭' : 'Close'}
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
-        {chapterWorkflowHint && (
-          <div className="px-4 pt-3 pb-0">
-            <p className="text-xs leading-relaxed" style={{ color: 'var(--app-muted)' }}>
-              {chapterWorkflowHint}
-            </p>
-          </div>
-        )}
-
-        {showPeriodExport && (
-          <div className="px-4 pt-3 flex flex-wrap items-center gap-2">
-            {onExportPeriodBundle && (
-              <button
-                type="button"
-                onClick={onExportPeriodBundle}
-                className="inline-flex items-center gap-1.5 text-xs font-medium rounded-lg px-3 py-2 border border-accent bg-accent/15 text-accent hover:bg-accent/25"
-              >
-                <Download className="w-3.5 h-3.5" />
-                {isZh ? '导出本期数据' : "Export This Period's Data"}
-              </button>
-            )}
-            {onCopyPeriodBundle && (
-              <button
-                type="button"
-                onClick={onCopyPeriodBundle}
-                className="inline-flex items-center gap-1.5 text-xs font-medium rounded-lg px-3 py-2 border border-border text-muted-foreground hover:bg-field"
-              >
-                <Copy className="w-3.5 h-3.5" />
-                {isZh ? '复制' : 'Copy'}
-              </button>
-            )}
-            {copyFeedback && (
-              <span className="text-xs" style={{ color: 'var(--app-accent)' }}>
-                {copyFeedback}
-              </span>
-            )}
-          </div>
-        )}
-
-        {chapter && (
-          <div
-            className="px-4 pt-2 pb-3 space-y-2 border-b"
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
+          <div className="flex flex-col lg:flex-row min-h-0">
+          {/* 左：工作流说明 + 导出/复制 + 粘贴 + 本期状态 */}
+          <aside
+            className="w-full lg:w-[min(42%,26rem)] lg:max-w-md shrink-0 border-b lg:border-b-0 lg:border-r"
             style={{ borderColor: 'var(--app-border)' }}
           >
-            <textarea
-              value={pasteRaw}
-              onChange={(e) => {
-                setPasteRaw(e.target.value);
-                setPasteError(null);
-              }}
-              rows={1}
-              className="w-full text-xs leading-normal rounded-lg border px-3 py-2 bg-field border-border resize-y font-mono min-h-[2.25rem] max-h-[min(40vh,16rem)] overflow-y-auto"
-              style={{ color: 'var(--app-text)' }}
-              placeholder={
-                isZh
-                  ? '粘贴外部AI的完整回复，点击「填入章节」自动解析'
-                  : 'Paste The Full External AI Reply, Then Tap Fill Chapter To Parse'
-              }
-              aria-label={isZh ? '粘贴 AI 回复' : 'Paste AI Reply'}
-            />
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={handleApplyAiPaste}
-                disabled={!pasteRaw.trim()}
-                className="inline-flex items-center gap-1.5 text-xs font-medium rounded-lg px-3 py-2 border border-border text-muted-foreground hover:bg-field disabled:opacity-50 disabled:pointer-events-none"
-              >
-                <ClipboardPaste className="w-3.5 h-3.5" />
-                {isZh ? '填入章节' : 'Fill Chapter'}
-              </button>
-              {pasteError && (
-                <span className="text-xs text-rose-600 dark:text-rose-400">{pasteError}</span>
+            <div className="p-4 space-y-4 flex flex-col min-h-0">
+              {(chapterWorkflowHint || showPeriodExport) && (
+                <div className="space-y-2 shrink-0">
+                  {chapterWorkflowHint && (
+                    <p className="text-xs leading-relaxed" style={{ color: 'var(--app-muted)' }}>
+                      {chapterWorkflowHint}
+                    </p>
+                  )}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {showPeriodExport && onExportPeriodBundle && (
+                      <button type="button" onClick={onExportPeriodBundle} className={MODAL_CHOICE_BTN}>
+                        <Download className="w-3.5 h-3.5" />
+                        {isZh ? '导出本期数据' : "Export This Period's Data"}
+                      </button>
+                    )}
+                    {showPeriodExport && onCopyPeriodBundle && (
+                      <button type="button" onClick={onCopyPeriodBundle} className={MODAL_CHOICE_BTN}>
+                        <Copy className="w-3.5 h-3.5" />
+                        {isZh ? '复制本期数据' : "Copy This Period's Data"}
+                      </button>
+                    )}
+                    {copyFeedback && (
+                      <span className="text-xs w-full sm:w-auto" style={{ color: 'var(--app-accent)' }}>
+                        {copyFeedback}
+                      </span>
+                    )}
+                  </div>
+                </div>
               )}
-              {pasteFeedback && (
-                <span className="text-xs" style={{ color: 'var(--app-accent)' }}>
-                  {pasteFeedback}
-                </span>
+
+              {periodExportJson != null && periodExportJson !== '' && (
+                <pre
+                  className={cn(MODAL_LEFT_SCROLL_BOX, 'whitespace-pre-wrap break-words')}
+                  style={{ color: 'var(--app-text)' }}
+                >
+                  {periodExportJson}
+                </pre>
+              )}
+
+              {chapter && (
+                <div className="space-y-2 shrink-0">
+                  <p className="text-xs font-bold" style={{ color: 'var(--app-text)' }}>
+                    {isZh ? '粘贴 AI 回复' : 'Paste AI Reply'}
+                  </p>
+                  <textarea
+                    value={pasteRaw}
+                    onChange={(e) => {
+                      setPasteRaw(e.target.value);
+                      setPasteError(null);
+                    }}
+                    className={cn(MODAL_LEFT_SCROLL_BOX, 'resize-y max-h-[min(40vh,18rem)]')}
+                    style={{ color: 'var(--app-text)' }}
+                    placeholder={
+                      isZh
+                        ? '粘贴外部 AI 的完整回复，再点「填入章节」'
+                        : 'Paste Full External AI Reply, Then Tap Fill Chapter'
+                    }
+                    aria-label={isZh ? '粘贴 AI 回复' : 'Paste AI Reply'}
+                  />
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleApplyAiPaste}
+                      disabled={!pasteRaw.trim()}
+                      className={cn(MODAL_CHOICE_BTN, 'disabled:opacity-50 disabled:pointer-events-none')}
+                    >
+                      <ClipboardPaste className="w-3.5 h-3.5" />
+                      {isZh ? '填入章节' : 'Fill Chapter'}
+                    </button>
+                    {pasteError && (
+                      <span className="text-xs text-rose-600 dark:text-rose-400">{pasteError}</span>
+                    )}
+                    {pasteFeedback && (
+                      <span className="text-xs" style={{ color: 'var(--app-accent)' }}>
+                        {pasteFeedback}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {chapter?.periodStart && chapter?.periodEnd && periodStats && (
+                <div className="pt-1">
+                  <ChapterPeriodStatusSection
+                    events={periodStats.events}
+                    completedInstances={periodStats.completedInstances}
+                    periodStart={chapter.periodStart}
+                    periodEnd={chapter.periodEnd}
+                    language={language}
+                    embedded
+                  />
+                </div>
               )}
             </div>
-          </div>
-        )}
+          </aside>
 
-        <div className="p-4 overflow-y-auto">
-          <div>
-            <p className="text-xs font-bold mb-2" style={{ color: 'var(--app-text)' }}>
-              {isZh ? '章节名' : 'Chapter Name'}
-            </p>
-            <input
-              value={displayTitle}
-              onChange={(e) => setEditTitle(e.target.value)}
-              readOnly={!isEditing}
-              className={cn(
-                'w-full text-sm rounded-lg border px-3 py-2 bg-field border-border',
-                !isEditing && 'cursor-default'
-              )}
-              style={{ color: 'var(--app-text)' }}
-              placeholder={isZh ? '输入章节名' : 'Enter Chapter Name'}
-            />
-          </div>
+          {/* 右：章节名 + 章节内容 + 字数 */}
+          <div className="flex-1 min-w-0 flex flex-col p-4 lg:pl-6 gap-6 pb-8">
+            <div>
+              <p className="text-xs font-bold mb-2" style={{ color: 'var(--app-text)' }}>
+                {isZh ? '章节名' : 'Chapter Name'}
+              </p>
+              <input
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                className="w-full text-sm rounded-lg border px-3 py-2 bg-field border-border"
+                style={{ color: 'var(--app-text)' }}
+                placeholder={isZh ? '输入章节名' : 'Enter Chapter Name'}
+              />
+            </div>
 
-          <div className="mt-6">
-            <p className="text-xs font-bold mb-1.5" style={{ color: 'var(--app-text)' }}>
-              {isZh ? '章节内容' : 'Chapter Content'}
-              {isEditing && (
-                <span className="ml-2 font-normal">
-                  {editSummary.length} / {MAX_CHAPTER_SUMMARY_CHARS}
-                  {editSummary.length > MAX_CHAPTER_SUMMARY_CHARS && (
-                    <span className="text-amber-600 dark:text-amber-400"> ({isZh ? '超出将截断' : 'Will Be Truncated'})</span>
-                  )}
+            <div className="flex flex-col flex-1 min-h-0">
+              <p className="text-xs font-bold mb-1.5 shrink-0" style={{ color: 'var(--app-text)' }}>
+                {isZh ? '章节内容' : 'Chapter Content'}
+                <span className="ml-2 font-normal tabular-nums" style={{ color: 'var(--app-muted)' }}>
+                  {summaryCharCount} / {MAX_CHAPTER_SUMMARY_CHARS}
                 </span>
-              )}
-            </p>
-            {isEditing ? (
+                {editSummary.length > MAX_CHAPTER_SUMMARY_CHARS && (
+                  <span className="text-amber-600 dark:text-amber-400"> ({isZh ? '超出将截断' : 'Will Be Truncated'})</span>
+                )}
+              </p>
               <textarea
                 value={editSummary}
                 onChange={(e) => setEditSummary(e.target.value)}
-                rows={10}
+                rows={16}
                 maxLength={MAX_CHAPTER_SUMMARY_CHARS + 500}
-                className="w-full text-sm rounded-lg border px-3 py-2 bg-field border-border resize-y"
+                className="w-full min-h-[min(48vh,380px)] text-sm rounded-lg border px-3 py-2 bg-field border-border resize-y"
                 style={{ color: 'var(--app-text)' }}
                 placeholder={isZh ? '输入章节内容（第一人称叙事）' : 'Enter Chapter Content (First-Person Narrative)'}
               />
-            ) : (
-              <div className="min-h-[8rem] rounded-lg border px-3 py-2 bg-field border-border" style={{ borderColor: 'var(--app-border)' }}>
-                <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: 'var(--app-text)' }}>
-                  {displaySummary ? (
-                    renderSummaryWithMarkdown(displaySummary)
-                  ) : (
-                    <span style={{ color: 'var(--app-muted)' }}>{isZh ? '暂无内容，点击编辑填写' : 'No Content Yet. Click Edit to Write.'}</span>
-                  )}
-                </p>
-              </div>
-            )}
+            </div>
           </div>
         </div>
+        </div>
 
-        <div className="sticky bottom-0 flex flex-wrap items-center gap-2 p-4 border-t shrink-0" style={{ borderColor: 'var(--app-border)' }}>
+        <div className="flex flex-wrap items-center gap-2 p-4 border-t shrink-0" style={{ borderColor: 'var(--app-border)' }}>
           {chapter && (
             <>
-              {!isEditing ? (
-                <button
-                  type="button"
-                  onClick={() => setIsEditing(true)}
-                  className="inline-flex items-center gap-1.5 text-xs font-medium rounded-lg px-3 py-2 border border-border text-muted-foreground hover:bg-field"
-                >
-                  <Edit3 className="w-3.5 h-3.5" />
-                  {isZh ? '编辑' : 'Edit'}
-                </button>
-              ) : (
+              {isDirty && (
                 <button
                   type="button"
                   onClick={handleSave}
-                  className="inline-flex items-center gap-1.5 text-xs font-medium rounded-lg px-3 py-2 border border-accent bg-accent/15 text-accent"
+                  className="inline-flex items-center gap-1.5 text-xs font-medium rounded-lg px-3 py-2 border border-accent bg-accent/15 text-accent transition-colors hover:bg-accent/25"
                 >
                   <Save className="w-3.5 h-3.5" />
                   {isZh ? '保存' : 'Save'}
@@ -356,7 +374,7 @@ export const ChapterViewModal: React.FC<ChapterViewModalProps> = ({
                 <button
                   type="button"
                   onClick={handleExport}
-                  className="inline-flex items-center gap-1.5 text-xs font-medium rounded-lg px-3 py-2 border border-border text-muted-foreground hover:bg-field"
+                  className={MODAL_CHOICE_BTN}
                 >
                   <Download className="w-3.5 h-3.5" />
                   {isZh ? '导出 TXT' : 'Export TXT'}
@@ -371,7 +389,7 @@ export const ChapterViewModal: React.FC<ChapterViewModalProps> = ({
                       onClose();
                     }
                   }}
-                  className="inline-flex items-center gap-1.5 text-xs font-medium rounded-lg px-3 py-2 border border-border text-rose-600 hover:bg-rose-500/10"
+                  className={MODAL_DELETE_BTN}
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   {isZh ? '删除' : 'Delete'}
@@ -379,13 +397,6 @@ export const ChapterViewModal: React.FC<ChapterViewModalProps> = ({
               )}
             </>
           )}
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex items-center text-xs font-medium rounded-lg px-3 py-2 border border-border text-muted-foreground hover:bg-field ml-auto"
-          >
-            {isZh ? '关闭' : 'Close'}
-          </button>
         </div>
       </div>
     </div>

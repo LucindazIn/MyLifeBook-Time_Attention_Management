@@ -1,4 +1,4 @@
-import { format, addDays, differenceInCalendarDays } from 'date-fns';
+import { format, differenceInCalendarDays, eachDayOfInterval } from 'date-fns';
 import type { ScheduleEvent } from '@/types';
 
 /** 单日能量：完成 30% + 高光/星标 40% + 连续性 30%（有事件=1，无=0）。 */
@@ -47,13 +47,13 @@ export function computeDailyEnergySeries(
     list.push(e);
     byDay.set(key, list);
   });
-  const out: { dateKey: string; energy: number }[] = [];
-  let d = new Date(rangeStart.getTime());
-  const endTime = rangeEnd.getTime();
-  while (d.getTime() <= endTime) {
-    const dateKey = format(d, 'yyyy-MM-dd');
-    out.push({ dateKey, energy: energyForDay(byDay.get(dateKey) ?? []) });
-    d = addDays(d, 1);
+  const t0 = rangeStart.getTime();
+  const t1 = rangeEnd.getTime();
+  if (Number.isNaN(t0) || Number.isNaN(t1) || t0 > t1) {
+    return [];
   }
-  return out;
+  return eachDayOfInterval({ start: rangeStart, end: rangeEnd }).map((d) => {
+    const dateKey = format(d, 'yyyy-MM-dd');
+    return { dateKey, energy: energyForDay(byDay.get(dateKey) ?? []) };
+  });
 }

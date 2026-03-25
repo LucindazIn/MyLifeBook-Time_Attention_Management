@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Mail, ArrowRight } from 'lucide-react';
+import { X, Mail, ArrowRight, Loader2 } from 'lucide-react';
 import { Turnstile } from '@marsidev/react-turnstile';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,7 +40,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, language,
     tip: language === 'zh'
       ? '请输入邮件中的验证码。'
       : 'Enter the verification code from your email.',
+    spamHint: language === 'zh'
+      ? '如未收到，请检查垃圾邮件箱。'
+      : 'If You Do Not Receive It, Check Your Spam Or Junk Folder.',
     verify: language === 'zh' ? '验证' : 'Verify',
+    verifying: language === 'zh' ? '验证中…' : 'Verifying…',
+    sending: language === 'zh' ? '发送中…' : 'Sending Code…',
     resend: language === 'zh' ? '重新发送' : 'Resend',
     otpPlaceholder: language === 'zh' ? '验证码' : 'Verification code',
   };
@@ -138,6 +143,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, language,
                         {labels.sent} <span className="font-semibold">{sentTo}</span>
                       </div>
                       <div className="mt-1 text-xs text-emerald-700">{labels.tip}</div>
+                      <div className="mt-2 text-xs text-emerald-700/90 leading-relaxed">{labels.spamHint}</div>
                     </div>
 
                     {errorMessage && (
@@ -160,12 +166,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, language,
                     {error && <div className="text-sm text-red-600">{error}</div>}
 
                     <Button
+                      type="button"
                       onClick={handleVerify}
                       disabled={otp.length < 6 || isVerifying}
-                      className={cn('w-full rounded-xl py-6', isVerifying && 'opacity-80 pointer-events-none')}
+                      aria-busy={isVerifying}
+                      className={cn('w-full rounded-xl py-6', isVerifying && 'pointer-events-none')}
                     >
-                      <ArrowRight className="w-4 h-4 mr-2" />
-                      {labels.verify}
+                      {isVerifying ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin shrink-0" aria-hidden />
+                          {labels.verifying}
+                        </>
+                      ) : (
+                        <>
+                          <ArrowRight className="w-4 h-4 mr-2 shrink-0" aria-hidden />
+                          {labels.verify}
+                        </>
+                      )}
                     </Button>
 
                     <button
@@ -215,12 +232,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, language,
                     )}
 
                     <Button
+                      type="button"
                       onClick={handleSend}
                       disabled={!email.trim() || isSending || (!!TURNSTILE_SITE_KEY && !captchaToken)}
-                      className={cn("w-full rounded-xl py-6", isSending && "opacity-80 pointer-events-none")}
+                      aria-busy={isSending}
+                      className={cn('w-full rounded-xl py-6', isSending && 'pointer-events-none')}
                     >
-                      <ArrowRight className="w-4 h-4 mr-2" />
-                      {labels.send}
+                      {isSending ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin shrink-0" aria-hidden />
+                          {labels.sending}
+                        </>
+                      ) : (
+                        <>
+                          <ArrowRight className="w-4 h-4 mr-2 shrink-0" aria-hidden />
+                          {labels.send}
+                        </>
+                      )}
                     </Button>
 
                     {onSkip && (

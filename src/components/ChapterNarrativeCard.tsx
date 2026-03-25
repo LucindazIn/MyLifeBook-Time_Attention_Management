@@ -69,7 +69,6 @@ export const ChapterNarrativeCard: React.FC<ChapterNarrativeCardProps> = ({
   const [savedChapters, setSavedChapters] = useState<SavedChapter[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalChapter, setModalChapter] = useState<SavedChapter | ChapterDraft | null>(null);
-  const [chapterModalMode, setChapterModalMode] = useState<'view' | 'edit'>('view');
   const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
 
   const isZh = language === 'zh';
@@ -198,9 +197,28 @@ export const ChapterNarrativeCard: React.FC<ChapterNarrativeCardProps> = ({
     }
   };
 
+  const periodExportJson = useMemo(() => {
+    if (!modalChapter?.periodStart || !modalChapter?.periodEnd) return null;
+    const text = buildExportTextForModalChapter();
+    return JSON.stringify(
+      {
+        meta: {
+          periodLabel: modalChapter.periodLabel,
+          periodStart: modalChapter.periodStart,
+          periodEnd: modalChapter.periodEnd,
+          periodKey: modalChapter.periodKey,
+          generatedAt: modalChapter.generatedAt,
+        },
+        exportedAt: new Date().toISOString(),
+        periodDataText: text,
+      },
+      null,
+      2
+    );
+  }, [modalChapter, buildExportTextForModalChapter]);
+
   const handleOpenChapter = () => {
     const draft = buildDraft('');
-    setChapterModalMode('edit');
     setModalChapter(draft);
     setModalOpen(true);
   };
@@ -212,7 +230,6 @@ export const ChapterNarrativeCard: React.FC<ChapterNarrativeCardProps> = ({
   };
 
   const handleOpenSaved = (ch: SavedChapter) => {
-    setChapterModalMode('view');
     setModalChapter(ch);
     setModalOpen(true);
   };
@@ -230,8 +247,8 @@ export const ChapterNarrativeCard: React.FC<ChapterNarrativeCardProps> = ({
   };
 
   const workflowHint = isZh
-    ? '建议先点击「导出本期数据」，再用外部 AI 总结工具提炼内容。'
-    : 'First Click "Export This Period\'s Data", Then Distill Your Chapter In An External AI Tool.';
+    ? '可以先点击「复制本期数据」，再粘贴至外部 AI 总结提炼内容。'
+    : 'You Can First Click "Copy This Period\'s Data", Then Paste Into An External AI To Summarize And Distill Content.';
 
   return (
     <div className="space-y-4">
@@ -348,12 +365,13 @@ export const ChapterNarrativeCard: React.FC<ChapterNarrativeCardProps> = ({
         onExportPeriodBundle={handleExportPeriodBundle}
         onCopyPeriodBundle={handleCopyPeriodBundle}
         copyFeedback={copyFeedback}
-        chapterOpenMode={chapterModalMode}
         onSave={handleModalSave}
         onSaveNew={handleSaveNew}
         onDelete={handleDeleteChapter}
         language={language}
         onExportTxt={(ch) => exportChapterToTxt(ch, true)}
+        periodStats={{ events, completedInstances }}
+        periodExportJson={periodExportJson}
       />
     </div>
   );

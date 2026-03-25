@@ -93,6 +93,102 @@ function truncateSummary(t: string): string {
   return t.slice(0, MAX_CHAPTER_SUMMARY_CHARS);
 }
 
+/** Read a JSON string value; `start` is the index of the first character after the opening `"`. */
+function readJsonStringValue(s: string, start: number): { value: string; endExclusive: number } | null {
+  let i = start;
+  let out = '';
+  while (i < s.length) {
+    const c = s[i];
+    if (c === '\\') {
+      if (i + 1 >= s.length) return null;
+      const n = s[i + 1];
+      switch (n) {
+        case 'n':
+          out += '\n';
+          i += 2;
+          continue;
+        case 'r':
+          out += '\r';
+          i += 2;
+          continue;
+        case 't':
+          out += '\t';
+          i += 2;
+          continue;
+        case '"':
+        case '\\':
+        case '/':
+          out += n;
+          i += 2;
+          continue;
+        case 'u': {
+          if (i + 6 > s.length) return null;
+          const hex = s.slice(i + 2, i + 6);
+          if (!/^[0-9a-fA-F]{4}$/.test(hex)) return null;
+          out += String.fromCodePoint(parseInt(hex, 16));
+          i += 6;
+          continue;
+        }
+        default:
+          out += n;
+          i += 2;
+          continue;
+      }
+    }
+    if (c === '"') {
+      return { value: out, endExclusive: i + 1 };
+    }
+    out += c;
+    i++;
+  }
+  return null;
+}
+
+/**
+ * When `narrativeSummary` contains unescaped `"` inside the value, `JSON.parse` fails.
+ * If `narrativeSummary` is the last property, the closing `"` of that value is the last `"` before the final `}`.
+ */
+function parseLooseChapterFromText(text: string): { chapterTitle: string; narrativeSummary: string } | null {
+  const t = text.trimEnd();
+  const titleKey = '"chapterTitle"';
+  const ti = t.indexOf(titleKey);
+  if (ti === -1) return null;
+  let p = ti + titleKey.length;
+  while (p < t.length && /\s/.test(t[p])) p++;
+  if (t[p] !== ':') return null;
+  p++;
+  while (p < t.length && /\s/.test(t[p])) p++;
+  if (t[p] !== '"') return null;
+  p++;
+  const titleRead = readJsonStringValue(t, p);
+  if (!titleRead) return null;
+
+  const nsKey = '"narrativeSummary"';
+  const ni = t.indexOf(nsKey);
+  if (ni === -1) return null;
+  let q = ni + nsKey.length;
+  while (q < t.length && /\s/.test(t[q])) q++;
+  if (t[q] !== ':') return null;
+  q++;
+  while (q < t.length && /\s/.test(t[q])) q++;
+  if (t[q] !== '"') return null;
+  q++;
+  const nsValueStart = q;
+
+  const lastBrace = t.lastIndexOf('}');
+  if (lastBrace === -1) return null;
+  let j = lastBrace - 1;
+  while (j >= 0 && /\s/.test(t[j])) j--;
+  if (j < 0 || t[j] !== '"') return null;
+  const closingQuoteIdx = j;
+  if (closingQuoteIdx < nsValueStart) return null;
+
+  return {
+    chapterTitle: titleRead.value,
+    narrativeSummary: t.slice(nsValueStart, closingQuoteIdx),
+  };
+}
+
 /**
  * Parse external AI reply: optional code fence, JSON with chapterTitle + narrativeSummary,
  * optional trailing product reminder line(s) (current or legacy).
@@ -122,7 +218,25 @@ export function parseChapterAiPaste(raw: string, isZh: boolean): ParseChapterAiP
   try {
     parsed = JSON.parse(jsonStr);
   } catch {
-    return { ok: false, error: err('parseJson') };
+    const loose = parseLooseChapterFromText(text);
+    if (!loose) {
+      return {
+        ok: false,
+        error:
+          err('parseJson') +
+          (isZh ? '（若正文含英文双引号，请写成 \\" 或改用弯引号。）' : ' Use \\" For Double Quotes Inside The Narrative.'),
+      };
+    }
+    const title = loose.chapterTitle.trim();
+    const summary = loose.narrativeSummary.trim();
+    if (!title || !summary) {
+      return { ok: false, error: err('missingFields') };
+    }
+    return {
+      ok: true,
+      chapterTitle: truncateTitle(title),
+      narrativeSummary: truncateSummary(summary),
+    };
   }
 
   if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {

@@ -1,9 +1,9 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { format, isBefore } from 'date-fns';
+import { isBefore } from 'date-fns';
 import { Plus, Calendar, CornerDownRight, Check, Coffee, Zap, Loader2, Sparkles, Users } from 'lucide-react';
-import { ScheduleEvent, AppLanguage } from '@/types';
-import { EventCard } from './EventCard';
+import { ScheduleEvent, AppLanguage, TimeDisplayFormat } from '@/types';
+import { formatEventClockForTimeline } from '@/lib/formatEventClock';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { EventLabelChip } from '@/components/EventLabelChip';
@@ -15,6 +15,7 @@ interface TimelineProps {
   onEventDoubleClick?: (event: ScheduleEvent) => void;
   onToggleComplete: (id: string) => void;
   language: AppLanguage;
+  timeDisplay: TimeDisplayFormat;
   onGenerateSchedule?: (mode: 'chill' | 'productive') => void;
   generatingMode?: 'chill' | 'productive' | null;
   selectedFilterRole?: string | null;
@@ -29,6 +30,7 @@ export const Timeline: React.FC<TimelineProps> = ({
   onEventDoubleClick,
   onToggleComplete, 
   language,
+  timeDisplay,
   onGenerateSchedule,
   generatingMode,
   selectedFilterRole = null,
@@ -155,12 +157,25 @@ export const Timeline: React.FC<TimelineProps> = ({
               )}
               
               {/* Time Label - Hide if overlapping to avoid clutter */}
-              {!isOverlap && (
-                <div className="absolute -left-[100px] top-4 w-[60px] text-right text-xs font-medium text-muted-foreground overflow-visible flex flex-col items-end">
-                  <span>{format(new Date(event.startTime), 'h:mm')}</span>
-                  <span className="text-[10px] opacity-70 mt-0.5">{format(new Date(event.startTime), 'a')}</span>
-                </div>
-              )}
+              {!isOverlap && (() => {
+                const parts = formatEventClockForTimeline(new Date(event.startTime), timeDisplay);
+                const is12hBlock = parts.line2 != null;
+                return (
+                  <div
+                    className={cn(
+                      'absolute -left-[100px] w-[60px] text-right text-xs font-medium text-muted-foreground overflow-visible translate-x-[0.6mm]',
+                      is12hBlock
+                        ? 'top-4 flex flex-col items-end'
+                        : 'top-5 flex h-3 items-center justify-end leading-none'
+                    )}
+                  >
+                    <span>{parts.line1}</span>
+                    {parts.line2 != null && (
+                      <span className="text-[10px] opacity-70 mt-0.5">{parts.line2}</span>
+                    )}
+                  </div>
+                );
+              })()}
 
               <div 
                 onClick={() => onEventClick(event)} 

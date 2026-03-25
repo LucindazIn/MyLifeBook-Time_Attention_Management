@@ -2,8 +2,9 @@ import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Search as SearchIcon, Tag as TagIcon, FilterX } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { ScheduleEvent, AppLanguage } from '@/types';
+import { ScheduleEvent, AppLanguage, TimeDisplayFormat } from '@/types';
 import { format } from 'date-fns';
+import { formatEventClockLine } from '@/lib/formatEventClock';
 import { zhCN } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { expandRecurringEvents } from '@/lib/events';
@@ -14,6 +15,7 @@ interface SearchModalProps {
   onClose: () => void;
   events: ScheduleEvent[];
   language: AppLanguage;
+  timeDisplay: TimeDisplayFormat;
   onEventClick: (date: Date) => void;
   completedInstances: Record<string, boolean>;
   onHighlightsChange?: (dates: string[]) => void;
@@ -30,6 +32,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   onClose,
   events,
   language,
+  timeDisplay,
   onEventClick,
   completedInstances,
   onHighlightsChange,
@@ -307,7 +310,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                       <div className="flex-1 min-w-0 py-1">
                         <h4 className="text-foreground font-medium truncate">{event.title}</h4>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1 flex-wrap">
-                          <span>{format(new Date(event.startTime), language === 'zh' ? 'HH:mm' : 'h:mm a')}</span>
+                          <span>{formatEventClockLine(new Date(event.startTime), timeDisplay)}</span>
                           {event.role && (
                             <>
                               <span>•</span>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { format, addDays, subDays, isSameDay, isBefore, startOfDay, addYears, subYears, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek, startOfYear, endOfYear, eachDayOfInterval } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, List, Grid, ChevronDown, Check, Settings, Search as SearchIcon, FilterX, BookOpen, Layers } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, List, Grid, ChevronDown, Check, Settings, Search as SearchIcon, FilterX, BookOpen, Layers, Loader2 } from 'lucide-react';
 import { SearchModal } from '@/components/SearchModal';
 import { motion, AnimatePresence } from 'motion/react';
 import { v4 as uuidv4 } from 'uuid';
@@ -19,6 +19,7 @@ import { DailyJournal } from '@/components/DailyJournal';
 import { AuthModal } from '@/components/AuthModal';
 import { Button } from '@/components/ui/button';
 import { ScheduleEvent, AppSettings, AppTheme, AppLanguage, CustomTag } from '@/types';
+import { normalizeAppSettings } from '@/lib/appSettings';
 import { generateDayName } from '@/lib/gemini';
 import { cn, getRandomDayName } from '@/lib/utils';
 import { expandRecurringEvents } from '@/lib/events';
@@ -39,6 +40,8 @@ import { getLocalScheduleSuggestions } from '@/lib/scheduleLocalSuggestions';
 import { getChapters, type SavedChapter } from '@/lib/chaptersStorage';
 import { PRESET_ROLES, getRoleDisplayName, getRoleColor } from '@/lib/constants/roles';
 
+const AUTH_ERROR_AUTO_DISMISS_MS = 10_000;
+
 export default function App() {
   const { user, isLoading: authLoading, signInWithEmail, verifyEmailOtp, signOut, authCallbackError, clearAuthCallbackError } = useAuth();
   const [authError, setAuthError] = useState<string | null>(null);
@@ -53,7 +56,10 @@ export default function App() {
   // Settings State
   const [settings, setSettings] = useState<AppSettings>(() => {
     const saved = localStorage.getItem('feather_settings');
-    return saved ? JSON.parse(saved) : { theme: 'artsy', language: 'en', hasCompletedOnboarding: false };
+    if (!saved) {
+      return normalizeAppSettings({ theme: 'artsy', language: 'en', hasCompletedOnboarding: false });
+    }
+    return normalizeAppSettings(JSON.parse(saved));
   });
 
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -109,7 +115,7 @@ export default function App() {
       setIsSyncing(true);
       setAuthError(null);
       try {
-        // V1 device cap (free=1): backend should enforce via RPC.
+        // Device cap: subscriptions.max_devices (default 8); enforced by register_device RPC.
         const deviceId = deviceIdRef.current;
         if (deviceId) {
           const { error } = await supabase.rpc('register_device', {
@@ -141,6 +147,12 @@ export default function App() {
     };
     run();
   }, [user]);
+
+  useEffect(() => {
+    if (!authError) return;
+    const id = window.setTimeout(() => setAuthError(null), AUTH_ERROR_AUTO_DISMISS_MS);
+    return () => window.clearTimeout(id);
+  }, [authError]);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -481,7 +493,9 @@ export default function App() {
   };
 
   const { uniqueTagsInView, tagCountsInView } = React.useMemo(() => {
-    if (viewMode === 'day') return { uniqueTagsInView: [], tagCountsInView: {} as Record<string, number> };
+    if (viewMode === 'day' || viewMode === 'collection' || viewMode === 'lifeBook') {
+      return { uniqueTagsInView: [], tagCountsInView: {} as Record<string, number> };
+    }
 
     let start, end;
     if (viewMode === 'month') {
@@ -736,163 +750,248 @@ export default function App() {
           </div>
         )}
         {isSyncing && user && (
-          <div className="mb-6 rounded-2xl border border-border bg-surface/80 px-4 py-3 text-foreground text-sm">
+          <div
+            className="mb-6 flex items-center gap-2 rounded-2xl border border-border bg-surface/80 px-4 py-3 text-foreground text-sm"
+            role="status"
+            aria-live="polite"
+          >
+            <Loader2 className="h-4 w-4 shrink-0 animate-spin text-muted-foreground" aria-hidden />
             {settings.language === 'zh' ? '正在同步数据…' : 'Syncing data…'}
           </div>
         )}
         
-        {/* Navigation Header */}
-        <header className="flex flex-col mb-8 gap-0 relative z-20">
-          {/* Row 1: Left (settings + icons) | Right (view + nav) */}
-          <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-3">
-            {/* Left: Settings, Search, Tag filter (in order, one row) */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsSettingsModalOpen(true)}
-                className="rounded-full hover:bg-surface hover:shadow-sm transition-all text-muted-foreground hover:text-accent"
-              >
-                <Settings className="w-5 h-5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => {
-                  if (viewMode === 'collection') {
-                    setViewMode(viewModeBeforeCollection);
-                  } else {
-                    setViewModeBeforeCollection(viewMode === 'day' || viewMode === 'month' || viewMode === 'year' ? viewMode : 'day');
-                    setViewMode('collection');
-                  }
-                  setIsViewMenuOpen(false);
-                  setIsTimePickerOpen(false);
-                }}
-                className={cn(
-                  "rounded-full hover:bg-surface hover:shadow-sm transition-all",
-                  viewMode === 'collection' ? "text-accent bg-accent/20" : "text-muted-foreground hover:text-accent"
-                )}
-                title={settings.language === 'zh' ? '时间聚合' : 'Time Synthesis'}
-              >
-                <Layers className="w-5 h-5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => {
-                  if (viewMode === 'lifeBook') {
-                    setViewMode(viewModeBeforeCollection ?? 'day');
-                  } else {
-                    setViewModeBeforeCollection(viewMode === 'day' || viewMode === 'month' || viewMode === 'year' ? viewMode : 'day');
-                    setViewMode('lifeBook');
-                  }
-                  setIsViewMenuOpen(false);
-                  setIsTimePickerOpen(false);
-                }}
-                className={cn(
-                  "rounded-full hover:bg-surface hover:shadow-sm transition-all",
-                  viewMode === 'lifeBook' ? "text-accent bg-accent/20" : "text-muted-foreground hover:text-accent"
-                )}
-                title={settings.language === 'zh' ? '人生之书' : 'Life Book'}
-              >
-                <BookOpen className="w-5 h-5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsSearchModalOpen(true)}
-                className="rounded-full hover:bg-surface hover:shadow-sm transition-all text-muted-foreground hover:text-accent"
-              >
-                <SearchIcon className="w-5 h-5" />
-              </Button>
-
-              <AnimatePresence>
-                {viewMode !== 'day' && uniqueTagsInView.length > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, x: -8 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -8 }}
-                    className="flex items-center gap-1.5 flex-wrap"
+        {/* Navigation Header — mobile: icon grid → view|date → tags; desktop: icons+tags | view+date */}
+        <header className="flex flex-col mb-8 gap-0 relative z-30">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between lg:gap-4 w-full min-w-0">
+            {/* Left: mobile icon grid; desktop icon row + tag filter */}
+            <div className="flex flex-col gap-2 flex-none w-full lg:flex-1 lg:min-w-0">
+              <div className="grid grid-cols-4 gap-1 w-full lg:hidden justify-items-stretch">
+                <div className="flex justify-center">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsSettingsModalOpen(true)}
+                    className="rounded-full hover:bg-surface hover:shadow-sm transition-all text-muted-foreground hover:text-accent"
                   >
-                    {selectedFilterTag && (
-                      <button
-                        onClick={() => setSelectedFilterTag(null)}
-                        className="w-7 h-7 flex items-center justify-center rounded-full bg-field text-muted-foreground hover:bg-surface transition-colors flex-shrink-0"
-                        title={settings.language === 'zh' ? '清除筛选' : 'Clear filter'}
-                      >
-                        <FilterX className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-                    {uniqueTagsInView.map(tag => {
-                      const count = tagCountsInView[tag] ?? 0;
-                      const isActive = selectedFilterTag === tag;
-                      return (
-                        <button
-                          key={tag}
-                          onClick={() => setSelectedFilterTag(prev => prev === tag ? null : tag)}
-                          className={cn(
-                            "flex items-center gap-1 pl-1.5 pr-2 h-7 rounded-full text-sm transition-all flex-shrink-0",
-                            isActive
-                              ? "bg-accent/20 ring-2 ring-accent shadow-sm"
-                              : "bg-field hover:bg-surface hover:shadow-sm"
-                          )}
-                        >
-                          <span>{tag}</span>
-                          <span className={cn(
-                            "text-[10px] font-semibold tabular-nums leading-none px-1 py-0.5 rounded-full",
-                            isActive ? "bg-accent/30 text-accent" : "bg-field text-muted-foreground"
-                          )}>
-                            {count}
-                          </span>
-                        </button>
-                      );
-                    })}
-                    {selectedFilterTag && (
-                      <span className="text-xs text-accent font-medium pl-0.5">
-                        {selectedFilterTag}{' '}
-                        {settings.language === 'zh'
-                          ? `· ${tagCountsInView[selectedFilterTag] ?? 0} 天`
-                          : `· ${tagCountsInView[selectedFilterTag] ?? 0} day${(tagCountsInView[selectedFilterTag] ?? 0) !== 1 ? 's' : ''}`}
-                      </span>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-
-          {/* Right: View dropdown + Date navigation */}
-          <div className="flex items-center gap-2 flex-wrap justify-end" ref={menuGroupRef}>
-            <div className="relative">
-              <button
-                onClick={() => {
-                  setIsViewMenuOpen(!isViewMenuOpen);
-                  setIsTimePickerOpen(false);
-                }}
-                className="flex items-center gap-1.5 bg-transparent hover:bg-field px-3 py-2.5 rounded-lg text-foreground font-medium transition-colors min-w-[120px] justify-between"
-              >
-                <div className="flex items-center gap-2">
-                  {viewMode === 'year' && <Grid className="w-4 h-4 text-accent" />}
-                  {viewMode === 'month' && <CalendarIcon className="w-4 h-4 text-accent" />}
-                  {viewMode === 'day' && <List className="w-4 h-4 text-accent" />}
-                  {viewMode === 'collection' && <Layers className="w-4 h-4 text-accent" />}
-                  {viewMode === 'lifeBook' && <BookOpen className="w-4 h-4 text-accent" />}
-                  <span>{currentViewLabel}</span>
+                    <Settings className="w-5 h-5" />
+                  </Button>
                 </div>
-                <ChevronDown className={cn("w-5 h-5 text-muted-foreground transition-transform flex-shrink-0", isViewMenuOpen && "rotate-180")} />
-              </button>
-
-              <AnimatePresence>
-                {isViewMenuOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 8, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                    className="absolute top-full right-0 mt-2 w-48 bg-surface rounded-xl shadow-xl border border-border overflow-y-auto overflow-x-hidden py-1 z-50 max-h-[min(16rem,70vh)]"
+                <div className="flex justify-center">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      if (viewMode === 'collection') {
+                        setViewMode(viewModeBeforeCollection);
+                      } else {
+                        setViewModeBeforeCollection(viewMode === 'day' || viewMode === 'month' || viewMode === 'year' ? viewMode : 'day');
+                        setViewMode('collection');
+                      }
+                      setIsViewMenuOpen(false);
+                      setIsTimePickerOpen(false);
+                    }}
+                    className={cn(
+                      'rounded-full hover:bg-surface hover:shadow-sm transition-all',
+                      viewMode === 'collection' ? 'text-accent bg-accent/20' : 'text-muted-foreground hover:text-accent'
+                    )}
+                    title={settings.language === 'zh' ? '时间聚合' : 'Time Synthesis'}
                   >
+                    <Layers className="w-5 h-5" />
+                  </Button>
+                </div>
+                <div className="flex justify-center">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      if (viewMode === 'lifeBook') {
+                        setViewMode(viewModeBeforeCollection ?? 'day');
+                      } else {
+                        setViewModeBeforeCollection(viewMode === 'day' || viewMode === 'month' || viewMode === 'year' ? viewMode : 'day');
+                        setViewMode('lifeBook');
+                      }
+                      setIsViewMenuOpen(false);
+                      setIsTimePickerOpen(false);
+                    }}
+                    className={cn(
+                      'rounded-full hover:bg-surface hover:shadow-sm transition-all',
+                      viewMode === 'lifeBook' ? 'text-accent bg-accent/20' : 'text-muted-foreground hover:text-accent'
+                    )}
+                    title={settings.language === 'zh' ? '人生之书' : 'Life Book'}
+                  >
+                    <BookOpen className="w-5 h-5" />
+                  </Button>
+                </div>
+                <div className="flex justify-center">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsSearchModalOpen(true)}
+                    className="rounded-full hover:bg-surface hover:shadow-sm transition-all text-muted-foreground hover:text-accent"
+                  >
+                    <SearchIcon className="w-5 h-5" />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="hidden lg:flex items-center gap-2 flex-wrap">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsSettingsModalOpen(true)}
+                  className="rounded-full hover:bg-surface hover:shadow-sm transition-all text-muted-foreground hover:text-accent"
+                >
+                  <Settings className="w-5 h-5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    if (viewMode === 'collection') {
+                      setViewMode(viewModeBeforeCollection);
+                    } else {
+                      setViewModeBeforeCollection(viewMode === 'day' || viewMode === 'month' || viewMode === 'year' ? viewMode : 'day');
+                      setViewMode('collection');
+                    }
+                    setIsViewMenuOpen(false);
+                    setIsTimePickerOpen(false);
+                  }}
+                  className={cn(
+                    'rounded-full hover:bg-surface hover:shadow-sm transition-all',
+                    viewMode === 'collection' ? 'text-accent bg-accent/20' : 'text-muted-foreground hover:text-accent'
+                  )}
+                  title={settings.language === 'zh' ? '时间聚合' : 'Time Synthesis'}
+                >
+                  <Layers className="w-5 h-5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    if (viewMode === 'lifeBook') {
+                      setViewMode(viewModeBeforeCollection ?? 'day');
+                    } else {
+                      setViewModeBeforeCollection(viewMode === 'day' || viewMode === 'month' || viewMode === 'year' ? viewMode : 'day');
+                      setViewMode('lifeBook');
+                    }
+                    setIsViewMenuOpen(false);
+                    setIsTimePickerOpen(false);
+                  }}
+                  className={cn(
+                    'rounded-full hover:bg-surface hover:shadow-sm transition-all',
+                    viewMode === 'lifeBook' ? 'text-accent bg-accent/20' : 'text-muted-foreground hover:text-accent'
+                  )}
+                  title={settings.language === 'zh' ? '人生之书' : 'Life Book'}
+                >
+                  <BookOpen className="w-5 h-5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsSearchModalOpen(true)}
+                  className="rounded-full hover:bg-surface hover:shadow-sm transition-all text-muted-foreground hover:text-accent"
+                >
+                  <SearchIcon className="w-5 h-5" />
+                </Button>
+
+                <AnimatePresence>
+                  {viewMode !== 'day' && uniqueTagsInView.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -8 }}
+                      className="flex items-center gap-1.5 flex-wrap"
+                    >
+                      {selectedFilterTag && (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedFilterTag(null)}
+                          className="w-7 h-7 flex items-center justify-center rounded-full bg-field text-muted-foreground hover:bg-surface transition-colors flex-shrink-0"
+                          title={settings.language === 'zh' ? '清除筛选' : 'Clear filter'}
+                        >
+                          <FilterX className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                      {uniqueTagsInView.map(tag => {
+                        const count = tagCountsInView[tag] ?? 0;
+                        const isActive = selectedFilterTag === tag;
+                        return (
+                          <button
+                            type="button"
+                            key={tag}
+                            onClick={() => setSelectedFilterTag(prev => prev === tag ? null : tag)}
+                            className={cn(
+                              'flex items-center gap-1 pl-1.5 pr-2 h-7 rounded-full text-sm transition-all flex-shrink-0',
+                              isActive
+                                ? 'bg-accent/20 ring-2 ring-accent shadow-sm'
+                                : 'bg-field hover:bg-surface hover:shadow-sm'
+                            )}
+                          >
+                            <span>{tag}</span>
+                            <span className={cn(
+                              'text-[10px] font-semibold tabular-nums leading-none px-1 py-0.5 rounded-full',
+                              isActive ? 'bg-accent/30 text-accent' : 'bg-field text-muted-foreground'
+                            )}>
+                              {count}
+                            </span>
+                          </button>
+                        );
+                      })}
+                      {selectedFilterTag && (
+                        <span className="text-xs text-accent font-medium pl-0.5">
+                          {selectedFilterTag}{' '}
+                          {settings.language === 'zh'
+                            ? `· ${tagCountsInView[selectedFilterTag] ?? 0} 天`
+                            : `· ${tagCountsInView[selectedFilterTag] ?? 0} day${(tagCountsInView[selectedFilterTag] ?? 0) !== 1 ? 's' : ''}`}
+                        </span>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+
+            {/* View + date: mobile date left / view right (DOM reverse); desktop view then date */}
+            <div
+              ref={menuGroupRef}
+              className="flex flex-row-reverse lg:flex-row items-center gap-2 justify-between w-full min-w-0 lg:w-auto lg:justify-end lg:flex-wrap shrink-0"
+            >
+              <div className="relative shrink-0 z-[60]">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsViewMenuOpen(!isViewMenuOpen);
+                    setIsTimePickerOpen(false);
+                  }}
+                  className="flex items-center gap-1 bg-transparent hover:bg-field px-2 sm:px-3 py-2 rounded-lg text-foreground text-sm font-medium transition-colors min-w-0 max-w-[min(11rem,42vw)] justify-between"
+                >
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    {viewMode === 'year' && <Grid className="w-4 h-4 shrink-0 text-accent" />}
+                    {viewMode === 'month' && <CalendarIcon className="w-4 h-4 shrink-0 text-accent" />}
+                    {viewMode === 'day' && <List className="w-4 h-4 shrink-0 text-accent" />}
+                    {viewMode === 'collection' && <Layers className="w-4 h-4 shrink-0 text-accent" />}
+                    {viewMode === 'lifeBook' && <BookOpen className="w-4 h-4 shrink-0 text-accent" />}
+                    <span className="truncate">{currentViewLabel}</span>
+                  </div>
+                  <ChevronDown
+                    className={cn(
+                      'w-4 h-4 shrink-0 text-muted-foreground transition-transform',
+                      isViewMenuOpen && 'rotate-180'
+                    )}
+                  />
+                </button>
+
+                <AnimatePresence>
+                  {isViewMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                      className="absolute right-0 z-[60] w-48 max-h-[min(16rem,70vh)] overflow-y-auto overflow-x-hidden rounded-xl border border-border bg-surface py-1 shadow-xl max-lg:bottom-full max-lg:top-auto max-lg:mb-2 max-lg:mt-0 lg:top-full lg:mt-2"
+                    >
                     {viewOptions.map((option) => (
                       <button
+                        type="button"
                         key={option.id}
                         onClick={() => {
                           if (option.id === 'lifeBook') {
@@ -919,9 +1018,10 @@ export default function App() {
               </AnimatePresence>
             </div>
 
+            <div className="min-w-0 flex-1 flex items-center justify-start gap-1 overflow-x-auto">
             {viewMode === 'day' && (
               <>
-                <Button variant="ghost" size="icon" onClick={() => navigateDate('prev')} className="rounded-full hover:bg-field transition-all">
+                <Button variant="ghost" size="icon" onClick={() => navigateDate('prev')} className="rounded-full hover:bg-field transition-all shrink-0">
                   <ChevronLeft className="w-5 h-5 text-muted-foreground" />
                 </Button>
                 <input
@@ -932,16 +1032,16 @@ export default function App() {
                   onChange={e => {
                     if (e.target.value) setCurrentDate(new Date(e.target.value + 'T12:00:00'));
                   }}
-                  className="text-sm font-medium text-foreground bg-transparent hover:bg-field px-3 py-1.5 rounded-lg transition-colors focus:outline-none focus:ring-1 focus:ring-accent"
+                  className="text-sm font-medium text-foreground bg-transparent hover:bg-field px-2 sm:px-3 py-1.5 rounded-lg transition-colors focus:outline-none focus:ring-1 focus:ring-accent min-w-0"
                 />
-                <Button variant="ghost" size="icon" onClick={() => navigateDate('next')} className="rounded-full hover:bg-field transition-all">
+                <Button variant="ghost" size="icon" onClick={() => navigateDate('next')} className="rounded-full hover:bg-field transition-all shrink-0">
                   <ChevronRight className="w-5 h-5 text-muted-foreground" />
                 </Button>
               </>
             )}
 
             {viewMode !== 'day' && viewMode !== 'collection' && viewMode !== 'lifeBook' && (
-              <div className="relative flex items-stretch">
+              <div className="relative flex items-stretch shrink-0">
                 <div className={cn(
                   "flex items-center rounded-l-lg border border-r-0 transition-colors",
                   isTimePickerOpen
@@ -1001,7 +1101,7 @@ export default function App() {
                       initial={{ opacity: 0, y: 8, scale: 0.96 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.96 }}
-                      className="absolute right-0 top-full mt-2 w-[260px] bg-surface rounded-xl border border-border shadow-xl p-3 z-50"
+                      className="absolute right-0 w-[260px] bg-surface rounded-xl border border-border shadow-xl p-3 z-[60] max-lg:bottom-full max-lg:top-auto max-lg:mb-2 max-lg:mt-0 lg:top-full lg:mt-2"
                     >
                       <div className="space-y-3">
                         <div>
@@ -1090,6 +1190,64 @@ export default function App() {
           </div>
           </div>
 
+            <div className="lg:hidden w-full">
+              <AnimatePresence>
+                {viewMode !== 'day' && uniqueTagsInView.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -8 }}
+                    className="flex items-center gap-1.5 flex-wrap"
+                  >
+                    {selectedFilterTag && (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedFilterTag(null)}
+                        className="w-7 h-7 flex items-center justify-center rounded-full bg-field text-muted-foreground hover:bg-surface transition-colors flex-shrink-0"
+                        title={settings.language === 'zh' ? '清除筛选' : 'Clear filter'}
+                      >
+                        <FilterX className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                    {uniqueTagsInView.map(tag => {
+                      const count = tagCountsInView[tag] ?? 0;
+                      const isActive = selectedFilterTag === tag;
+                      return (
+                        <button
+                          type="button"
+                          key={tag}
+                          onClick={() => setSelectedFilterTag(prev => prev === tag ? null : tag)}
+                          className={cn(
+                            'flex items-center gap-1 pl-1.5 pr-2 h-7 rounded-full text-sm transition-all flex-shrink-0',
+                            isActive
+                              ? 'bg-accent/20 ring-2 ring-accent shadow-sm'
+                              : 'bg-field hover:bg-surface hover:shadow-sm'
+                          )}
+                        >
+                          <span>{tag}</span>
+                          <span className={cn(
+                            'text-[10px] font-semibold tabular-nums leading-none px-1 py-0.5 rounded-full',
+                            isActive ? 'bg-accent/30 text-accent' : 'bg-field text-muted-foreground'
+                          )}>
+                            {count}
+                          </span>
+                        </button>
+                      );
+                    })}
+                    {selectedFilterTag && (
+                      <span className="text-xs text-accent font-medium pl-0.5">
+                        {selectedFilterTag}{' '}
+                        {settings.language === 'zh'
+                          ? `· ${tagCountsInView[selectedFilterTag] ?? 0} 天`
+                          : `· ${tagCountsInView[selectedFilterTag] ?? 0} day${(tagCountsInView[selectedFilterTag] ?? 0) !== 1 ? 's' : ''}`}
+                      </span>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+
           {/* Row 2: 年/月/时间聚合/人生之书 — 整页居中 */}
           {viewMode !== 'day' && (
             <div className="w-full flex flex-col items-center justify-center mt-5 gap-1">
@@ -1146,6 +1304,7 @@ export default function App() {
                   dayVibes={dayVibesData}
                   completedInstances={completedInstances}
                   language={settings.language}
+                  timeDisplay={settings.timeDisplay}
                   journalEntries={journalEntries}
                 />
               </motion.div>
@@ -1280,6 +1439,7 @@ export default function App() {
                             }}
                             onToggleComplete={handleToggleComplete}
                             language={settings.language}
+                            timeDisplay={settings.timeDisplay}
                             onGenerateSchedule={handleGenerateSchedule}
                             generatingMode={generatingMode}
                             selectedFilterRole={selectedFilterRole}
@@ -1380,6 +1540,7 @@ export default function App() {
         isRegenerating={!!generatingMode}
         mode={lastGenerateMode}
         language={settings.language}
+        timeDisplay={settings.timeDisplay}
       />
 
       <SearchModal
@@ -1387,6 +1548,7 @@ export default function App() {
         onClose={() => setIsSearchModalOpen(false)}
         events={events}
         language={settings.language}
+        timeDisplay={settings.timeDisplay}
         onEventClick={(date) => {
           setCurrentDate(date);
         }}

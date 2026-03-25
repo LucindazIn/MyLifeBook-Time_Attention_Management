@@ -45,6 +45,13 @@ export const RoleEnergyCard: React.FC<RoleEnergyCardProps> = ({
   const dominantRolePct = rolePercentages.length ? Math.max(...rolePercentages.map(([, p]) => p)) : 0;
   const showBalanceReminder = dominantRolePct >= ROLE_BALANCE_THRESHOLD_PCT;
 
+  const roleCountById = useMemo(() => {
+    const m = new Map<string, number>();
+    roleSegments.forEach((s) => m.set(s.roleId, s.count));
+    return m;
+  }, [roleSegments]);
+  const totalWeekEvents = weekEvents.length;
+
   return (
     <div className="space-y-4">
       <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--app-text)' }}>
@@ -59,23 +66,36 @@ export const RoleEnergyCard: React.FC<RoleEnergyCardProps> = ({
           >
             {rolePercentages.map(([roleId, pct]) => {
               if (pct <= 0) return null;
+              const n = roleCountById.get(roleId) ?? 0;
+              const name = getRoleDisplayName(roleId, isZh ? 'zh' : 'en');
+              const titleStr = isZh
+                ? `${name}：${pct}%（${n}/${totalWeekEvents}）`
+                : `${name}: ${pct}% (${n}/${totalWeekEvents})`;
               return (
                 <div
                   key={roleId}
-                  className="h-full transition-all"
+                  className="h-full min-w-px shrink-0 transition-all"
                   style={{ width: `${pct}%`, backgroundColor: getRoleColor(roleId) }}
-                  title={`${getRoleDisplayName(roleId, isZh ? 'zh' : 'en')} ${pct}%`}
+                  title={titleStr}
                 />
               );
             })}
           </div>
-          <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
-            {rolePercentages.map(([roleId, pct]) => (
-              <span key={roleId} style={{ color: 'var(--app-muted)' }}>
-                {getRoleDisplayName(roleId, isZh ? 'zh' : 'en')} {pct}%
+          <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-xs">
+            {rolePercentages.map(([roleId]) => (
+              <span
+                key={roleId}
+                className="inline-flex min-w-0 items-center gap-1.5"
+                style={{ color: 'var(--app-text)' }}
+              >
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: getRoleColor(roleId) }} aria-hidden />
+                <span className="truncate">{getRoleDisplayName(roleId, isZh ? 'zh' : 'en')}</span>
               </span>
             ))}
           </div>
+          <p className="text-[10px] leading-snug" style={{ color: 'var(--app-muted)' }}>
+            {isZh ? '悬停色条查看比例与条数' : 'Hover Bar For Proportion And Counts'}
+          </p>
           {showBalanceReminder && (
             <p className="text-xs rounded-lg px-3 py-2" style={{ background: 'var(--app-field)', color: 'var(--app-muted)' }}>
               {isZh

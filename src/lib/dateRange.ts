@@ -7,6 +7,7 @@ import {
   subMonths,
   format,
   addDays,
+  parseISO,
 } from 'date-fns';
 
 export type ChapterPeriodKey = 'this_week' | 'last_week' | 'this_month' | 'custom';
@@ -96,6 +97,29 @@ export function formatPeriodWeekLabel(
     return isZh ? `${month}月` : format(d, 'MMMM');
   }
   return isZh ? `${month}月第${weekNo}周` : `Week ${weekNo}, ${format(d, 'MMMM')}`;
+}
+
+/**
+ * 章节弹窗标题后括号：本月/本周等为「（3月）」「（3月第1周）」；自定义为起止日。
+ */
+export function formatChapterModalPeriodBracket(
+  periodStart: string | undefined,
+  periodEnd: string | undefined,
+  periodKey: ChapterPeriodKey,
+  isZh: boolean
+): string {
+  if (!periodStart) return '';
+  if (periodKey === 'custom' && periodEnd) {
+    const a = parseISO(periodStart);
+    const b = parseISO(periodEnd);
+    if (isNaN(a.getTime()) || isNaN(b.getTime())) return '';
+    return isZh
+      ? `（${format(a, 'M月d日')}–${format(b, 'M月d日')}）`
+      : `(${format(a, 'MMM d')}–${format(b, 'MMM d')})`;
+  }
+  const inner = formatPeriodWeekLabel(periodStart, periodKey, isZh);
+  if (!inner) return '';
+  return isZh ? `（${inner}）` : `(${inner})`;
 }
 
 /** 人生之书目录用周期后缀：（x年x月x周）或（x年x月） */

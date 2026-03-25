@@ -1,19 +1,21 @@
 import React, { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Target } from 'lucide-react';
-import type { ScheduleEvent, AppLanguage } from '@/types';
+import type { ScheduleEvent, AppLanguage, TimeDisplayFormat } from '@/types';
 import { LongTermGoalDetailModal } from '@/components/LongTermGoalDetailModal';
 
 export interface LongTermGoalsCardProps {
   events: ScheduleEvent[];
   completedInstances: Record<string, boolean>;
   language: AppLanguage;
+  timeDisplay: TimeDisplayFormat;
 }
 
 export const LongTermGoalsCard: React.FC<LongTermGoalsCardProps> = ({
   events,
   completedInstances,
   language,
+  timeDisplay,
 }) => {
   const [goalModal, setGoalModal] = useState<string | null>(null);
   const isZh = language === 'zh';
@@ -56,6 +58,7 @@ export const LongTermGoalsCard: React.FC<LongTermGoalsCardProps> = ({
                 events={events}
                 completedInstances={completedInstances}
                 language={language}
+                timeDisplay={timeDisplay}
                 onClose={() => setGoalModal(null)}
               />,
               document.body

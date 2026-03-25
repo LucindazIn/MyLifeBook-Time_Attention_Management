@@ -2,29 +2,144 @@
 <img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
-# My Life Book
+# 人生之书（My Life Book）产品介绍
 
-Narrative scheduling web app (人生之书). This repo contains everything you need to run the app locally.
+一款把「过日子」变成「讲故事」的日程 Web 应用：时间不只是被填满，而是被你**设计**——用角色、意义与长期目标，把零散安排串成可回看、可讲述的人生叙事。
 
-**Storage:** `localStorage` keys still use the legacy `feather_` prefix so existing settings and cached chapter data continue to work; no key migration is required for the product rename.
+---
 
-View your app in AI Studio: https://ai.studio/apps/54045701-b3f4-419c-9a42-dce3af590f10
+## 目录
 
-## Run Locally
+- [1.0 产品与价值主张](#10-产品与价值主张)
+- [2.0 产品说明](#20-产品说明)
+  - [2.1 产品目标](#21-产品目标)
+  - [2.2 目标用户](#22-目标用户)
+  - [2.3 平台与技术范围](#23-平台与技术范围)
+  - [2.4 核心功能模块](#24-核心功能模块)
+  - [2.5 界面设计规范](#25-界面设计规范)
+  - [2.6 系统架构](#26-系统架构)
+  - [2.7 数据如何组织（用户视角）](#27-数据如何组织用户视角)
+  - [2.8 体验与性能（目标方向）](#28-体验与性能目标方向)
+  - [2.9 数据安全（要点）](#29-数据安全要点)
+- [3.0 仓库与本地运行（开发者）](#30-仓库与本地运行开发者)
 
-**Prerequisites:**  Node.js
+---
 
-1. Install dependencies: `npm install`
-2. Optional — **developer fallback (Tier A):** set `GEMINI_API_KEY` or `VITE_GEMINI_PROXY_URL` in `.env.local` so **day titles** and **journal meaning summaries** work without a per-user key. See [.env.example](.env.example).
-3. **Your Gemini API key (Tier B):** in the app, open **Settings** and paste a key from [Google AI Studio](https://aistudio.google.com/apikey). Required for **chat**, **random schedule**, **AI summaries by tag/role**, and **Life Book chapters**. The key is stored **only in your browser** (localStorage), not sent to the app developer’s servers.
-4. Run the app: `npm run dev`
-5. Tests: `npm test`
+## 1.0 产品与价值主张
 
-### AI tiers (short)
+**产品类型：** 日程 Web 应用（响应式，手机与桌面浏览器均可使用；后续可演进为完整 PWA 安装体验）。
 
-| Tier | Who pays / which key | Features |
-|------|----------------------|----------|
-| A (free fallback) | Host `GEMINI_API_KEY` or proxy | Day name, journal “meaning” summary |
-| B (user key) | User’s key in Settings | Chat, random schedule, filter AI summary, Life Book chapter generation |
+**产品定位：** **叙事型时间设计系统**——你不是在管理一串待办，而是在编排「今天的剧情」：谁在场（角色）、什么事值得被记住（意义与高光）、这些事最终通向哪里（长期目标）。
 
-If you use a browser-stored API key, treat XSS and dependency supply-chain risk seriously; restrict keys in Google Cloud where possible.
+### 用户真正想完成的事（JTBD）
+
+- **当我受够了冷冰冰的「会议 / 待办」列表时**，我需要一个地方，让同一件事能写成「作为某个角色的成长或付出」，而不只是一行标题。
+- **当我想分清「活着」和「活出名堂」时**，我需要在日历里标出哪些日子、哪些事真正塑造了我——而不只是按时完成。
+- **当我想把一段日子收成故事、而不是一堆数据时**，我希望能把日程、心情与能量放进同一套叙事里，甚至交给 AI 帮忙整理成章节，让过去对未来说话。
+
+### 1.1 核心主张
+
+**时间不是被填满，而是被设计。**
+
+### 我们如何把主张落到体验里
+
+日程体现时间的**广度**——你仍然拥有熟悉的多日视图与安排能力，看见生活展开的形状。
+
+**标签与角色体系**决定生命的**深度**——同一件事，是「买菜」还是「作为家庭支柱的付出」，取决于你给自己哪张叙事名片。
+
+**生命能量与当日心境**（如精力、情绪、专注等）反映生命的**强度**——不是只有「忙不忙」，还有「这一天我是燃尽了还是在蓄力」。
+
+三者合在一起：**看得见安排、读得懂意义、对得上状态**——这才是「设计时间」，而不只是「填满格子」。
+
+### 1.2 三大核心能力（卖点）
+
+**1）角色标签（Role）—— 叙事的主角**
+
+日程不再是扁平的「事项」，而是挂在某个身份之下的行动：可以是职场里的角色，也可以是你在意的自我定义。角色帮你固定**视角**：从谁的眼睛看这一天，冲突与成长才站得住脚。
+
+**2）事件意义与高光（Meaning / Star / Highlight）—— 叙事的权重**
+
+并不是所有一小时都同等重要。当前产品支持为事件写下**一句对你有意义的话**，并用**星标**标记重点、用**高光**标记值得进入「人生之书」的里程碑——让「洗碗」和「第一次面试」在叙事里自然分出轻重。（未来若引入数值化「意义分」，也会是在这条逻辑上延伸。）
+
+**3）长期目标（Long-term Goals）—— 叙事的线索**
+
+目标是连接过去与未来的钩子。日程可以挂载到长期目标上：挂不上时，它更像噪音；大量日程指向同一目标时，那一段时间就有了**章节主轴**——你在为什么而忙，一眼能看出来。
+
+## 2.0 产品说明
+
+### 2.1 产品目标
+
+- 提供**可叙事、可复盘**的日程体验，超越传统待办与日历的「清单感」。
+- 在**同一套界面**里连接：事件、角色、意义、长期目标、日记与当日状态，减少「多个 App 拼不出一天」的割裂。
+- 支持登录后**云端同步**与多设备使用：同一账号下**同时活跃设备默认上限为 8 台**（服务端按订阅表的 `max_devices` 校验；超出上限时新环境可能无法完成设备注册，具体以订阅与后台策略为准），让叙事随人走、不锁在一台机器上。
+- 在保护隐私的前提下，数据可导出，便于用户准备个性化日记意义总结、「人生之书」章节生成等。
+
+### 2.2 目标用户
+
+**适合谁：** 需要日历与日程管理，从轻量化记录到精细化时间管理均可。
+
+**尤其适合：**
+- 愿意多花5秒用「叙事性标注」换长期回报的用户——多写一句意义、多选一个角色，久了就是自己的人生数据库。
+- 爱读故事的、爱思考人生意义的、喜欢自我管理的、知识工作者，以及希望**从日程里看见意义与方向**的人。
+
+### 2.3 平台与技术范围
+
+| 层级 | 说明 |
+|------|------|
+| 前端 | React 19、Vite 6、TypeScript、Tailwind CSS 4、Motion、Swiper 等 |
+| 数据与账号 | Supabase（PostgreSQL + Row Level Security；邮箱 OTP 登录等） |
+| AI | `@google/genai`；可选本地代理 [server/gemini-proxy.mjs](server/gemini-proxy.mjs)，避免把宿主 Key 打进前端 |
+
+### 2.4 核心功能模块
+- **日历与事件**：多视图浏览、创建/编辑事件、重复规则、按日完成状态（含重复事件的实例级完成记录）。
+- **叙事字段**：角色、标签、文本意义、星标、高光、长期目标（目标与标签在存储层统一沉淀，便于统计与回顾）。
+- **日记与当日元数据**：每日标题/标签、日记正文、每日一句；以及精力、情绪、专注等维度，与日程对照阅读。
+- **人生之书 / 章节**：将一段时间内的叙事材料组织为可阅读的章节与呈现。
+- **设置**：六大视觉主题、中/英语言、**时间显示**（12 小时制 / 24 小时制，与界面语言可独立配置）、登录与登出。登录同步默认每账号**活跃设备上限 8 台**。
+
+### 2.5 界面设计规范
+
+产品提供 **六大主题**，同一套功能、六种气质。英文版字体差异更大，体验更佳。
+| **Artsy 文艺** 
+| **Tech 赛博** 
+| **Anime 二次元** 
+| **Nature 自然** 
+| **Retro 复古** 
+
+
+### 2.6 系统架构
+
+产品在浏览器中运行；登录后数据与云端同步。可选的 AI 能力基于 Google Gemini，密钥可仅存于你的设备或由部署方配置，避免写入公开仓库或泄露给他人。
+
+### 2.7 数据如何组织
+
+- 一个账号对应一套数据，彼此隔离。
+- 事件、标签、打卡与长期目标等在应用内联动；重复任务可在不同日期分别勾选完成。
+
+### 2.8 体验与性能
+
+常见网络下轻快；AI 相关耗时受模型与网络影响。登录后数据默认在云端持久化，降低单设备丢失风险。以上为工程目标，**不等同于对外 SLA 承诺**。
+
+针对 iOS 和 Android 系统，提供将网页端添加桌面的教程：
+
+【iOS 用户 (iPhone / iPad)】
+由于苹果系统的限制，必须使用 Safari 浏览器完成此操作。
+第一步： 在 Safari 中打开你的 Web App 链接。
+第二步： 点击屏幕底部中央的 “分享”图标（一个带向上箭头的方框）。
+第三步： 在弹出的选项列表中向下滚动，找到并点击 “添加到主屏幕” (Add to Home Screen)。
+第四步： 确认应用名称（你可以重命名为“人生之书”），点击右上角的 “添加”。
+
+💡 小贴士： 添加成功后，桌面上会出现一个精美的图标，下次点击它时，浏览器上方的地址栏和底部的工具栏会自动隐藏，体验非常顺滑。
+
+【 Android 用户 (华为、小米、三星等)】
+建议使用 Chrome 浏览器，兼容性最好。
+第一步： 在 Chrome 中打开你的 Web App 链接。
+第二步： 点击右上角的 “三个点”图标（菜单）。
+第三步： 找到并点击 “安装应用” 或 “添加到主屏幕”。
+第四步： 在弹出的确认框中点击 “添加” 或 “自动添加”。
+注意： 部分安卓国产ROM可能需要在系统设置中，为浏览器开启“创建桌面快捷方式”的权限。
+
+
+## 3.0 仓库与本地运行（开发者）
+克隆本仓库即可在本地运行。如需二次开发请联系我授权（sunqy0310@163.com).
+**Prerequisites:** Node.js

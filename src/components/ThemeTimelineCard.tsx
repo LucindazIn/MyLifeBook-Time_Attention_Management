@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { format } from 'date-fns';
 import { BookMarked, Tag } from 'lucide-react';
-import type { ScheduleEvent, AppLanguage } from '@/types';
+import type { ScheduleEvent, AppLanguage, TimeDisplayFormat } from '@/types';
+import { formatEventClockLine } from '@/lib/formatEventClock';
 import { expandRecurringEvents } from '@/lib/events';
 import { getChapterRange, type ChapterPeriodKey } from '@/lib/dateRange';
 import { cn } from '@/lib/utils';
@@ -12,6 +13,7 @@ export interface ThemeTimelineCardProps {
   events: ScheduleEvent[];
   completedInstances: Record<string, boolean>;
   language: AppLanguage;
+  timeDisplay: TimeDisplayFormat;
 }
 
 function getRangeLabel(period: ChapterPeriodKey, isZh: boolean): string {
@@ -28,6 +30,7 @@ export const ThemeTimelineCard: React.FC<ThemeTimelineCardProps> = ({
   events,
   completedInstances,
   language,
+  timeDisplay,
 }) => {
   const [range, setRange] = useState<ChapterPeriodKey>('this_week');
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
@@ -159,7 +162,7 @@ export const ThemeTimelineCard: React.FC<ThemeTimelineCardProps> = ({
                         >
                           <span className="font-medium">{e.title}</span>
                           <span className="text-[11px] ml-2" style={{ color: 'var(--app-muted)' }}>
-                            {format(new Date(e.startTime), 'HH:mm')}
+                            {formatEventClockLine(new Date(e.startTime), timeDisplay)}
                             {e.completed ? ' ✓' : ''}
                           </span>
                         </li>

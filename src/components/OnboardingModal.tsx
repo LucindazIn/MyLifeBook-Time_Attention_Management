@@ -27,7 +27,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) 
     onComplete({
       language,
       theme,
-      hasCompletedOnboarding: true
+      hasCompletedOnboarding: true,
+      timeDisplay: language === 'zh' ? '24h' : '12h',
     });
   };
 

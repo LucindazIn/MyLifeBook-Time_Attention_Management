@@ -1,23 +1,27 @@
-import React, { useMemo, useState, useRef, useCallback } from 'react';
-import { format, startOfMonth, endOfMonth, subDays, addDays, differenceInCalendarDays } from 'date-fns';
-import { TrendingUp, Download } from 'lucide-react';
-import html2canvas from 'html2canvas';
+import React, { useMemo, useState, useRef, useCallback, useEffect } from 'react';
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  subDays,
+  addDays,
+  differenceInCalendarDays,
+  startOfDay,
+  endOfDay,
+  parseISO,
+} from 'date-fns';
+import { TrendingUp } from 'lucide-react';
 import type { ScheduleEvent, AppLanguage } from '@/types';
 import { expandRecurringEvents } from '@/lib/events';
-import { getRoleColor, getRoleDisplayName, PRESET_ROLES } from '@/lib/constants/roles';
-import {
-  aggregateByRole,
-  rolePercentagesByCount,
-} from '@/lib/roleAggregation';
-import {
-  aggregateByGoal,
-  goalPercentagesByCount,
-} from '@/lib/goalAggregation';
 import { computeDailyEnergySeries } from '@/lib/lifeEnergy';
-import { getLifeEnergyForDay, setLifeEnergyForDay } from '@/lib/lifeEnergyStorage';
+import {
+  LIFE_ENERGY_GLOBAL_RANGE_KEY,
+  getLifeEnergyOverrideForDate,
+  setLifeEnergyForDay,
+} from '@/lib/lifeEnergyStorage';
 import { cn } from '@/lib/utils';
 
-export type RangeKey = 'month' | 'quarter' | 'full';
+export type RangeKey = 'month' | 'quarter' | 'custom';
 
 export interface RoleBalanceCardProps {
   events: ScheduleEvent[];
@@ -26,9 +30,8 @@ export interface RoleBalanceCardProps {
 }
 
 function getRangeDates(
-  range: RangeKey,
-  now: Date,
-  earliestEventDate: Date | null
+  range: Exclude<RangeKey, 'custom'>,
+  now: Date
 ): { currentStart: Date; currentEnd: Date; previousStart: Date; previousEnd: Date } {
   switch (range) {
     case 'month': {
@@ -53,28 +56,17 @@ function getRangeDates(
         previousEnd: prevQuarterEnd,
       };
     }
-    case 'full': {
-      const fullEnd = now;
-      const fullStart = earliestEventDate ?? subDays(now, 365);
-      const len = differenceInCalendarDays(fullEnd, fullStart) + 1;
-      const prevEnd = subDays(fullStart, 1);
-      const prevStart = subDays(prevEnd, len - 1);
-      return {
-        currentStart: fullStart,
-        currentEnd: fullEnd,
-        previousStart: prevStart,
-        previousEnd: prevEnd,
-      };
-    }
   }
 }
 
-const GOAL_PALETTE = PRESET_ROLES.map((r) => r.color);
-
 const CHART_HEIGHT = 140;
+/** Extra SVG height so value badges above top points are not clipped */
+const CHART_TOP_PAD = 24;
 const PADDING = { top: 8, right: 8, bottom: 24, left: 32 };
 const POINT_R = 5;
 const POINT_HIT_R = 14;
+const BADGE_H = 30;
+const BADGE_GAP = 6;
 
 type PointData = { dateKey: string; energy: number; dayIndex: number };
 
@@ -84,25 +76,40 @@ export const RoleBalanceCard: React.FC<RoleBalanceCardProps> = ({
   language,
 }) => {
   const [range, setRange] = useState<RangeKey>('month');
+  const [customStart, setCustomStart] = useState(() => format(startOfMonth(new Date()), 'yyyy-MM-dd'));
+  const [customEnd, setCustomEnd] = useState(() => format(new Date(), 'yyyy-MM-dd'));
   const [energyOverrides, setEnergyOverrides] = useState<Record<string, number>>({});
   const [dragging, setDragging] = useState<string | null>(null);
-  const cardRef = useRef<HTMLDivElement>(null);
   const isZh = language === 'zh';
 
   const now = useMemo(() => new Date(), []);
-  const earliestEventDate = useMemo(() => {
-    const withRoleOrGoal = events.filter(
-      (e) => (e.role != null && e.role !== '') || ((e.longTermGoals?.length ?? 0) > 0)
-    );
-    if (!withRoleOrGoal.length) return null;
-    const t = Math.min(...withRoleOrGoal.map((e) => new Date(e.startTime).getTime()));
-    return new Date(t);
-  }, [events]);
 
-  const { currentStart, currentEnd, previousStart, previousEnd } = useMemo(
-    () => getRangeDates(range, now, earliestEventDate),
-    [range, now, earliestEventDate]
-  );
+  const { currentStart, currentEnd } = useMemo(() => {
+    if (range === 'custom') {
+      const a = startOfDay(parseISO(customStart));
+      const b = endOfDay(parseISO(customEnd));
+      const s = a.getTime() <= b.getTime() ? a : b;
+      const e = a.getTime() <= b.getTime() ? b : a;
+      return { currentStart: s, currentEnd: e };
+    }
+    return getRangeDates(range, now);
+  }, [range, customStart, customEnd, now]);
+
+  const onCustomStartChange = useCallback((value: string) => {
+    if (!value) return;
+    setCustomStart(value);
+    if (value > customEnd) setCustomEnd(value);
+  }, [customEnd]);
+
+  const onCustomEndChange = useCallback((value: string) => {
+    if (!value) return;
+    setCustomEnd(value);
+    if (value < customStart) setCustomStart(value);
+  }, [customStart]);
+
+  useEffect(() => {
+    setEnergyOverrides({});
+  }, [range, customStart, customEnd]);
 
   const expandedCurrent = useMemo(
     () => expandRecurringEvents(events, currentStart, currentEnd, completedInstances),
@@ -121,8 +128,6 @@ export const RoleBalanceCard: React.FC<RoleBalanceCardProps> = ({
     return keys;
   }, [currentStart, currentEnd]);
 
-  const rangeKeyForStorage = range === 'full' ? 'full' : range;
-
   const dailyEnergyComputed = useMemo(
     () => computeDailyEnergySeries(expandedCurrent, currentStart, currentEnd),
     [expandedCurrent, currentStart, currentEnd]
@@ -132,118 +137,77 @@ export const RoleBalanceCard: React.FC<RoleBalanceCardProps> = ({
     return dailyEnergyComputed.map(({ dateKey, energy }, dayIndex) => ({
       dateKey,
       dayIndex,
-      energy: energyOverrides[dateKey] ?? getLifeEnergyForDay(rangeKeyForStorage, dateKey) ?? energy,
+      energy: energyOverrides[dateKey] ?? getLifeEnergyOverrideForDate(dateKey) ?? energy,
     }));
-  }, [dailyEnergyComputed, energyOverrides, rangeKeyForStorage]);
+  }, [dailyEnergyComputed, energyOverrides]);
 
-  const rolePercentagesByDay = useMemo(() => {
-    return dayKeys.map((dateKey) => {
-      const dayEvents = expandedCurrent.filter(
-        (e) => format(new Date(e.startTime), 'yyyy-MM-dd') === dateKey
-      );
-      const segs = aggregateByRole(dayEvents);
-      const total = segs.reduce((a, s) => a + s.count, 0) || 1;
-      return rolePercentagesByCount(segs, total);
-    });
-  }, [dayKeys, expandedCurrent]);
-
-  const goalPercentagesByDay = useMemo(() => {
-    return dayKeys.map((dateKey) => {
-      const dayEvents = expandedCurrent.filter(
-        (e) => format(new Date(e.startTime), 'yyyy-MM-dd') === dateKey
-      );
-      const segs = aggregateByGoal(dayEvents);
-      const total = segs.reduce((a, s) => a + s.count, 0) || 1;
-      return goalPercentagesByCount(segs, total);
-    });
-  }, [dayKeys, expandedCurrent]);
-
-  const allRoleIds = useMemo(() => {
-    const set = new Set<string>();
-    rolePercentagesByDay.forEach((row) => row.forEach(([id]) => set.add(id)));
-    return Array.from(set).sort();
-  }, [rolePercentagesByDay]);
-
-  const allGoalIds = useMemo(() => {
-    const set = new Set<string>();
-    goalPercentagesByDay.forEach((row) => row.forEach(([id]) => set.add(id)));
-    return Array.from(set).sort();
-  }, [goalPercentagesByDay]);
-
-  const handleEnergyDrag = useCallback(
-    (dateKey: string, newEnergy: number) => {
-      const clamped = Math.min(100, Math.max(0, Math.round(newEnergy)));
-      setLifeEnergyForDay(rangeKeyForStorage, dateKey, clamped);
-      setEnergyOverrides((prev) => ({ ...prev, [dateKey]: clamped }));
-    },
-    [rangeKeyForStorage]
-  );
-
-  const handleExportPng = useCallback(async () => {
-    if (!cardRef.current) return;
-    try {
-      const canvas = await html2canvas(cardRef.current, {
-        useCORS: true,
-        scale: 2,
-        backgroundColor: null,
-      });
-      const dataUrl = canvas.toDataURL('image/png');
-      const a = document.createElement('a');
-      a.href = dataUrl;
-      a.download = `人生曲线_${range === 'month' ? '本月' : range === 'quarter' ? '近3个月' : '全时间段'}_${format(now, 'yyyy-MM')}.png`;
-      a.click();
-    } catch {
-      // ignore
-    }
-  }, [range, now]);
+  const handleEnergyDrag = useCallback((dateKey: string, newEnergy: number) => {
+    const clamped = Math.min(100, Math.max(0, Math.round(newEnergy)));
+    setLifeEnergyForDay(LIFE_ENERGY_GLOBAL_RANGE_KEY, dateKey, clamped);
+    setEnergyOverrides((prev) => ({ ...prev, [dateKey]: clamped }));
+  }, []);
 
   const rangeLabels: Record<RangeKey, string> = isZh
-    ? { month: '本月', quarter: '近3个月', full: '全时间段' }
-    : { month: 'This Month', quarter: 'Last 3 Months', full: 'All Time' };
-
-  const segmentLabel = (id: string, _pct: number) =>
-    getRoleDisplayName(id, isZh ? 'zh' : 'en');
-  const segmentColor = (id: string, index: number) => getRoleColor(id);
-  const goalColor = (id: string, index: number) =>
-    GOAL_PALETTE[index % GOAL_PALETTE.length];
+    ? { month: '本月', quarter: '近3个月', custom: '自定义' }
+    : { month: 'This Month', quarter: 'Last 3 Months', custom: 'Custom' };
 
   return (
-    <div ref={cardRef} className="space-y-4" style={{ color: 'var(--app-text)' }}>
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--app-text)' }}>
-          <TrendingUp className="w-4 h-4" style={{ color: 'var(--app-accent)' }} />
-          {isZh ? '人生曲线' : 'Life Curve'}
-        </h3>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={handleExportPng}
-            className="text-xs font-medium rounded-lg px-2.5 py-1.5 border transition-colors flex items-center gap-1.5"
-            style={{ borderColor: 'var(--app-border)', color: 'var(--app-muted)' }}
-            title={isZh ? '导出 PNG' : 'Export PNG'}
-          >
-            <Download className="w-3.5 h-3.5" />
-            {isZh ? '导出 PNG' : 'Export PNG'}
-          </button>
-        </div>
-      </div>
+    <div
+      className="space-y-4 rounded-xl p-1"
+      style={{ color: 'var(--app-text)', backgroundColor: 'var(--app-surface)' }}
+    >
+      <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--app-text)' }}>
+        <TrendingUp className="w-4 h-4" style={{ color: 'var(--app-accent)' }} />
+        {isZh ? '人生曲线' : 'Life Curve'}
+      </h3>
 
-      <div className="flex flex-wrap items-center gap-2">
-        {(['month', 'quarter', 'full'] as const).map((r) => (
-          <button
-            key={r}
-            type="button"
-            onClick={() => setRange(r)}
-            className={cn(
-              'text-xs font-medium rounded-lg px-2.5 py-1.5 border transition-colors',
-              range === r
-                ? 'border-accent bg-accent/15 text-accent'
-                : 'border-border text-muted-foreground hover:bg-field'
-            )}
-          >
-            {rangeLabels[r]}
-          </button>
-        ))}
+      <div className="space-y-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {(['month', 'quarter', 'custom'] as const).map((r) => (
+            <button
+              key={r}
+              type="button"
+              onClick={() => setRange(r)}
+              className={cn(
+                'text-xs font-medium rounded-lg px-2.5 py-1.5 border transition-colors',
+                range === r
+                  ? 'border-accent bg-accent/15 text-accent'
+                  : 'border-border text-muted-foreground hover:bg-field'
+              )}
+            >
+              {rangeLabels[r]}
+            </button>
+          ))}
+        </div>
+        {range === 'custom' && (
+          <div className="flex flex-wrap items-center gap-2 text-xs" style={{ color: 'var(--app-muted)' }}>
+            <label className="flex items-center gap-1.5 shrink-0">
+              <span className="whitespace-nowrap">{isZh ? '起' : 'From'}</span>
+              <input
+                type="date"
+                value={customStart}
+                max={customEnd}
+                onChange={(e) => onCustomStartChange(e.target.value)}
+                className="rounded-lg border bg-field px-2 py-1 text-foreground tabular-nums"
+                style={{ borderColor: 'var(--app-border)' }}
+              />
+            </label>
+            <span aria-hidden className="text-muted-foreground">
+              —
+            </span>
+            <label className="flex items-center gap-1.5 shrink-0">
+              <span className="whitespace-nowrap">{isZh ? '止' : 'To'}</span>
+              <input
+                type="date"
+                value={customEnd}
+                min={customStart}
+                onChange={(e) => onCustomEndChange(e.target.value)}
+                className="rounded-lg border bg-field px-2 py-1 text-foreground tabular-nums"
+                style={{ borderColor: 'var(--app-border)' }}
+              />
+            </label>
+          </div>
+        )}
       </div>
 
       {expandedCurrent.length === 0 && (
@@ -252,118 +216,71 @@ export const RoleBalanceCard: React.FC<RoleBalanceCardProps> = ({
         </p>
       )}
 
-      {expandedCurrent.length > 0 && (
-        <>
-          {/* 生命能量（按角色分类） */}
-          <section className="space-y-2">
+      {dayCount > 0 && (
+        <section className="space-y-2">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
             <h4 className="text-xs font-semibold" style={{ color: 'var(--app-text)' }}>
-              {isZh ? '生命能量（按角色分类）' : 'Life Energy (By Role)'}
+              {isZh ? '生命能量' : 'Life Energy'}
             </h4>
-            <StackedAreaChart
-              dayCount={dayCount}
-              dayKeys={dayKeys}
-              percentagesByDay={rolePercentagesByDay}
-              segmentOrder={allRoleIds}
-              segmentColor={segmentColor}
-              segmentLabel={segmentLabel}
-              dailyEnergy={dailyEnergyWithOverrides}
-              rangeKey={rangeKeyForStorage}
-              dragging={dragging}
-              setDragging={setDragging}
-              onEnergyDrag={handleEnergyDrag}
-              isZh={isZh}
-            />
-            {allRoleIds.length > 0 && (
-              <div className="flex flex-wrap gap-x-4 gap-y-1.5">
-                {allRoleIds.map((id, i) => (
-                  <div key={id} className="flex items-center gap-1.5 text-xs">
-                    <span
-                      className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: segmentColor(id, i) }}
-                    />
-                    <span style={{ color: 'var(--app-text)' }}>{segmentLabel(id, 0)}</span>
-                  </div>
-                ))}
-                <div className="flex items-center gap-1.5 text-xs">
-                  <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: 'var(--app-accent)' }} />
-                  <span style={{ color: 'var(--app-muted)' }}>{isZh ? '生命能量' : 'Life Energy'}</span>
-                </div>
-              </div>
-            )}
-          </section>
-
-          {/* 生命能量（按目标分类） */}
-          <section className="space-y-2">
-            <h4 className="text-xs font-semibold" style={{ color: 'var(--app-text)' }}>
-              {isZh ? '生命能量（按目标分类）' : 'Life Energy (By Goal)'}
-            </h4>
-            <StackedAreaChart
-              dayCount={dayCount}
-              dayKeys={dayKeys}
-              percentagesByDay={goalPercentagesByDay}
-              segmentOrder={allGoalIds}
-              segmentColor={goalColor}
-              segmentLabel={(id) => id}
-              dailyEnergy={dailyEnergyWithOverrides}
-              rangeKey={rangeKeyForStorage}
-              dragging={dragging}
-              setDragging={setDragging}
-              onEnergyDrag={handleEnergyDrag}
-              isZh={isZh}
-            />
-            {allGoalIds.length > 0 && (
-              <div className="flex flex-wrap gap-x-4 gap-y-1.5">
-                {allGoalIds.map((id, i) => (
-                  <div key={id} className="flex items-center gap-1.5 text-xs">
-                    <span
-                      className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: goalColor(id, i) }}
-                    />
-                    <span style={{ color: 'var(--app-text)' }}>{id}</span>
-                  </div>
-                ))}
-                <div className="flex items-center gap-1.5 text-xs">
-                  <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: 'var(--app-accent)' }} />
-                  <span style={{ color: 'var(--app-muted)' }}>{isZh ? '生命能量' : 'Life Energy'}</span>
-                </div>
-              </div>
-            )}
-          </section>
-        </>
+            <span className="text-xs flex items-center gap-1.5 shrink-0" style={{ color: 'var(--app-muted)' }}>
+              <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: 'var(--app-accent)' }} />
+              {isZh ? '可拖动折线点调整' : 'Drag Points To Adjust'}
+            </span>
+          </div>
+          <EnergyLineChart
+            dayCount={dayCount}
+            dayKeys={dayKeys}
+            dailyEnergy={dailyEnergyWithOverrides}
+            dragging={dragging}
+            setDragging={setDragging}
+            onEnergyDrag={handleEnergyDrag}
+            isZh={isZh}
+          />
+        </section>
       )}
     </div>
   );
 };
 
-interface StackedAreaChartProps {
+interface EnergyLineChartProps {
   dayCount: number;
   dayKeys: string[];
-  percentagesByDay: [string, number][][];
-  segmentOrder: string[];
-  segmentColor: (id: string, index: number) => string;
-  segmentLabel: (id: string, pct: number) => string;
   dailyEnergy: PointData[];
-  rangeKey: string;
   dragging: string | null;
   setDragging: (d: string | null) => void;
   onEnergyDrag: (dateKey: string, energy: number) => void;
   isZh: boolean;
 }
 
-function StackedAreaChart({
+function EnergyLineChart({
   dayCount,
   dayKeys,
-  percentagesByDay,
-  segmentOrder,
-  segmentColor,
   dailyEnergy,
   dragging,
   setDragging,
   onEnergyDrag,
   isZh,
-}: StackedAreaChartProps) {
+}: EnergyLineChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const hoverClearTimerRef = useRef<number | null>(null);
   const [width, setWidth] = useState(400);
+  const [hoveredDateKey, setHoveredDateKey] = useState<string | null>(null);
+
+  const scheduleHoverClear = useCallback(() => {
+    if (hoverClearTimerRef.current != null) {
+      window.clearTimeout(hoverClearTimerRef.current);
+    }
+    hoverClearTimerRef.current = window.setTimeout(() => {
+      hoverClearTimerRef.current = null;
+      setHoveredDateKey(null);
+    }, 120);
+  }, []);
+
+  React.useEffect(() => {
+    return () => {
+      if (hoverClearTimerRef.current != null) window.clearTimeout(hoverClearTimerRef.current);
+    };
+  }, []);
 
   React.useEffect(() => {
     const el = containerRef.current;
@@ -373,23 +290,9 @@ function StackedAreaChart({
     return () => ro.disconnect();
   }, []);
 
-  const innerW = width - PADDING.left - PADDING.right;
   const innerH = CHART_HEIGHT - PADDING.top - PADDING.bottom;
-  const scaleX = dayCount <= 1 ? 0 : innerW / (dayCount - 1);
+  const scaleX = dayCount <= 1 ? 0 : (width - PADDING.left - PADDING.right) / (dayCount - 1);
   const scaleY = innerH / 100;
-
-  const cumulativeByDay = useMemo(() => {
-    return percentagesByDay.map((row) => {
-      const cum: number[] = [];
-      let c = 0;
-      for (const id of segmentOrder) {
-        const pct = row.find(([k]) => k === id)?.[1] ?? 0;
-        c += pct;
-        cum.push(c);
-      }
-      return cum;
-    });
-  }, [percentagesByDay, segmentOrder]);
 
   const energyPath = useMemo(() => {
     if (dailyEnergy.length === 0) return '';
@@ -404,6 +307,11 @@ function StackedAreaChart({
   const handleMouseDown = useCallback(
     (e: React.MouseEvent, dateKey: string) => {
       e.preventDefault();
+      if (hoverClearTimerRef.current != null) {
+        window.clearTimeout(hoverClearTimerRef.current);
+        hoverClearTimerRef.current = null;
+      }
+      setHoveredDateKey(dateKey);
       setDragging(dateKey);
     },
     [setDragging]
@@ -449,104 +357,128 @@ function StackedAreaChart({
     <div ref={containerRef} className="w-full overflow-x-auto">
       <svg
         width={width}
-        height={CHART_HEIGHT}
+        height={CHART_HEIGHT + CHART_TOP_PAD}
         className="overflow-visible"
         style={{ minWidth: Math.max(320, dayCount * 12) }}
       >
-        <defs>
-          <linearGradient id="energyGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--app-accent)" stopOpacity={0.3} />
-            <stop offset="100%" stopColor="var(--app-accent)" stopOpacity={0} />
-          </linearGradient>
-        </defs>
-        {/* Y axis labels */}
-        {[0, 50, 100].map((v) => (
-          <text
-            key={v}
-            x={PADDING.left - 6}
-            y={PADDING.top + (100 - v) * scaleY}
-            textAnchor="end"
-            dominantBaseline="middle"
-            className="text-[10px] fill-[var(--app-muted)]"
-          >
-            {v}
-          </text>
-        ))}
-        {/* X axis labels */}
-        {xLabels.map(({ dayIndex, label }) => (
-          <text
-            key={dayIndex}
-            x={PADDING.left + dayIndex * scaleX}
-            y={CHART_HEIGHT - 6}
-            textAnchor="middle"
-            className="text-[10px] fill-[var(--app-muted)]"
-          >
-            {label}
-          </text>
-        ))}
-        {/* Stacked area — pointer-events: none 以便点击到前景能量点 */}
-        <g style={{ pointerEvents: 'none' }}>
-          {segmentOrder.map((id, segIndex) => {
-            const pathD = cumulativeByDay
-              .map((cum, dayIndex) => {
-                const x = PADDING.left + dayIndex * scaleX;
-                const top = PADDING.top + (100 - (cum[segIndex] ?? 0)) * scaleY;
-                const bottom = PADDING.top + (100 - (cum[segIndex - 1] ?? 0)) * scaleY;
-                return { x, top, bottom };
-              })
-              .filter((_, i) => i < cumulativeByDay.length);
-            if (pathD.length === 0) return null;
-            const topPoints = pathD.map((p) => `${p.x},${p.top}`).join(' L ');
-            const bottomPoints = pathD.map((p) => `${p.x},${p.bottom}`).reverse().join(' L ');
-            const d = `M ${pathD[0].x},${pathD[0].bottom} L ${topPoints} L ${pathD[pathD.length - 1].x},${pathD[pathD.length - 1].bottom} L ${bottomPoints} Z`;
+        <g transform={`translate(0, ${CHART_TOP_PAD})`}>
+          {[0, 50, 100].map((v) => (
+            <text
+              key={v}
+              x={PADDING.left - 6}
+              y={PADDING.top + (100 - v) * scaleY}
+              textAnchor="end"
+              dominantBaseline="middle"
+              className="text-[10px] fill-[var(--app-muted)]"
+            >
+              {v}
+            </text>
+          ))}
+          {xLabels.map(({ dayIndex, label }) => (
+            <text
+              key={dayIndex}
+              x={PADDING.left + dayIndex * scaleX}
+              y={CHART_HEIGHT - 6}
+              textAnchor="middle"
+              className="text-[10px] fill-[var(--app-muted)]"
+            >
+              {label}
+            </text>
+          ))}
+          <g style={{ pointerEvents: 'none' }}>
+            <path
+              d={energyPath}
+              fill="none"
+              stroke="var(--app-accent)"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </g>
+          {dailyEnergy.map((p) => {
+            const x = PADDING.left + p.dayIndex * scaleX;
+            const y = PADDING.top + (100 - p.energy) * scaleY;
             return (
-              <path
-                key={id}
-                d={d}
-                fill={segmentColor(id, segIndex)}
-                fillOpacity={0.7}
-                stroke="none"
-              />
+              <g key={p.dateKey}>
+                <circle
+                  cx={x}
+                  cy={y}
+                  r={POINT_HIT_R}
+                  fill="transparent"
+                  className="cursor-grab active:cursor-grabbing"
+                  style={{ touchAction: 'none' }}
+                  onMouseDown={(e) => handleMouseDown(e, p.dateKey)}
+                  onMouseEnter={() => {
+                    if (hoverClearTimerRef.current != null) {
+                      window.clearTimeout(hoverClearTimerRef.current);
+                      hoverClearTimerRef.current = null;
+                    }
+                    setHoveredDateKey(p.dateKey);
+                  }}
+                  onMouseLeave={() => {
+                    if (dragging === p.dateKey) return;
+                    scheduleHoverClear();
+                  }}
+                  aria-label={`${p.dateKey} ${Math.round(p.energy)}`}
+                />
+                <circle
+                  cx={x}
+                  cy={y}
+                  r={POINT_R}
+                  fill="var(--app-accent)"
+                  stroke="var(--app-surface)"
+                  strokeWidth={2}
+                  style={{ pointerEvents: 'none' }}
+                />
+              </g>
             );
           })}
-          {/* Energy line */}
-          <path
-            d={energyPath}
-            fill="none"
-            stroke="var(--app-accent)"
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+          {dailyEnergy.map((p) => {
+            const x = PADDING.left + p.dayIndex * scaleX;
+            const y = PADDING.top + (100 - p.energy) * scaleY;
+            const showBadge = hoveredDateKey === p.dateKey || dragging === p.dateKey;
+            if (!showBadge) return null;
+            const bw = 52;
+            const bx = x - bw / 2;
+            const by = y - POINT_R - BADGE_GAP - BADGE_H;
+            const dateShort = format(new Date(p.dateKey + 'T12:00:00'), isZh ? 'M/d' : 'MMM d');
+            return (
+              <g key={`badge-${p.dateKey}`} style={{ pointerEvents: 'none' }}>
+                <rect
+                  x={bx}
+                  y={by}
+                  width={bw}
+                  height={BADGE_H}
+                  rx={6}
+                  fill="var(--app-surface)"
+                  stroke="var(--app-border)"
+                  strokeWidth={1}
+                  style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.12)' }}
+                />
+                <text
+                  x={x}
+                  y={by + 14}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  className="text-[11px] font-semibold"
+                  fill="var(--app-text)"
+                >
+                  {Math.round(p.energy)}
+                </text>
+                <text
+                  x={x}
+                  y={by + 24}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  className="text-[9px]"
+                  fill="var(--app-muted)"
+                >
+                  {dateShort}
+                </text>
+              </g>
+            );
+          })}
         </g>
-        {/* Draggable points：大 hit 区域 + 小可见圆点 */}
-        {dailyEnergy.map((p) => {
-          const x = PADDING.left + p.dayIndex * scaleX;
-          const y = PADDING.top + (100 - p.energy) * scaleY;
-          return (
-            <g key={p.dateKey}>
-              <circle
-                cx={x}
-                cy={y}
-                r={POINT_HIT_R}
-                fill="transparent"
-                className="cursor-grab active:cursor-grabbing"
-                style={{ touchAction: 'none' }}
-                onMouseDown={(e) => handleMouseDown(e, p.dateKey)}
-                aria-label={`${p.dateKey} ${Math.round(p.energy)}`}
-              />
-              <circle
-                cx={x}
-                cy={y}
-                r={POINT_R}
-                fill="var(--app-accent)"
-                stroke="var(--app-surface)"
-                strokeWidth={2}
-                style={{ pointerEvents: 'none' }}
-              />
-            </g>
-          );
-        })}
       </svg>
     </div>
   );

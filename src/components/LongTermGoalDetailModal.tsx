@@ -1,7 +1,8 @@
 import React, { useMemo, useCallback } from 'react';
 import { format, addDays } from 'date-fns';
 import { X, Download } from 'lucide-react';
-import type { ScheduleEvent, AppLanguage } from '@/types';
+import type { ScheduleEvent, AppLanguage, TimeDisplayFormat } from '@/types';
+import { formatEventClockLine } from '@/lib/formatEventClock';
 import { expandRecurringEvents } from '@/lib/events';
 
 export interface LongTermGoalDetailModalProps {
@@ -9,6 +10,7 @@ export interface LongTermGoalDetailModalProps {
   events: ScheduleEvent[];
   completedInstances: Record<string, boolean>;
   language: AppLanguage;
+  timeDisplay: TimeDisplayFormat;
   onClose: () => void;
 }
 
@@ -17,6 +19,7 @@ export const LongTermGoalDetailModal: React.FC<LongTermGoalDetailModalProps> = (
   events,
   completedInstances,
   language,
+  timeDisplay,
   onClose,
 }) => {
   const isZh = language === 'zh';
@@ -62,7 +65,7 @@ export const LongTermGoalDetailModal: React.FC<LongTermGoalDetailModalProps> = (
       const dayLabel = format(new Date(dateKey + 'T00:00:00'), isZh ? 'M月d日 EEE' : 'MMM d, EEE');
       lines.push(`${dayLabel} (${list.length})`);
       list.forEach((e) => {
-        lines.push(`  ${format(new Date(e.startTime), 'HH:mm')} ${e.title}`);
+        lines.push(`  ${formatEventClockLine(new Date(e.startTime), timeDisplay)} ${e.title}`);
       });
       lines.push('');
     });
@@ -73,7 +76,7 @@ export const LongTermGoalDetailModal: React.FC<LongTermGoalDetailModalProps> = (
     a.download = `${goal.replace(/[/\\?%*:|"<>]/g, '_')}_events.txt`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [goal, byDate, isZh]);
+  }, [goal, byDate, isZh, timeDisplay]);
 
   return (
     <div
@@ -178,7 +181,7 @@ export const LongTermGoalDetailModal: React.FC<LongTermGoalDetailModalProps> = (
                             <li key={e.id} className="text-sm truncate" style={{ color: 'var(--app-text)' }}>
                               {e.title}
                               <span className="text-[11px] ml-1" style={{ color: 'var(--app-muted)' }}>
-                                {format(new Date(e.startTime), 'HH:mm')}
+                                {formatEventClockLine(new Date(e.startTime), timeDisplay)}
                               </span>
                             </li>
                           ))}

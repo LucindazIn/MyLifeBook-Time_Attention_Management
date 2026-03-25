@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Globe, Palette, Check, UserCircle2, LogIn, LogOut, KeyRound } from 'lucide-react';
-import { AppSettings, AppTheme, AppLanguage } from '@/types';
+import { X, Globe, Palette, Check, UserCircle2, LogIn, LogOut, KeyRound, Clock } from 'lucide-react';
+import { AppSettings, AppTheme, AppLanguage, TimeDisplayFormat } from '@/types';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -63,6 +63,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     onUpdateSettings({ ...settings, language });
   };
 
+  const handleTimeDisplaySelect = (timeDisplay: TimeDisplayFormat) => {
+    onUpdateSettings({ ...settings, timeDisplay });
+  };
+
   const [geminiKeyInput, setGeminiKeyInput] = useState('');
   const [geminiKeySaved, setGeminiKeySaved] = useState(false);
 
@@ -116,7 +120,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
           >
-            <div className="w-full max-w-[31.36rem] rounded-[2rem] shadow-2xl p-0 pointer-events-auto border overflow-hidden flex flex-col max-h-[85vh]" style={{ background: 'var(--app-surface)', borderColor: 'var(--app-border)' }}>
+            <div className="w-full max-w-[33.87rem] rounded-[2rem] shadow-2xl p-0 pointer-events-auto border overflow-hidden flex flex-col max-h-[85vh]" style={{ background: 'var(--app-surface)', borderColor: 'var(--app-border)' }}>
               
               {/* Header */}
               <div className="p-6 pb-4 flex items-center justify-between border-b" style={{ borderColor: 'var(--app-border)' }}>
@@ -272,13 +276,49 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   </div>
                 </section>
 
+                {/* Time display */}
+                <section>
+                  <div className="flex items-center gap-2 mb-4 font-medium text-foreground">
+                    <Clock className="w-4 h-4 text-accent" />
+                    {settings.language === 'zh' ? '时间显示' : 'Time Display'}
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => handleTimeDisplaySelect('12h')}
+                      className={cn(
+                        'flex items-center justify-center gap-2 p-3 rounded-xl border transition-all',
+                        settings.timeDisplay === '12h'
+                          ? 'bg-accent/20 border-accent text-accent ring-1 ring-accent'
+                          : 'bg-field border-border text-foreground hover:border-accent'
+                      )}
+                    >
+                      <span>{settings.language === 'zh' ? '12 小时制' : '12 Hour'}</span>
+                      {settings.timeDisplay === '12h' && <Check className="w-3 h-3" />}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleTimeDisplaySelect('24h')}
+                      className={cn(
+                        'flex items-center justify-center gap-2 p-3 rounded-xl border transition-all',
+                        settings.timeDisplay === '24h'
+                          ? 'bg-accent/20 border-accent text-accent ring-1 ring-accent'
+                          : 'bg-field border-border text-foreground hover:border-accent'
+                      )}
+                    >
+                      <span>{settings.language === 'zh' ? '24 小时制' : '24 Hour'}</span>
+                      {settings.timeDisplay === '24h' && <Check className="w-3 h-3" />}
+                    </button>
+                  </div>
+                </section>
+
                 {/* Theme Section */}
                 <section>
                   <div className="flex items-center gap-2 mb-4 font-medium text-foreground">
                     <Palette className="w-4 h-4 text-accent" />
                     {settings.language === 'zh' ? '风格主题' : 'Theme & Vibe'}
                   </div>
-                  <div className="grid grid-cols-1 gap-2">
+                  <div className="grid grid-cols-1 gap-2 px-1">
                     {themes.map((theme) => (
                       <button
                         key={theme.id}
@@ -286,7 +326,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         className={cn(
                           "flex items-center p-3 rounded-xl border transition-all text-left",
                           settings.theme === theme.id
-                            ? "bg-accent/20 border-accent ring-1 ring-accent"
+                            ? "bg-accent/20 border-accent ring-1 ring-accent ring-inset"
                             : "bg-field border-border hover:border-accent hover:bg-surface"
                         )}
                       >

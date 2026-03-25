@@ -49,6 +49,7 @@ export interface ChatMessage {
 
 export type AppTheme = 'tech' | 'artsy' | 'anime' | 'minimalist' | 'nature' | 'retro';
 export type AppLanguage = 'en' | 'zh';
+export type TimeDisplayFormat = '12h' | '24h';
 
 export interface CustomTag {
   id: string;
@@ -59,6 +60,8 @@ export interface CustomTag {
 export interface AppSettings {
   theme: AppTheme;
   language: AppLanguage;
+  /** 议程等界面上的时钟展示：12 小时制（含 AM/PM）或 24 小时制 */
+  timeDisplay: TimeDisplayFormat;
   hasCompletedOnboarding: boolean;
   customTags?: CustomTag[];
 }

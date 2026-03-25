@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Calendar, CheckCircle2, Clock, Sparkles, Star, Sparkle } from 'lucide-react';
+import { X, Calendar, CheckCircle2, Clock, Sparkles, Star, Sparkle, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { EventType, ScheduleEvent, AppLanguage } from '@/types';
@@ -14,6 +14,8 @@ interface AddEventModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAdd: (event: ScheduleEvent) => void;
+  /** 删除主日程（含重复日程母事件）；由 App 持久化 */
+  onDelete?: (eventId: string) => void | Promise<void>;
   selectedDate: Date;
   language: AppLanguage;
   initialEvent?: ScheduleEvent | null;
@@ -26,6 +28,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
   isOpen,
   onClose,
   onAdd,
+  onDelete,
   selectedDate,
   language,
   initialEvent,
@@ -350,6 +353,8 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
     when: language === 'zh' ? '时间' : 'When',
     cancel: language === 'zh' ? '取消' : 'Cancel',
     add: language === 'zh' ? (initialEvent ? '保存' : '添加') : (initialEvent ? 'Save' : 'Add Event'),
+    delete: language === 'zh' ? '删除日程' : 'Delete Event',
+    deleteConfirm: language === 'zh' ? '确定删除此日程？' : 'Delete This Event?',
     placeholder: language === 'zh' ? '和Sarah喝咖啡' : 'Coffee With Sarah',
     meeting: language === 'zh' ? '会议' : 'Meeting',
     todo: language === 'zh' ? '待办' : 'To-Do',
@@ -753,13 +758,33 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                         </div>
                       </div>
 
-                      <div className="pt-2 flex justify-end gap-3">
-                        <Button type="button" variant="ghost" onClick={onClose} className="rounded-md">
-                          {labels.cancel}
-                        </Button>
-                        <Button type="submit" className="rounded-md px-6 shadow-sm bg-accent text-accent-foreground hover:opacity-90">
-                          {labels.add}
-                        </Button>
+                      <div className="pt-2 flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          {initialEvent && onDelete && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              onClick={() => {
+                                const id = initialEvent.baseEventId ?? initialEvent.id;
+                                if (window.confirm(labels.deleteConfirm)) {
+                                  void onDelete(id);
+                                }
+                              }}
+                              className="rounded-md text-rose-600 hover:text-rose-700 hover:bg-rose-500/10 dark:text-rose-400"
+                            >
+                              <Trash2 className="w-4 h-4 mr-1.5 shrink-0" />
+                              {labels.delete}
+                            </Button>
+                          )}
+                        </div>
+                        <div className="flex gap-3 ml-auto">
+                          <Button type="button" variant="ghost" onClick={onClose} className="rounded-md">
+                            {labels.cancel}
+                          </Button>
+                          <Button type="submit" className="rounded-md px-6 shadow-sm bg-accent text-accent-foreground hover:opacity-90">
+                            {labels.add}
+                          </Button>
+                        </div>
                       </div>
                     </motion.form>
               </div>

@@ -25,7 +25,7 @@ import { cn, getRandomDayName } from '@/lib/utils';
 import { expandRecurringEvents } from '@/lib/events';
 import { useAuth } from '@/lib/auth/useAuth';
 import { supabase } from '@/lib/supabase/client';
-import { listAllEventsWithTags, upsertEventWithTags } from '@/lib/repositories/eventsRepo';
+import { listAllEventsWithTags, upsertEventWithTags, softDeleteEvent } from '@/lib/repositories/eventsRepo';
 import { listAllCompletions, setInstanceCompletion } from '@/lib/repositories/completionsRepo';
 import { listAllDayMeta, upsertDayMeta, DayVibes as DayVibesData } from '@/lib/repositories/dayMetaRepo';
 import { VIBE_ICON_URL } from '@/lib/vibeIcons';
@@ -386,6 +386,27 @@ export default function App() {
         return updated;
       }
       return [...prev, newEvent];
+    });
+    setIsAddModalOpen(false);
+    setEditingEvent(null);
+  };
+
+  const handleDeleteEvent = async (eventId: string) => {
+    if (user) {
+      try {
+        await softDeleteEvent(supabase, user.id, eventId);
+      } catch (e: any) {
+        alert(e?.message || 'Failed to delete event');
+        return;
+      }
+    }
+    setEvents((prev) => prev.filter((e) => e.id !== eventId));
+    setCompletedInstances((prev) => {
+      const next = { ...prev };
+      for (const k of Object.keys(next)) {
+        if (k === eventId || k.startsWith(`${eventId}_`)) delete next[k];
+      }
+      return next;
     });
     setIsAddModalOpen(false);
     setEditingEvent(null);
@@ -1535,6 +1556,7 @@ export default function App() {
         isOpen={isAddModalOpen} 
         onClose={() => { setIsAddModalOpen(false); setEditingEvent(null); }} 
         onAdd={handleAddEvent}
+        onDelete={handleDeleteEvent}
         selectedDate={currentDate}
         language={settings.language}
         initialEvent={editingEvent}

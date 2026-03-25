@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Mail, ArrowRight, Loader2 } from 'lucide-react';
 import { Turnstile } from '@marsidev/react-turnstile';
@@ -20,6 +20,8 @@ interface AuthModalProps {
   isOpen: boolean;
   onClose?: () => void;
   language: AppLanguage;
+  /** When the modal opens (e.g. after onboarding), start in this mode. */
+  initialMode?: AuthFormMode;
   onSignIn: (
     email: string,
     pin: string,
@@ -70,6 +72,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   isOpen,
   onClose,
   language,
+  initialMode = 'login',
   onSignIn,
   onSignUp,
   onResetPassword,
@@ -87,6 +90,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [resetSent, setResetSent] = useState(false);
   const sendingRef = useRef(false);
   const turnstileRef = useRef<{ reset: () => void } | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setMode(initialMode);
+    setError(null);
+    setPin('');
+    setConfirmPin('');
+    setRegisterSent(false);
+    setResetSent(false);
+    turnstileRef.current?.reset();
+    setCaptchaToken(null);
+  }, [isOpen, initialMode]);
 
   const labels = {
     title: language === 'zh' ? '登录以同步' : 'Sign In To Sync',
@@ -126,6 +141,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       language === 'zh'
         ? '使用人数较多，请耐心等待'
         : 'High Traffic Right Now, Please Wait A Moment',
+    sendingStatus:
+      language === 'zh' ? '正在提交，请稍候…' : 'Submitting, Please Wait…',
+    registerConfirmHint:
+      language === 'zh'
+        ? '确认密码须与上方 6 位数字完全一致，两次都输满后按钮才会可点。'
+        : 'Confirm Pin Must Match The 6 Digits Above. The Button Enables When Both Fields Are Complete.',
+    confirmPinMismatchHint:
+      language === 'zh' ? '两次输入的密码不一致，请修改。' : 'Pins Do Not Match. Please Adjust.',
     backAfterMail: language === 'zh' ? '返回登录' : 'Back To Sign In',
   };
 
@@ -210,6 +233,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         ? labels.subtitleForgot
         : labels.subtitleLogin;
 
+  const registerConfirmPinsMismatch =
+    mode === 'register' &&
+    /^\d{6}$/.test(pin) &&
+    /^\d{6}$/.test(confirmPin) &&
+    pin !== confirmPin;
+
+  const headerTitle =
+    mode === 'register'
+      ? language === 'zh'
+        ? '注册'
+        : 'Sign Up'
+      : mode === 'forgot'
+        ? language === 'zh'
+          ? '重置密码'
+          : 'Forgot Password'
+        : labels.title;
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -235,7 +275,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 className="p-6 pb-4 flex items-center justify-between border-b"
                 style={{ borderColor: 'var(--app-border)' }}
               >
-                <h2 className="text-xl font-serif font-bold text-foreground">{labels.title}</h2>
+                <h2 className="text-xl font-serif font-bold text-foreground">{headerTitle}</h2>
                 {onClose && (
                   <button onClick={onClose} className="p-2 hover:bg-field rounded-full transition-colors">
                     <X className="w-5 h-5 text-muted-foreground" />
@@ -307,16 +347,31 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                             autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                           />
                           {mode === 'register' && (
-                            <Input
-                              value={confirmPin}
-                              onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, PIN_LEN))}
-                              placeholder={labels.confirmLabel}
-                              className="border-border focus:border-accent text-center text-lg tracking-[0.4em]"
-                              type="text"
-                              inputMode="numeric"
-                              maxLength={PIN_LEN}
-                              autoComplete="new-password"
-                            />
+                            <>
+                              <Input
+                                value={confirmPin}
+                                onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, PIN_LEN))}
+                                placeholder={labels.confirmLabel}
+                                className="border-border focus:border-accent text-center text-lg tracking-[0.4em]"
+                                type="text"
+                                inputMode="numeric"
+                                maxLength={PIN_LEN}
+                                autoComplete="new-password"
+                                aria-invalid={registerConfirmPinsMismatch}
+                                aria-describedby="auth-register-confirm-hint"
+                              />
+                              <p
+                                id="auth-register-confirm-hint"
+                                className={cn(
+                                  'text-xs leading-snug px-0.5',
+                                  registerConfirmPinsMismatch ? 'text-red-600' : 'text-muted-foreground',
+                                )}
+                              >
+                                {registerConfirmPinsMismatch
+                                  ? labels.confirmPinMismatchHint
+                                  : labels.registerConfirmHint}
+                              </p>
+                            </>
                           )}
                         </>
                       )}
@@ -337,6 +392,22 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     {error && <div className="text-sm text-red-600">{error}</div>}
 
                     <div className="space-y-2">
+                      {isSending && (
+                        <p
+                          id="auth-send-hint"
+                          role="status"
+                          aria-live="polite"
+                          className="text-xs text-center leading-snug space-y-1 rounded-xl border px-3 py-2.5"
+                          style={{
+                            color: 'var(--app-muted)',
+                            borderColor: 'var(--app-border)',
+                            background: 'var(--app-field, rgba(0,0,0,0.03))',
+                          }}
+                        >
+                          <span className="block font-medium text-foreground">{labels.sendingStatus}</span>
+                          <span className="block">{labels.sendingHint}</span>
+                        </p>
+                      )}
                       <Button
                         type="button"
                         onClick={handleSubmit}
@@ -361,15 +432,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                           </>
                         )}
                       </Button>
-                      {isSending && (
-                        <p
-                          id="auth-send-hint"
-                          className="text-xs text-center leading-snug"
-                          style={{ color: 'var(--app-muted)' }}
-                        >
-                          {labels.sendingHint}
-                        </p>
-                      )}
                     </div>
 
                     <div

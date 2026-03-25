@@ -1,35 +1,35 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { AppTheme, AppLanguage, AppSettings } from '@/types';
-import { Button } from '@/components/ui/button';
-import { Check, Palette, Globe, ArrowRight } from 'lucide-react';
+import { AppLanguage, AppSettings } from '@/types';
+import { Globe, ArrowRight, LogIn, UserPlus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+export type OnboardingAuthIntent = 'login' | 'register' | 'skip';
+
 interface OnboardingModalProps {
-  onComplete: (settings: AppSettings) => void;
+  onComplete: (settings: AppSettings, authIntent: OnboardingAuthIntent) => void;
 }
 
 export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
-  const [step, setStep] = useState<'language' | 'theme'>('language');
+  const [step, setStep] = useState<'language' | 'account'>('language');
   const [language, setLanguage] = useState<AppLanguage>('en');
-  const [theme, setTheme] = useState<AppTheme>('artsy');
 
   const handleLanguageSelect = (lang: AppLanguage) => {
     setLanguage(lang);
-    setStep('theme');
+    setStep('account');
   };
 
-  const handleThemeSelect = (t: AppTheme) => {
-    setTheme(t);
-  };
-
-  const handleFinish = () => {
-    onComplete({
-      language,
-      theme,
-      hasCompletedOnboarding: true,
-      timeDisplay: language === 'zh' ? '24h' : '12h',
-    });
+  const finish = (authIntent: OnboardingAuthIntent) => {
+    onComplete(
+      {
+        language,
+        theme: 'artsy',
+        hasCompletedOnboarding: true,
+        hasCompletedPostLoginTheme: false,
+        timeDisplay: language === 'zh' ? '24h' : '12h',
+      },
+      authIntent,
+    );
   };
 
   return (
@@ -76,7 +76,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) 
               </motion.div>
             ) : (
               <motion.div
-                key="theme"
+                key="account"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
@@ -84,64 +84,52 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) 
               >
                 <div className="text-center space-y-2">
                   <div className="w-12 h-12 bg-accent/20 rounded-full flex items-center justify-center mx-auto text-accent mb-4">
-                    <Palette className="w-6 h-6" />
+                    <LogIn className="w-6 h-6" />
                   </div>
                   <h2 className="text-2xl font-serif font-bold text-foreground">
-                    {language === 'zh' ? '选择风格' : 'Pick a Vibe'}
+                    {language === 'zh' ? '选择账号' : 'Choose Your Account'}
                   </h2>
                   <p className="text-muted-foreground">
-                    {language === 'zh' ? '这将影响每日名称与小组件的风格' : 'This will inspire your daily names & widgets'}
+                    {language === 'zh'
+                      ? '登录以同步日程，或注册新账号；也可稍后在设置中登录。'
+                      : 'Sign In To Sync Your Schedule, Register A New Account, Or Continue Later In Settings.'}
                   </p>
                 </div>
 
-                <div className="grid gap-3 max-h-[60vh] overflow-y-auto">
-                  {(language === 'zh'
-                    ? [
-                        { id: 'tech', label: '科技未来', desc: '赛博、代码、创新' },
-                        { id: 'artsy', label: '文艺范', desc: '诗歌、经典艺术、优雅' },
-                        { id: 'anime', label: '二次元', desc: '动漫、ACG、梦幻' },
-                        { id: 'minimalist', label: '极简主义', desc: '干净、简约、禅意' },
-                        { id: 'nature', label: '自然系', desc: '有机、平静、大地气息' },
-                        { id: 'retro', label: '复古怀旧', desc: '经典、老派、怀旧' }
-                      ]
-                    : [
-                        { id: 'tech', label: 'Tech & Future', desc: 'Cyberpunk, Code, Innovation' },
-                        { id: 'artsy', label: 'Artsy & Literary', desc: 'Poetry, Classic Art, Elegance' },
-                        { id: 'anime', label: 'Anime & ACG', desc: 'Vibrant, Dreamy, 2D World' },
-                        { id: 'minimalist', label: 'Minimalist', desc: 'Clean, Simple, Zen' },
-                        { id: 'nature', label: 'Nature', desc: 'Organic, Calm, Earthy' },
-                        { id: 'retro', label: 'Retro', desc: 'Vintage, Nostalgic, Classic' }
-                      ]
-                  ).map((option) => (
-                    <button
-                      key={option.id}
-                      onClick={() => handleThemeSelect(option.id as AppTheme)}
-                      className={cn(
-                        "relative flex items-center p-4 rounded-xl border transition-all text-left",
-                        theme === option.id 
-                          ? "border-accent bg-accent/20 ring-1 ring-accent" 
-                          : "border-border hover:border-accent hover:bg-field"
-                      )}
-                    >
-                      <div className="flex-1">
-                        <div className="font-medium text-foreground">{option.label}</div>
-                        <div className="text-xs text-muted-foreground">{option.desc}</div>
-                      </div>
-                      {theme === option.id && (
-                        <div className="w-5 h-5 bg-accent rounded-full flex items-center justify-center text-white">
-                          <Check className="w-3 h-3" />
-                        </div>
-                      )}
-                    </button>
-                  ))}
+                <div className="grid gap-3">
+                  <button
+                    type="button"
+                    onClick={() => finish('login')}
+                    className="flex items-center justify-between p-4 rounded-xl border border-border hover:border-accent hover:bg-field transition-all group"
+                  >
+                    <span className="flex items-center gap-3 font-medium text-foreground">
+                      <LogIn className="w-5 h-5 text-muted-foreground group-hover:text-accent shrink-0" />
+                      {language === 'zh' ? '登录' : 'Sign In'}
+                    </span>
+                    <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-accent" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => finish('register')}
+                    className="flex items-center justify-between p-4 rounded-xl border border-border hover:border-accent hover:bg-field transition-all group"
+                  >
+                    <span className="flex items-center gap-3 font-medium text-foreground">
+                      <UserPlus className="w-5 h-5 text-muted-foreground group-hover:text-accent shrink-0" />
+                      {language === 'zh' ? '注册' : 'Sign Up'}
+                    </span>
+                    <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-accent" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => finish('skip')}
+                    className={cn(
+                      'w-full text-center text-sm py-2 rounded-lg text-muted-foreground',
+                      'transition-colors hover:text-accent',
+                    )}
+                  >
+                    {language === 'zh' ? '暂时跳过' : 'Skip For Now'}
+                  </button>
                 </div>
-
-                <Button 
-                  onClick={handleFinish}
-                  className="w-full py-6 text-lg rounded-xl bg-accent hover:opacity-90 text-white shadow-lg"
-                >
-                  {language === 'zh' ? '开始使用' : 'Get Started'}
-                </Button>
               </motion.div>
             )}
           </AnimatePresence>

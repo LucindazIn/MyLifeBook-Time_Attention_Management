@@ -11,11 +11,19 @@ export function normalizeAppSettings(
         ? '24h'
         : '12h';
 
+  const hasCompletedOnboarding = raw.hasCompletedOnboarding ?? false;
+  /** 旧版已在引导里选过主题：本地无此字段且已完成引导 → 视为已选过，避免老用户再弹窗 */
+  const hasCompletedPostLoginTheme =
+    raw.hasCompletedPostLoginTheme !== undefined
+      ? Boolean(raw.hasCompletedPostLoginTheme)
+      : hasCompletedOnboarding;
+
   return {
     theme: (raw.theme ?? 'artsy') as AppTheme,
     language,
     timeDisplay,
-    hasCompletedOnboarding: raw.hasCompletedOnboarding ?? false,
+    hasCompletedOnboarding,
+    hasCompletedPostLoginTheme,
     customTags: raw.customTags as CustomTag[] | undefined,
   };
 }

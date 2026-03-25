@@ -63,5 +63,7 @@ export interface AppSettings {
   /** 议程等界面上的时钟展示：12 小时制（含 AM/PM）或 24 小时制 */
   timeDisplay: TimeDisplayFormat;
   hasCompletedOnboarding: boolean;
+  /** 登录后是否已完成「选主题」一步（新用户登录后展示一次） */
+  hasCompletedPostLoginTheme: boolean;
   customTags?: CustomTag[];
 }

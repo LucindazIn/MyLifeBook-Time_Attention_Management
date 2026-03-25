@@ -14,9 +14,10 @@ import { CalendarView } from '@/components/CalendarView';
 import { YearView } from '@/components/YearView';
 import { SurpriseWidgets } from '@/components/SurpriseWidgets';
 import { OnboardingModal } from '@/components/OnboardingModal';
+import { PostLoginThemeModal } from '@/components/PostLoginThemeModal';
 import { SettingsModal } from '@/components/SettingsModal';
 import { DailyJournal } from '@/components/DailyJournal';
-import { AuthModal } from '@/components/AuthModal';
+import { AuthModal, type AuthFormMode } from '@/components/AuthModal';
 import { PasswordRecoveryModal } from '@/components/PasswordRecoveryModal';
 import { Button } from '@/components/ui/button';
 import { ScheduleEvent, AppSettings, AppTheme, AppLanguage, CustomTag } from '@/types';
@@ -77,6 +78,8 @@ export default function App() {
   const [hasSkippedAuth, setHasSkippedAuth] = useState<boolean>(() => {
     return localStorage.getItem('feather_skipped_auth') === '1';
   });
+  const [authModalInitialMode, setAuthModalInitialMode] = useState<AuthFormMode>('login');
+  const prevUserForAuthModeRef = useRef(user);
   const [lastGenerateMode, setLastGenerateMode] = useState<'chill' | 'productive' | null>(null);
   const scheduleGenNonceRef = useRef(0);
 
@@ -180,6 +183,13 @@ export default function App() {
     const id = window.setTimeout(() => setAuthError(null), AUTH_ERROR_AUTO_DISMISS_MS);
     return () => window.clearTimeout(id);
   }, [authError]);
+
+  useEffect(() => {
+    if (prevUserForAuthModeRef.current && !user) {
+      setAuthModalInitialMode('login');
+    }
+    prevUserForAuthModeRef.current = user;
+  }, [user]);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -717,6 +727,21 @@ export default function App() {
     setCurrentDate(startOfDay(new Date()));
   };
 
+  const handleOnboardingComplete = (
+    next: AppSettings,
+    authIntent: 'login' | 'register' | 'skip',
+  ) => {
+    setSettings(normalizeAppSettings({ ...next } as Parameters<typeof normalizeAppSettings>[0]));
+    if (authIntent === 'skip') {
+      setHasSkippedAuth(true);
+      localStorage.setItem('feather_skipped_auth', '1');
+    } else {
+      setHasSkippedAuth(false);
+      localStorage.removeItem('feather_skipped_auth');
+      setAuthModalInitialMode(authIntent === 'register' ? 'register' : 'login');
+    }
+  };
+
   const lifeBookChapters = viewMode === 'lifeBook' ? getChapters({ order: 'asc' }) : [];
 
   return (
@@ -731,8 +756,27 @@ export default function App() {
     >
     <div className="min-h-screen font-sans" style={{ background: 'var(--app-bg)', color: 'var(--app-text)' }}>
       {!settings.hasCompletedOnboarding && !passwordRecoveryPending && (
-        <OnboardingModal onComplete={setSettings} />
+        <OnboardingModal onComplete={handleOnboardingComplete} />
       )}
+
+      {user &&
+        !authLoading &&
+        !passwordRecoveryPending &&
+        !settings.hasCompletedPostLoginTheme && (
+          <PostLoginThemeModal
+            language={settings.language}
+            initialTheme={settings.theme}
+            onComplete={(theme) => {
+              setSettings((prev) =>
+                normalizeAppSettings({
+                  ...prev,
+                  theme,
+                  hasCompletedPostLoginTheme: true,
+                } as Parameters<typeof normalizeAppSettings>[0]),
+              );
+            }}
+          />
+        )}
 
       <SettingsModal 
         isOpen={isSettingsModalOpen}
@@ -748,8 +792,9 @@ export default function App() {
       />
 
       <AuthModal
-        isOpen={!authLoading && !user && !hasSkippedAuth}
+        isOpen={!authLoading && !user && !hasSkippedAuth && settings.hasCompletedOnboarding}
         language={settings.language}
+        initialMode={authModalInitialMode}
         errorMessage={authCallbackError}
         onSignIn={async (email, pin, options) => {
           clearAuthCallbackError();

@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { isBefore } from 'date-fns';
-import { Plus, Calendar, CornerDownRight, Check, Coffee, Zap, Loader2, Sparkles, Users } from 'lucide-react';
+import { Plus, Calendar, CornerDownRight, Check, Coffee, Zap, Loader2, Users } from 'lucide-react';
 import { ScheduleEvent, AppLanguage, TimeDisplayFormat } from '@/types';
 import { formatEventClockForTimeline } from '@/lib/formatEventClock';
 import { Button } from '@/components/ui/button';
@@ -109,11 +109,6 @@ export const Timeline: React.FC<TimelineProps> = ({
             </Button>
           </div>
         )}
-        
-        <div className="mt-6 flex items-center gap-2 text-xs text-muted-foreground">
-          <Sparkles className="w-3 h-3" />
-          <span>Powered by Gemini Intelligence</span>
-        </div>
       </div>
     );
   }
@@ -144,13 +139,13 @@ export const Timeline: React.FC<TimelineProps> = ({
             >
               {/* Timeline Indicator */}
               {isOverlap ? (
-                 <div className="absolute -left-[35px] top-5 w-6 h-6 flex items-center justify-center text-accent z-10">
+                 <div className="absolute -left-[35px] top-7 w-6 h-6 flex items-center justify-center text-accent z-10">
                    <CornerDownRight className="w-5 h-5" />
                  </div>
               ) : (
                 <div
                   className={cn(
-                    "absolute -left-[29px] top-5 w-3 h-3 rounded-full bg-surface border-2 border-accent z-10 shadow-sm transition-colors"
+                    "absolute -left-[29px] top-7 w-3 h-3 rounded-full bg-surface border-2 border-accent z-10 shadow-sm transition-colors"
                   )}
                   style={(roleColor || event.label?.color) ? { borderColor: roleColor || event.label?.color } : undefined}
                 />
@@ -163,15 +158,14 @@ export const Timeline: React.FC<TimelineProps> = ({
                 return (
                   <div
                     className={cn(
-                      'absolute -left-[100px] w-[60px] text-right text-xs font-medium text-muted-foreground overflow-visible translate-x-[0.9mm]',
-                      is12hBlock
-                        ? 'top-4 flex flex-col items-end'
-                        : 'top-5 flex h-3 items-center justify-end leading-none'
+                      'absolute -left-[100px] w-[60px] text-right text-xs font-medium text-muted-foreground overflow-visible translate-x-[1.6mm]',
+                      'top-[calc(1.25rem+0.25rem+0.625rem)] -translate-y-1/2 flex flex-col items-end',
+                      is12hBlock ? 'gap-0.5' : 'gap-0'
                     )}
                   >
-                    <span>{parts.line1}</span>
+                    <span className={cn(!is12hBlock && 'leading-none')}>{parts.line1}</span>
                     {parts.line2 != null && (
-                      <span className="text-[10px] opacity-70 mt-0.5">{parts.line2}</span>
+                      <span className="text-[10px] opacity-70 leading-none">{parts.line2}</span>
                     )}
                   </div>
                 );

@@ -152,7 +152,7 @@ export const DailyJournal: React.FC<DailyJournalProps> = ({
   };
 
   const labels = {
-    title: language === 'zh' ? '每日意义' : "Today's meaning",
+    title: language === 'zh' ? '每日意义' : "Today's Meaning",
     generate: language === 'zh' ? '生成意义总结' : 'Generate meaning summary',
     edit: language === 'zh' ? '编辑' : 'Edit',
     save: language === 'zh' ? '保存' : 'Save',
@@ -253,7 +253,7 @@ export const DailyJournal: React.FC<DailyJournalProps> = ({
               value={summary}
               onChange={(e) => setSummary(e.target.value)}
               placeholder={labels.placeholder}
-              className="min-h-[200px] text-lg leading-relaxed bg-field border-border focus:border-accent focus:ring-accent/30 rounded-xl resize-none p-4 font-serif text-foreground"
+              className="min-h-[200px] text-lg leading-relaxed bg-field border-border focus:border-accent focus:ring-accent/30 rounded-xl resize-none p-4 font-sans text-foreground"
             />
             {error && (
               <div className="absolute bottom-4 left-4 text-xs font-medium text-red-500">
@@ -271,7 +271,7 @@ export const DailyJournal: React.FC<DailyJournalProps> = ({
       ) : (
         <div 
           onClick={() => setIsEditing(true)}
-          className="min-h-[120px] text-lg leading-relaxed text-muted-foreground font-serif cursor-text hover:bg-field/50 p-4 rounded-xl transition-colors -ml-4"
+          className="min-h-[120px] text-lg leading-relaxed text-muted-foreground font-sans cursor-text hover:bg-field/50 p-4 rounded-xl transition-colors -ml-4"
         >
           {summary ? (
             summary.split('\n').map((line, i) => (

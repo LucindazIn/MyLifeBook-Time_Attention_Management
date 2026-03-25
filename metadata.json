@@ -1,5 +1,5 @@
 {
-  "name": "Feather Schedule",
-  "description": "An elegant, feather-light scheduling app that builds agendas from documents and gives every day a unique name.",
+  "name": "My Life Book",
+  "description": "A narrative scheduling app that connects your calendar, journal, and life chapters—design time as story, with optional Gemini for day names, summaries, and Life Book chapters.",
   "requestFramePermissions": ["microphone"]
 }

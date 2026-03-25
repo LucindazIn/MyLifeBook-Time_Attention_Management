@@ -180,7 +180,7 @@ export const ChapterNarrativeCard: React.FC<ChapterNarrativeCardProps> = ({
     a.href = url;
     const safe = sanitizeChapterExportFilenameSegment(modalChapter?.periodLabel ?? 'chapter');
     const d = format(new Date(), 'yyyy-MM-dd');
-    a.download = `feather_chapter_period_${safe}_${d}.txt`;
+    a.download = `my_life_book_chapter_period_${safe}_${d}.txt`;
     document.body.appendChild(a);
     a.click();
     a.remove();

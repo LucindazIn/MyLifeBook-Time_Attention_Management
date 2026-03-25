@@ -2,9 +2,11 @@
 <img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
-# Run and deploy your AI Studio app
+# My Life Book
 
-This contains everything you need to run your app locally.
+Narrative scheduling web app (人生之书). This repo contains everything you need to run the app locally.
+
+**Storage:** `localStorage` keys still use the legacy `feather_` prefix so existing settings and cached chapter data continue to work; no key migration is required for the product rename.
 
 View your app in AI Studio: https://ai.studio/apps/54045701-b3f4-419c-9a42-dce3af590f10
 

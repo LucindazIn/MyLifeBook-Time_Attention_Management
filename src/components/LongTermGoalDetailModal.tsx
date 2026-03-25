@@ -85,7 +85,7 @@ export const LongTermGoalDetailModal: React.FC<LongTermGoalDetailModalProps> = (
       aria-label={goal}
     >
       <div
-        className="rounded-2xl border bg-surface shadow-xl max-h-[85vh] w-full max-w-lg flex flex-col"
+        className="rounded-2xl border bg-surface shadow-xl max-h-[85vh] w-full max-w-[35.84rem] flex flex-col"
         style={{ borderColor: 'var(--app-border)', boxShadow: 'var(--app-card-shadow)' }}
         onClick={(e) => e.stopPropagation()}
       >

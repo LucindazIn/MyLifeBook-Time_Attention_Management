@@ -36,7 +36,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) 
       <motion.div 
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-md rounded-[2rem] shadow-2xl overflow-hidden border" style={{ background: 'var(--app-surface)', borderColor: 'var(--app-border)' }}
+        className="w-full max-w-[31.36rem] rounded-[2rem] shadow-2xl overflow-hidden border" style={{ background: 'var(--app-surface)', borderColor: 'var(--app-border)' }}
       >
         <div className="p-8">
           <AnimatePresence mode="wait">

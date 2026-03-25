@@ -1,0 +1,455 @@
+{
+  "batchRange": [100, 149],
+  "items": [
+    {
+      "title": "Maintain Electronic Devices",
+      "description": "Give your digital buddies a full charge and clear out those forgotten, dusty apps.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "reminder",
+      "default_duration_minutes": 10,
+      "locale": "en"
+    },
+    {
+      "title": "Take a Short Nap",
+      "description": "Close your eyes for a bit to recharge your focus for the next challenge.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "reminder",
+      "default_duration_minutes": 25,
+      "locale": "en"
+    },
+    {
+      "title": "Write a Weekly Summary",
+      "description": "Sort out your wins, the little hiccups, and what's coming up next week.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 40,
+      "locale": "en"
+    },
+    {
+      "title": "Pay Monthly Utility Bills",
+      "description": "Handle the boring but necessary stuff like water, electricity, and the internet.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 15,
+      "locale": "en"
+    },
+    {
+      "title": "Organize Books and Files",
+      "description": "Put your books back in their homes or file away those loose papers.",
+      "intensity": "low",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 30,
+      "locale": "en"
+    },
+    {
+      "title": "Help Children with Homework",
+      "description": "Check on their progress and explain the tricky bits of today's lessons.",
+      "intensity": "high",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Do Some Simple DIY",
+      "description": "Fix a shirt button, build a model, or do some tiny repairs around the house.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "todo",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Take Out the Trash",
+      "description": "Sort your waste and take it to the bin so your home stays fresh.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "reminder",
+      "default_duration_minutes": 10,
+      "locale": "en"
+    },
+    {
+      "title": "Follow Up on Inquiries",
+      "description": "Send that confirmation email or coordinate time for a new meeting.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 30,
+      "locale": "en"
+    },
+    {
+      "title": "Do Your Nightly Skincare",
+      "description": "Wash away the day and put on a mask to tell your skin it's time to rest.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "reminder",
+      "default_duration_minutes": 20,
+      "locale": "en"
+    },
+    {
+      "title": "Walk Your Pet",
+      "description": "Take your little friend outside for some exercise and a breath of fresh air.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 40,
+      "locale": "en"
+    },
+    {
+      "title": "Unload the Dish Rack",
+      "description": "Put the dry dishes back in the cabinet to keep your counter clear.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 10,
+      "locale": "en"
+    },
+    {
+      "title": "Browse Current News",
+      "description": "Spend a few minutes catching up with what's happening in the big world.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "todo",
+      "default_duration_minutes": 20,
+      "locale": "en"
+    },
+    {
+      "title": "Prep Breakfast for the Family",
+      "description": "Warm some milk or toast some bread to kickstart everyone's energy.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 20,
+      "locale": "en"
+    },
+    {
+      "title": "Tidy Cloud Photos and Videos",
+      "description": "Delete the blurry ones and name the precious family moments.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "todo",
+      "default_duration_minutes": 45,
+      "locale": "en"
+    },
+    {
+      "title": "Research Travel or Dining Tips",
+      "description": "Compare reviews and pick a nice place for your next little adventure.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "todo",
+      "default_duration_minutes": 30,
+      "locale": "en"
+    },
+    {
+      "title": "Train with High Intensity",
+      "description": "Go for a run or lift some weights to feel the power of your body.",
+      "intensity": "high",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 50,
+      "locale": "en"
+    },
+    {
+      "title": "Update Resume or Portfolio",
+      "description": "Polish your self-description and add your latest shining achievements.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 90,
+      "locale": "en"
+    },
+    {
+      "title": "Video Call Your Parents",
+      "description": "Share a little about your day and listen to the warmth of their voices.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 25,
+      "locale": "en"
+    },
+    {
+      "title": "Audit the Medicine Cabinet",
+      "description": "Throw away expired pills and restock your band-aids and basics.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 15,
+      "locale": "en"
+    },
+    {
+      "title": "Set Up Automation Scripts",
+      "description": "Teach your software to do the boring, repetitive tasks for you.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 45,
+      "locale": "en"
+    },
+    {
+      "title": "Read a Professional Journal",
+      "description": "Deep-read a high-value analysis to keep your industry knowledge fresh.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 50,
+      "locale": "en"
+    },
+    {
+      "title": "Switch Your Phone Wallpaper",
+      "description": "Pick a cozy image that makes you smile every time you wake up your screen.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "reminder",
+      "default_duration_minutes": 5,
+      "locale": "en"
+    },
+    {
+      "title": "Sell or Donate Unused Items",
+      "description": "Take some photos for a second-hand app or pack up clothes for donation.",
+      "intensity": "high",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Brew Coffee or Tea",
+      "description": "Focus on the aroma and the water; treat it as a tiny work-break ceremony.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "reminder",
+      "default_duration_minutes": 15,
+      "locale": "en"
+    },
+    {
+      "title": "Wash and Dust Your Car",
+      "description": "Clean the windows and clear out the crumbs to make your drive more pleasant.",
+      "intensity": "high",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Track Your Packages",
+      "description": "Check where your orders are and handle any returns or exchanges.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "reminder",
+      "default_duration_minutes": 10,
+      "locale": "en"
+    },
+    {
+      "title": "Prepare Tomorrow's Outfit",
+      "description": "Check the weather and pick your clothes so you can enjoy a calm morning.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "reminder",
+      "default_duration_minutes": 5,
+      "locale": "en"
+    },
+    {
+      "title": "Clear Desktop Clutter",
+      "description": "Put away the papers and wipe your screen for a clear, clean view.",
+      "intensity": "low",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 15,
+      "locale": "en"
+    },
+    {
+      "title": "Attend an Online Webinar",
+      "description": "Listen live and jot down the core points to keep your mind sharp.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "meeting",
+      "default_duration_minutes": 90,
+      "locale": "en"
+    },
+    {
+      "title": "Check Home Safety Locks",
+      "description": "Make sure the windows are shut and the gas is turned off for a peaceful night.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "reminder",
+      "default_duration_minutes": 5,
+      "locale": "en"
+    },
+    {
+      "title": "Keep a Simple Diary",
+      "description": "Jot down a few little things that happened today without overthinking it.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "todo",
+      "default_duration_minutes": 15,
+      "locale": "en"
+    },
+    {
+      "title": "Sort New Social Contacts",
+      "description": "Add new friends and add a tiny note about how you met.",
+      "intensity": "low",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 20,
+      "locale": "en"
+    },
+    {
+      "title": "Stare into Space",
+      "description": "Put down your phone and do absolutely nothing; let your brain breathe.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "reminder",
+      "default_duration_minutes": 10,
+      "locale": "en"
+    },
+    {
+      "title": "Wash the Accumulated Dishes",
+      "description": "Empty the sink and wipe it dry for a clean, happy kitchen.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 20,
+      "locale": "en"
+    },
+    {
+      "title": "Draft a Weekly Presentation",
+      "description": "Organize your data into pretty charts and align your talking points.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 90,
+      "locale": "en"
+    },
+    {
+      "title": "Drop Off Sorted Trash",
+      "description": "Check your recycling and kitchen waste, then walk them to the bin.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 10,
+      "locale": "en"
+    },
+    {
+      "title": "Check Credit Card Bill",
+      "description": "Check your spending line by line to make sure everything is correct.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 15,
+      "locale": "en"
+    },
+    {
+      "title": "Clean Out the Fridge",
+      "description": "Say goodbye to old sauces and those vegetables that have seen better days.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 20,
+      "locale": "en"
+    },
+    {
+      "title": "Read Industry Reports",
+      "description": "Study the latest market trends and highlight the most interesting bits.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Trim Your Nails",
+      "description": "Enjoy a quiet moment of personal care to keep yourself tidy.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "reminder",
+      "default_duration_minutes": 15,
+      "locale": "en"
+    },
+    {
+      "title": "Reply to Social Comments",
+      "description": "Pick a few friends to chat with and keep your social circles warm.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "todo",
+      "default_duration_minutes": 15,
+      "locale": "en"
+    },
+    {
+      "title": "Review Core Code or Plans",
+      "description": "Read through the logic and offer helpful ideas or a little warning.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "meeting",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Replace Water Filter",
+      "description": "Keep your home drinking water safe by putting in a fresh filter.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 15,
+      "locale": "en"
+    },
+    {
+      "title": "Take a Yoga Class",
+      "description": "Follow a video to stretch out your body and find your balance.",
+      "intensity": "high",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 45,
+      "locale": "en"
+    },
+    {
+      "title": "Tidy Desktop Icons",
+      "description": "Delete temporary downloads and tuck everything into neat little folders.",
+      "intensity": "low",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 15,
+      "locale": "en"
+    },
+    {
+      "title": "Pack Your Luggage",
+      "description": "Check your list for clothes, toiletries, and all those important chargers.",
+      "intensity": "high",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 40,
+      "locale": "en"
+    },
+    {
+      "title": "Iron and Prep Clothes",
+      "description": "Pick two outfits for the week and get them ready for a smooth morning.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "reminder",
+      "default_duration_minutes": 15,
+      "locale": "en"
+    },
+    {
+      "title": "Learn a Software Shortcut",
+      "description": "Pick a common task and memorize a new key to do it faster.",
+      "intensity": "low",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 10,
+      "locale": "en"
+    },
+    {
+      "title": "Sanitize Your Phone Screen",
+      "description": "Wipe down your most-touched device to keep things clean and fresh.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "reminder",
+      "default_duration_minutes": 5,
+      "locale": "en"
+    }
+  ]
+}

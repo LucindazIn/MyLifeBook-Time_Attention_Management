@@ -19,7 +19,7 @@ import { DailyJournal } from '@/components/DailyJournal';
 import { AuthModal } from '@/components/AuthModal';
 import { Button } from '@/components/ui/button';
 import { ScheduleEvent, AppSettings, AppTheme, AppLanguage, CustomTag } from '@/types';
-import { generateDayName, generateRandomSchedule, UserGeminiKeyMissing } from '@/lib/gemini';
+import { generateDayName } from '@/lib/gemini';
 import { cn, getRandomDayName } from '@/lib/utils';
 import { expandRecurringEvents } from '@/lib/events';
 import { useAuth } from '@/lib/auth/useAuth';
@@ -34,8 +34,7 @@ import { DayVibes } from '@/components/DayVibes';
 import { CollectionView } from '@/components/CollectionView';
 import { LifeBookView } from '@/components/LifeBookView';
 import { GeminiUserKeyProvider } from '@/contexts/GeminiUserKeyContext';
-import { hasUserGeminiKey } from '@/lib/userGeminiKeyStorage';
-import { requestOpenGeminiKeyRequiredModal } from '@/lib/geminiKeyModalBridge';
+import { getLocalScheduleSuggestions } from '@/lib/scheduleLocalSuggestions';
 import { getChapters, type SavedChapter } from '@/lib/chaptersStorage';
 import { PRESET_ROLES, getRoleDisplayName, getRoleColor } from '@/lib/constants/roles';
 
@@ -48,6 +47,7 @@ export default function App() {
     return localStorage.getItem('feather_skipped_auth') === '1';
   });
   const [lastGenerateMode, setLastGenerateMode] = useState<'chill' | 'productive' | null>(null);
+  const scheduleGenNonceRef = useRef(0);
 
   // Settings State
   const [settings, setSettings] = useState<AppSettings>(() => {
@@ -429,28 +429,10 @@ export default function App() {
     setLastGenerateMode(mode);
     setGeneratingMode(mode);
     try {
-      if (!hasUserGeminiKey()) {
-        setGeneratingMode(null);
-        requestOpenGeminiKeyRequiredModal();
-        return;
-      }
-      let generatedEvents = await generateRandomSchedule(mode, settings.language);
+      scheduleGenNonceRef.current += 1;
+      const seed = `${format(currentDate, 'yyyy-MM-dd')}-${mode}-${settings.language}-${scheduleGenNonceRef.current}`;
+      const generatedEvents = getLocalScheduleSuggestions(mode, settings.language, { seed });
 
-      if (!Array.isArray(generatedEvents) || generatedEvents.length === 0) {
-        const fallback = mode === 'chill'
-          ? [
-              { title: settings.language === 'zh' ? '慢醒的早晨' : 'Slow Morning', startTime: '09:00', endTime: '10:00', type: 'personal', description: settings.language === 'zh' ? '一杯咖啡和随意阅读时间。' : 'Coffee and unstructured reading.' },
-              { title: settings.language === 'zh' ? '午后散步' : 'Afternoon Walk', startTime: '15:00', endTime: '15:45', type: 'personal', description: settings.language === 'zh' ? '在附近走走，放空一下。' : 'A short walk to clear your mind.' },
-              { title: settings.language === 'zh' ? '晚间自我放松' : 'Evening Unwind', startTime: '20:00', endTime: '21:00', type: 'personal', description: settings.language === 'zh' ? '音乐、写日记或轻松追剧。' : 'Music, journaling or a light show.' },
-            ]
-          : [
-              { title: settings.language === 'zh' ? '深度工作冲刺' : 'Deep Work Sprint', startTime: '09:00', endTime: '11:00', type: 'todo', description: settings.language === 'zh' ? '专注处理一项最重要的任务。' : 'Focus on your most important task.' },
-              { title: settings.language === 'zh' ? '策略思考时间' : 'Strategy Block', startTime: '14:00', endTime: '15:00', type: 'todo', description: settings.language === 'zh' ? '整理思路、规划接下来一周。' : 'Plan and reflect on your week.' },
-              { title: settings.language === 'zh' ? '晚间复盘' : 'Evening Review', startTime: '20:30', endTime: '21:00', type: 'todo', description: settings.language === 'zh' ? '简单复盘今日完成的事情。' : 'Quick review of what you accomplished.' },
-            ];
-        generatedEvents = fallback as any;
-      }
-      
       const processedEvents = generatedEvents.map((e: any) => {
         const [startH, startM] = e.startTime.split(':').map(Number);
         const [endH, endM] = e.endTime.split(':').map(Number);
@@ -473,9 +455,6 @@ export default function App() {
       setSuggestedEvents(processedEvents);
       setIsSuggestionModalOpen(true);
     } catch (error) {
-      if (error instanceof UserGeminiKeyMissing) {
-        requestOpenGeminiKeyRequiredModal();
-      }
       console.error("Failed to generate schedule", error);
     } finally {
       setGeneratingMode(null);
@@ -1361,8 +1340,19 @@ export default function App() {
         </main>
 
         {/* Footer */}
-        <footer className="mt-12 text-center text-muted-foreground text-xs font-light">
-          Feather Schedule
+        <footer className="mt-12 text-center text-muted-foreground text-xs font-light space-y-1 leading-relaxed">
+          <p>© 2026 My Life Book</p>
+          <p>
+            Have Fun With Developer{' '}
+            <a
+              href="https://www.lucindazin.us.ci"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent underline-offset-2 hover:underline"
+            >
+              Lucinda
+            </a>
+          </p>
         </footer>
       </div>
 

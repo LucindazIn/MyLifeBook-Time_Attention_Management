@@ -1,0 +1,2427 @@
+{
+"title": "创意构思",
+"description": "捕捉那些跳跃的灵感火花。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 90,
+"locale": "zh"
+},
+{
+"title": "跨部门战略对齐",
+"description": "打破沟通壁垒，确保各方在核心目标上达成共识。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "meeting",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": "周度复盘与未来规划",
+"description": "从过去七天的碎片中提取经验，绘制下周的路线图。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 45,
+"locale": "zh"
+},
+{
+"title": "关键技术方案攻坚",
+"description": "潜入逻辑的深海，解决制约进度的核心瓶颈问题。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 120,
+"locale": "zh"
+},
+{
+"title": "行业深度洞察研讨",
+"description": "剥离市场噪音，共同探讨行业底层的运行逻辑。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "meeting",
+"default_duration_minutes": 90,
+"locale": "zh"
+},
+{
+"title": "沉浸式写作时间",
+"description": "屏蔽一切外界干扰，完成高含金量的文字输出。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": "核心决策事项审批",
+"description": "集中精力处理关键节点，确保项目流转不卡壳。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 30,
+"locale": "zh"
+},
+{
+"title": "个人品牌构建探讨",
+"description": "思考如何传递专业价值，建立独特的社交标签。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "meeting",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": "高强度脑力风暴",
+"description": "在思想的碰撞中寻找荒谬却伟大的可能性。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "meeting",
+"default_duration_minutes": 45,
+"locale": "zh"
+},
+{
+"title": "逻辑架构深度梳理",
+"description": "将混乱的业务流抽象为清晰的模块与关系。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": "重要项目进度同步",
+"description": "核对里程碑，识别潜在风险并制定应对策略。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "meeting",
+"default_duration_minutes": 30,
+"locale": "zh"
+},
+{
+"title": "外语高阶进阶学习",
+"description": "挑战认知舒适区，掌握更复杂的表达与思维方式。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": "效率工具链优化",
+"description": "打磨你的“武器库”，让自动化替代机械性劳动。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 45,
+"locale": "zh"
+},
+{
+"title": "核心业务数据审计",
+"description": "在繁杂的数字中寻找支撑决策的真实依据。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 90,
+"locale": "zh"
+},
+{
+"title": "团队技能分享工作坊",
+"description": "知识的流动是团队进化的唯一途径。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "meeting",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": "窗边读诗",
+"description": "借用诗人的眼睛，看一眼这个世界。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "reminder",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "午后手冲咖啡慢品",
+"description": "感受研磨的香气，等待滤纸下的一滴纯粹。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "reminder",
+"default_duration_minutes": 20,
+"locale": "zh"
+},
+{
+"title": "暮色下的社区漫步",
+"description": "没有目的地，只是看夕阳如何染红街角的招牌。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 45,
+"locale": "zh"
+},
+{
+"title": “去公园，寻找城市绿洲",
+"description": "在钢筋水泥之间，寻觅一处无人惊扰的草坪。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 90,
+"locale": "zh"
+},
+{
+"title": "睡前舒缓冥想",
+"description": "向大脑发送名为“休息”的指令，排空一天的杂讯。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "reminder",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "聆听一张黑胶唱片",
+"description": "在物理的摩擦声中，重拾音乐最质朴的质感。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 40,
+"locale": "zh"
+},
+{
+"title": "无目的自由涂鸦",
+"description": "不追求美感，只让笔尖随潜意识自由游走。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 30,
+"locale": "zh"
+},
+{
+"title": "周末花市闲逛",
+"description": "把季节的色彩带回家，挑选一束生命力。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": "书店里的半日浮生",
+"description": "藏身于排架之间，与千年前的灵魂交谈。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 120,
+"locale": "zh"
+},
+{
+"title": "与阳台植物对话",
+"description": "修剪残叶，观察新芽，感受沉默的生长力。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "reminder",
+"default_duration_minutes": 10,
+"locale": "zh"
+},
+{
+"title": "云端白日梦",
+"description": "允许思绪断线，在虚构的时空中进行一场漫游。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "reminder",
+"default_duration_minutes": 20,
+"locale": "zh"
+},
+{
+"title": "整理旧物件",
+"description": "擦拭积灰的旧物，重新发现被遗忘的瞬间。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": "收集风的声音",
+"description": "静坐片刻，分辨树叶沙沙声背后的风力级数。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "reminder",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "暖光灯下的轻阅读",
+"description": "没有功利目的，只为满足一点点好奇心。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 45,
+"locale": "zh"
+},
+{
+"title": "慢调睡前拉伸",
+"description": "安抚紧绷的肌肉，告诉身体辛苦了。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "reminder",
+"default_duration_minutes": 20,
+"locale": "zh"
+},
+{
+"title": "每日营养午餐",
+"description": "补充身体所需的燃料，这是一场庄严的仪式。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 45,
+"locale": "zh"
+},
+{
+"title": "物理桌面杂物清理",
+"description": "环境的秩序往往预示着内心的平静。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 20,
+"locale": "zh"
+},
+{
+"title": "邮箱清理",
+"description": "归档已处理邮件，让未读红点消失。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 30,
+"locale": "zh"
+},
+{
+"title": "与挚友的非正式茶叙",
+"description": "在轻快的闲谈中交换最近的见闻与心情。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "meeting",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": "确认今日待办优先级",
+"description": "找出那件如果不做就会不安的事情。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 10,
+"locale": "zh"
+},
+{
+"title": "核心肌肉耐力训练",
+"description": "通过流汗唤醒身体，增强对抗疲劳的底气。",
+"intensity": "high",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 45,
+"locale": "zh"
+},
+{
+"title": "居家环境深层洁净",
+"description": "在彻底的清扫中，重新掌握对生活的控制感。",
+"intensity": "high",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 90,
+"locale": "zh"
+},
+{
+"title": "森林气息深呼吸练习",
+"description": "即便身处室内，也尝试模拟深林的律动。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 5,
+"locale": "zh"
+},
+{
+"title": "备忘录碎片信息整理",
+"description": "将散落在各处的火花汇聚成可落地的火种。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 20,
+"locale": "zh"
+},
+{
+"title": "下午茶能量补给",
+"description": "血糖的小幅回升，是支撑到下班的秘密武器。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "通讯录联系人维护",
+"description": "给久未联系的老友发条简讯，激活沉睡的关系。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 30,
+"locale": "zh"
+},
+{
+"title": "健康状态每日自省",
+"description": "倾听心跳与胃的声响，调整当下的作息。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 5,
+"locale": "zh"
+},
+{
+"title": “记录财务收支",
+"description": "清点金钱的去向，掌握财务的主动权。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "阅读一篇长篇特稿",
+"description": "在快餐信息时代，尝试进行一次长程思维长跑。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 40,
+"locale": "zh"
+},
+{
+"title": "捕捉灵感瞬间",
+"description": "随手记下脑海中闪过的那个奇怪念头。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 5,
+"locale": "zh"
+},
+{
+"title": "柔韧性拉伸",
+"description": "缓解久坐带来的僵硬，让身体恢复弹性。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 20,
+"locale": "zh"
+},
+{
+"title": "下周行程预排",
+"description": "提前安放好未来的重要事件，减少突发焦虑。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 30,
+"locale": "zh"
+},
+{
+"title": “听播客",
+"description": "在做家务或通勤时，借用他人的感官看世界。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 45,
+"locale": "zh"
+},
+{
+"title": "为重要的人选购礼物",
+"description": "将心意转化为具体的物件，感受挑选的快乐。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 40,
+"locale": "zh"
+},
+{
+"title": "傍晚看夕阳”,
+"description": "这是大自然每天免费赠送的盛大落幕式。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 10,
+"locale": "zh"
+}
+{
+"title": "生命叙事的主线梳理",
+"description": "回顾近期的生活片段，像剪辑电影一样找出那条贯穿始终的意义主线。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": “笔记整理”,
+"description": "将碎片化的笔记进行关联，在看似无关的信息之间建立逻辑的神经突触。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 90,
+"locale": "zh"
+},
+{
+"title": "个人使命宣言迭代",
+"description": "审视当下的价值观，更新那份指引你做出每一个重大决策的内心底稿。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 45,
+"locale": "zh"
+},
+{
+"title": “制定计划”,
+"description": "面对那个令你焦虑的庞然大物，用手术刀般的理性将其细化为可执行的微小单元。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": "心流状态",
+"description": "深度专注，完成最耗费脑力的核心任务。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 120,
+"locale": "zh"
+},
+{
+"title": "练习技能”,
+"description": "在舒适区边缘反复试探，通过高质量的反馈打磨那一项立身之本。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 90,
+"locale": "zh"
+},
+{
+"title": "系统性偏见的自我审计",
+"description": "反思近期决策中的思维定式，警惕那些悄悄限制你视野的认知围墙。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 45,
+"locale": "zh"
+},
+{
+"title": "细读经典著作",
+"description": "拒绝速食拆解，逐字逐句地与伟大的思想家进行一场跨越时空的对谈。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": "项目复盘",
+"description": "不只是记录进度，更要挖掘成功背后的偶然与失败背后的结构性必然。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 50,
+"locale": "zh"
+},
+{
+"title": "建立个人原则库",
+"description": "将生活教给你的教训转化为清单，作为下次面对诱惑或困境时的防线。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 40,
+"locale": "zh"
+},
+{
+"title": "绘制知识体系",
+"description": "可视化你的所学所知，看清哪些领域是肥沃的，哪些仍是荒芜的死角。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 90,
+"locale": "zh"
+},
+{
+"title": "校准长期目标",
+"description": "剔除那些受他人影响而产生的伪需求，回归最本真的长期愿望。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 45,
+"locale": "zh"
+},
+{
+"title": "灵魂放牧",
+"description": "不设KPI，不求产出，允许思绪像野马一样在荒原上自由奔跑。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": "触摸自然的原始肌理",
+"description": "去摸一棵树的皮、一颗石子的棱角，找回人类作为生物与大地的连接。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 40,
+"locale": "zh"
+},
+{
+"title": "在音乐中感官漂流",
+"description": "闭上眼，让音符带你去任何地方，拒绝分析旋律，只接受情绪的洗礼。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 30,
+"locale": "zh"
+},
+{
+"title": "味蕾旅行",
+"description": “吃一顿精致的饭，极其缓慢地咀嚼，致敬每一份大地的馈赠。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "reminder",
+"default_duration_minutes": 20,
+"locale": "zh"
+},
+{
+"title": "给未来的自己存一封信",
+"description": "记录下此刻的困惑与坚定，让未来的你看到这一段必经的心路历程。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 45,
+"locale": "zh"
+},
+{
+"title": "云朵鉴定师",
+"description": "观察云的形状、颜色与变幻，在这场永不重复的宏大演出前保持敬畏。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "reminder",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "漫步在未曾留意的街角",
+"description": "以旅人的心态重新发现熟悉的城市，寻找那些被日常忽略的叙事碎片。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": "人际关系的温湿度调节",
+"description": "给久违的朋友打个电话，或写一段真挚的文字，维护那些滋养你的情感纽带。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 40,
+"locale": "zh"
+},
+{
+"title": “整理周围环境”,
+"description": "不仅仅是整理房间，更是通过整理物品来理顺当下的生活逻辑。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": “做手帐”,
+"description": "在微小的事物中寻找值得欢喜的理由，对抗生活里惯性的虚无感。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 10,
+"locale": "zh"
+},
+{
+"title": “和朋友深度对话",
+"description": "与同频的人探讨关于死亡、爱或自由的议题，在碰撞中看清彼此的灵魂轮廓。",
+"intensity": "high",
+"mode_tags": ["both"],
+"type": "meeting",
+"default_duration_minutes": 90,
+"locale": "zh"
+},
+{
+"title": "阅读一份他人的生活样态",
+"description": "通过传记或纪录片，走出自己的狭隘空间，体验另一种人生的逻辑与色彩。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": “亲手做一顿饭”,
+"description": "亲手处理食材，在烟火气中感受创造的快乐，把平凡日子煮出温情。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": "向世界投递一份善意",
+"description": "无论是微小的捐赠、真诚的赞美还是耐心的等待，用行动改善周遭的场域。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 10,
+"locale": "zh"
+},
+{
+"title": "自我和解内心对话",
+"description": "像安慰最好的朋友一样安慰受挫的自己，学会与不完美的自我和解。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "跨界随机碰撞",
+"description": "去接触一个完全陌生的领域，让新奇的认知为旧有的思维带来涟漪。",
+"intensity": "high",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": "捕捉正在消逝的日常",
+"description": "拍一张照片，写一段随笔，为这些平凡却唯一的瞬间留下存在的证据。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "寻找生活里的秩序锚点",
+"description": "确定几件即便世界崩塌也要坚持做的小事，以此构建内心的确定性。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 10,
+"locale": "zh"
+},
+{
+"title": "思维大扫除",
+"description": "清空那些过时的执念、无用的羞耻感，让大脑恢复清爽的初学者心态。",
+"intensity": "high",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 45,
+"locale": "zh"
+},
+{
+"title": “朋友相聚",
+"description": "与好友在同一空间各自忙碌，享受那种无需语言的深度陪伴与默契。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "meeting",
+"default_duration_minutes": 120,
+"locale": "zh"
+},
+{
+"title": "确认今日的微小英雄时刻",
+"description": "找出那个你战胜了惰性、恐惧或自私的瞬间，并为此给自己记上一功。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 5,
+"locale": "zh"
+},
+{
+"title": "建立一个‘快乐实验室’",
+"description": "尝试一件从未做过的小趣事，看看它是否能成为你新的能量补给点。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 45,
+"locale": "zh"
+},
+{
+"title": "睡前对宇宙简短致意",
+"description": "意识到自己是宏大宇宙的一员，以更开阔的心胸接纳当下的得失。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 5,
+"locale": "zh"
+}
+[
+{
+"title": "深度专注办公",
+"description": "屏蔽社交软件，集中处理最核心的工作任务或复杂文档。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 90,
+"locale": "zh"
+},
+{
+"title": "超市生活大采购",
+"description": "列好清单，去超市一次性补全未来几天的食材和日用品。",
+"intensity": "high",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": "处理积压邮件与消息",
+"description": "集中回复待办事项，清理红点，确保信息流转通畅。",
+"intensity": "low",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 30,
+"locale": "zh"
+},
+{
+"title": "全屋地面清洁",
+"description": "使用吸尘器或拖把清理地板，维持居家环境的基本整洁。",
+"intensity": "high",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 40,
+"locale": "zh"
+},
+{
+"title": "备菜与饭盒准备",
+"description": "洗切蔬菜，分装肉类，为接下来几天的餐食做预处理。",
+"intensity": "high",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": "个人财务对账",
+"description": "记录开支，核对账单，检查本月预算的执行情况。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 20,
+"locale": "zh"
+},
+{
+"title": "课后习题与知识巩固",
+"description": "通过练习题或笔记复习，消化近期学到的新知识点。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": "项目进度同步会",
+"description": "与团队成员核对里程碑，沟通协作中遇到的瓶颈问题。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "meeting",
+"default_duration_minutes": 45,
+"locale": "zh"
+},
+{
+"title": "更换床单被套",
+"description": "拆洗旧床品，换上干净的织物，改善睡眠环境。",
+"intensity": "high",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 30,
+"locale": "zh"
+},
+{
+"title": "收纳折叠干衣物",
+"description": "从晾衣架收回衣物，按分类折叠并放入衣柜。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 20,
+"locale": "zh"
+},
+{
+"title": "制定明日行动计划",
+"description": "确定明天的三件核心任务，预排时间块，减少清晨焦虑。",
+"intensity": "low",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "身体拉伸与放松",
+"description": "针对肩颈和腰部进行基础拉伸，缓解久坐产生的僵硬感。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 20,
+"locale": "zh"
+},
+{
+"title": "阳台植物浇水修剪",
+"description": "检查土壤湿度，给绿植补水，剪掉发黄的叶片。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "深度清洁厨房灶台",
+"description": "清除油垢，擦拭油烟机和墙面，保持烹饪区卫生。",
+"intensity": "high",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 45,
+"locale": "zh"
+},
+{
+"title": "聆听播客或有声书",
+"description": "在通勤或做家务时，听取感兴趣的主题分享或故事。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 45,
+"locale": "zh"
+},
+{
+"title": "电子设备充电维护",
+"description": "给所有移动设备补满电，清理不常用的App和缓存文件。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 10,
+"locale": "zh"
+},
+{
+"title": "短时间午间小睡",
+"description": "休息片刻，为接下来的任务恢复精力和注意力。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "reminder",
+"default_duration_minutes": 25,
+"locale": "zh"
+},
+{
+"title": "撰写工作周报或总结",
+"description": "梳理本周成果、遗留问题及下周规划。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 40,
+"locale": "zh"
+},
+{
+"title": "公共事务与账单缴纳",
+"description": "处理电费、网费、物业费等日常杂事。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "整理书架或资料夹",
+"description": "将书籍按类存放，或将纸质文件进行打孔归档。",
+"intensity": "low",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 30,
+"locale": "zh"
+},
+{
+"title": "辅导孩子课业",
+"description": "检查作业进度，讲解难点题目，跟进学习状况。",
+"intensity": "high",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": "简单的手工或DIY",
+"description": "缝补衣物、拼装模型或进行基础的家庭维修。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": "垃圾分类与丢弃",
+"description": "整理家中的废弃物，分类并带到指定投放点。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 10,
+"locale": "zh"
+},
+{
+"title": "跟进面试或商务邀约",
+"description": "发送确认邮件，协调时间，准备沟通素材。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 30,
+"locale": "zh"
+},
+{
+"title": "护肤与洗漱",
+"description": "基础清洁，敷面膜或简单按摩，准备进入休息状态。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "reminder",
+"default_duration_minutes": 20,
+"locale": "zh"
+},
+{
+"title": "带宠物下楼遛弯",
+"description": "带宠物出门活动，顺便呼吸室外新鲜空气。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 40,
+"locale": "zh"
+},
+{
+"title": "清空洗碗机或沥水架",
+"description": "将晾干的碗筷归位，保持台面空无一物。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 10,
+"locale": "zh"
+},
+{
+"title": "浏览感兴趣的新闻",
+"description": "快速了解行业动态或社会资讯，保持信息同步。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 20,
+"locale": "zh"
+},
+{
+"title": "为家人准备早餐",
+"description": "加热牛奶，烤面包或准备水果，开启一天的能量。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 20,
+"locale": "zh"
+},
+{
+"title": "整理云盘照片与视频",
+"description": "删除模糊废图，给重要的家庭影像分类命名。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 45,
+"locale": "zh"
+},
+{
+"title": "查阅旅行或聚餐攻略",
+"description": "对比评价，确定目的地，预订餐厅或门票。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 30,
+"locale": "zh"
+},
+{
+"title": "高强度体能训练",
+"description": "进行力量练习、跑步或高强度间歇运动。",
+"intensity": "high",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 50,
+"locale": "zh"
+},
+{
+"title": "更新个人简历或作品集",
+"description": "补充最新的工作成果，优化自我描述的措辞。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 90,
+"locale": "zh"
+},
+{
+"title": "给父母打个视频电话",
+"description": "简单的问候，分享生活近况，维持家庭联系。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 25,
+"locale": "zh"
+},
+{
+"title": "药箱清理与效期核对",
+"description": "处理过期药品，补充感冒、创可贴等常用储备。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "工作软件的自动化设置",
+"description": "配置快捷键或自动化脚本，提升重复性工作的效率。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 45,
+"locale": "zh"
+},
+{
+"title": "阅读专业领域期刊",
+"description": "精读一篇高含金量的行业分析或学术文章。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 50,
+"locale": "zh"
+},
+{
+"title": "挑选更换手机壁纸",
+"description": "换个心情，选择一张让自己感到舒适的图像。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "reminder",
+"default_duration_minutes": 5,
+"locale": "zh"
+},
+{
+"title": "处理旧物或闲置出售",
+"description": "拍照并发布到二手平台，或打包捐赠旧衣物。",
+"intensity": "high",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": "手冲咖啡或泡茶",
+"description": "专注水流与香气，作为工作间隙的仪式感休息。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "reminder",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "洗车或内饰除尘",
+"description": "清洗外观，清理车内纸屑，保持驾驶环境清爽。",
+"intensity": "high",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": "核对快递物流信息",
+"description": "确认包裹到站情况，及时处理退换货流程。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 10,
+"locale": "zh"
+},
+{
+"title": "查看天气预报准备衣物",
+"description": "根据气温和降水概率，准备好明早要穿的服装。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 5,
+"locale": "zh"
+},
+{
+"title": "工作位桌面杂物清理",
+"description": "收起凌乱的纸张，擦拭屏幕，保持办公视野干净。",
+"intensity": "low",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "参加线上研讨会",
+"description": "实时听讲并参与Q&A环节，记录核心要点。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "meeting",
+"default_duration_minutes": 90,
+"locale": "zh"
+},
+{
+"title": "检查家庭安防设备",
+"description": "确认门窗锁闭，检查燃气阀门或监控设备。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 5,
+"locale": "zh"
+},
+{
+"title": "简单的手工记录日记",
+"description": "记下今天发生的几件小事，不做深度思考。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "梳理本周新的社交关系",
+"description": "添加新认识的人为好友，备注重要背景信息。",
+"intensity": "low",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 20,
+"locale": "zh"
+},
+{
+"title": "安静地发呆十分钟",
+"description": "放下手机，什么都不做，给大脑彻底的留白时间。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "reminder",
+"default_duration_minutes": 10,
+"locale": "zh"
+}
+[
+{
+"title": "清洗堆积的碗筷",
+"description": "清空洗碗池，擦干水渍并整齐码放到橱柜中。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 20,
+"locale": "zh"
+},
+{
+"title": "撰写周会演示文稿",
+"description": "整理核心数据，制作直观的可视化图表并对齐汇报思路。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 90,
+"locale": "zh"
+},
+{
+"title": "下楼扔掉分类垃圾",
+"description": "检查厨余垃圾和干垃圾，带到小区的指定投放点。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 10,
+"locale": "zh"
+},
+{
+"title": "核对下月信用卡账单",
+"description": "逐笔核实支出，确认是否有重复扣款或异常消费。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "清理冰箱过期食材",
+"description": "检查冷藏室深处，扔掉过期的酱料和枯萎的蔬菜。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 20,
+"locale": "zh"
+},
+{
+"title": "深度阅读行业研报",
+"description": "研读最新的行业分析，在空白处标注核心观点和趋势。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": "修剪手指甲和趾甲",
+"description": "保持个人卫生，这是一段安静且专注的自我打理时间。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "reminder",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "回复朋友圈重要评论",
+"description": "挑选需要回应的信息进行互动，维护基本的社交连接。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "核心代码或方案评审",
+"description": "仔细阅读他人的逻辑，提出建设性的修改意见或风险提示。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "meeting",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": "给饮水机更换滤芯",
+"description": "根据周期提示更换净水配件，确保家庭饮水安全。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "练习一节瑜伽课",
+"description": "跟随视频指导完成基础体式，拉伸紧绷的身体部位。",
+"intensity": "high",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 45,
+"locale": "zh"
+},
+{
+"title": "清理电脑桌面图标",
+"description": "删除临时下载的文件，将散乱的图标归类到文件夹中。",
+"intensity": "low",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "整理行李”,
+"description": "对照清单装入衣物、洗漱用品和各类电子设备充电器。",
+"intensity": "high",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 40,
+"locale": "zh"
+},
+{
+"title": "挑选两件本周要穿的衣服",
+"description": "提前熨烫并搭配好，避免清晨因为找衣服而匆忙。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "学习一个软件快捷键",
+"description": "挑选一个高频操作，记住并反复练习其键盘映射。",
+"intensity": "low",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 10,
+"locale": "zh"
+},
+{
+"title": "给手机屏幕除菌消毒",
+"description": "使用专用喷雾和酒精棉片，擦拭每天高频接触的设备。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 5,
+"locale": "zh"
+},
+{
+"title": "给重要联系人写生日祝福",
+"description": "提前写好一段真诚的文字，设置定时或准时发送。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 10,
+"locale": "zh"
+},
+{
+"title": "清洗抽油烟机油网",
+"description": "使用去油强力剂，彻底清除长期积攒的顽固油垢。",
+"intensity": "high",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 45,
+"locale": "zh"
+},
+{
+"title": "翻看并归档纸质收据",
+"description": "扫描重要发票存入电子备忘，扔掉不再需要的废纸。",
+"intensity": "low",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 20,
+"locale": "zh"
+},
+{
+"title": "更换牙刷或刷头",
+"description": "每三个月一次的卫生更换，保护口腔健康。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 5,
+"locale": "zh"
+},
+{
+"title": "修剪阳台绿植枯叶",
+"description": "细心观察植物生长状态，剪掉发黄或干枯的部分。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "预定餐厅位置",
+"description": "通过App或电话确认时间，为聚会留好位子。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 10,
+"locale": "zh"
+},
+{
+"title": "整理手机内重复的照片",
+"description": "清理相似连拍和无用的截图，释放宝贵的存储空间。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 30,
+"locale": "zh"
+},
+{
+"title": "检查家中的备用电池",
+"description": "确认遥控器、智能门锁是否有电，补齐5号和7号电池。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 10,
+"locale": "zh"
+},
+{
+"title": "学习一首新歌的歌词",
+"description": "在上下班路上尝试记住旋律和词句，作为放松手段。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 20,
+"locale": "zh"
+},
+{
+"title": "给鞋子除尘或上油",
+"description": "清理鞋面污渍，保持外出的职业感或整洁度。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "确认重要会议的参会人",
+"description": "核实日程邀请，确保关键决策人都有空准时出席。",
+"intensity": "low",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 10,
+"locale": "zh"
+},
+{
+"title": "给家里的宠物梳毛",
+"description": "减少室内浮毛，顺便观察宠物的皮肤健康状况。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 20,
+"locale": "zh"
+},
+{
+"title": "整理书桌的电缆线",
+"description": "使用理线器或魔术贴，让杂乱的电源线变得有序。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 25,
+"locale": "zh"
+},
+{
+"title": "听取昨天的会议录音",
+"description": "补全遗漏的纪要内容，确认具体责任人和截止日期。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 40,
+"locale": "zh"
+},
+{
+"title": "整理化妆台或洗手台",
+"description": "擦拭积水，将各种瓶罐按使用频率重新摆放。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "去洗衣店取回干洗衣物",
+"description": "检查衣物清洗情况，并带回家悬挂收纳。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 30,
+"locale": "zh"
+},
+{
+"title": "给阳台地板冲水清扫",
+"description": "清除积攒的灰尘和雨水干涸后的泥垢。",
+"intensity": "high",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 30,
+"locale": "zh"
+},
+{
+"title": "挑选几本想卖掉的旧书",
+"description": "扫描条形码，确认回收价格，装袋准备下单上门取货。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 20,
+"locale": "zh"
+},
+{
+"title": "检查车载行车记录仪",
+"description": "确认内存卡录制状态，格式化过旧的视频数据。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 10,
+"locale": "zh"
+},
+{
+"title": "练习五分钟深呼吸",
+"description": "跟随呼吸节奏调节心率，缓解刚才高强度工作带来的紧绷感。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 5,
+"locale": "zh"
+},
+{
+"title": "整理待办事项的标签",
+"description": "优化你的管理系统，确保每一项任务都有准确的分类。",
+"intensity": "low",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "更换浴室的地垫",
+"description": "洗净旧垫子，换上干燥防滑的新地垫，防止积水发霉。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 5,
+"locale": "zh"
+},
+{
+"title": "学习一个烹饪新技巧",
+"description": "看一段视频学会一种切菜方法或调料配比。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "给加湿器清理水垢",
+"description": "使用醋水浸泡，刷洗水箱内部，保持出雾卫生。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 20,
+"locale": "zh"
+},
+{
+"title": "为同事准备一份小谢礼",
+"description": "感谢对方在最近项目中的帮忙，简单的小零食或手写便签即可。",
+"intensity": "low",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 10,
+"locale": "zh"
+},
+{
+"title": "检查防盗门的指纹灵敏度",
+"description": "清理传感器，或重新录入一遍由于天气干燥变得不准的指纹。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 10,
+"locale": "zh"
+},
+{
+"title": "磨咖啡豆”,
+"description": "准备好粉量，节省时间成本。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 5,
+"locale": "zh"
+},
+{
+"title": "清理常用App的聊天缓存",
+"description": "删除过期的大文件和视频，让手机运行更流畅。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "确认聚餐人数",
+"description": "群内接龙，确认谁会出席，以便安排菜量和桌位。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 10,
+"locale": "zh"
+}
+[
+{
+"title": "清洗家用空调滤网",
+"description": "拆下室内机面板，冲洗积灰的滤网，改善空气质量并节能。",
+"intensity": "high",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 30,
+"locale": "zh"
+},
+{
+"title": "核对快递取件码",
+"description": "查看手机短信或App，下班顺路去驿站取回包裹。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 5,
+"locale": "zh"
+},
+{
+"title": "整理工作电脑的下载文件夹",
+"description": "移动有用的文件至分类目录，彻底删除临时安装包。",
+"intensity": "low",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "修剪室内花卉的残花",
+"description": "将已经凋谢的花朵剪掉，减少养分消耗，保持盆栽美观。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 10,
+"locale": "zh"
+},
+{
+"title": "补充洗手液和洗洁精",
+"description": "将大瓶补充装倒入分装瓶，确保日常洗涤不中断。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 10,
+"locale": "zh"
+},
+{
+"title": "撰写下周项目排期表",
+"description": "在看板或表格中填入关键节点，协调各环节的时间分配。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 45,
+"locale": "zh"
+},
+{
+"title": "清理键盘缝隙灰尘",
+"description": "使用小刷子或气吹，清除办公高频设备的物理碎屑。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "给自己剪刘海或修鬓角",
+"description": "对着镜子进行简单的自我理发护理，维持精神面貌。",
+"intensity": "high",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 20,
+"locale": "zh"
+},
+{
+"title": "核实身份证件有效期",
+"description": "检查身份证、驾照或护照，确保没有面临过期无法使用的情况。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 5,
+"locale": "zh"
+},
+{
+"title": "整理冰箱侧门调料区",
+"description": "按使用频率摆放，顺便擦拭渗漏的油渍或酱汁。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "回复求职者的咨询邮件",
+"description": "礼貌回复招聘进展或反馈意见，维护雇主或个人品牌。",
+"intensity": "low",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 30,
+"locale": "zh"
+},
+{
+"title": "清空垃圾桶并套袋",
+"description": "完成全屋垃圾收集工作，确保环境卫生。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 10,
+"locale": "zh"
+},
+{
+"title": "更新常用软件至最新版",
+"description": "集中升级系统及App，修复已知漏洞并体验新功能。",
+"intensity": "low",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 20,
+"locale": "zh"
+},
+{
+"title": "给电动牙刷充电",
+"description": "接通电源，确保未来一周的早晚洗漱正常进行。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 5,
+"locale": "zh"
+},
+{
+"title": "整理沙发上的抱枕被毯",
+"description": "拍打蓬松，摆放整齐，恢复客厅的有序感。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 5,
+"locale": "zh"
+},
+{
+"title": "清洗睡衣和居家服",
+"description": "将贴身衣物投入洗衣机，保持穿着的舒适清爽。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 10,
+"locale": "zh"
+},
+{
+"title": "给宠物饮水机换水",
+"description": "清洗储水桶，加入新鲜过滤水，保证宠物饮水卫生。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "清理书包或手提袋底部",
+"description": "倒出积攒的纸屑，拿掉没用的收据，整理常用小物。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 10,
+"locale": "zh"
+},
+{
+"title": "参加线上健身打卡",
+"description": "开启视频跟练，完成每日规定的动作指标。",
+"intensity": "high",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 40,
+"locale": "zh"
+},
+{
+"title": "给手机系统备份",
+"description": "将重要数据上传至云端或本地硬盘，预防数据丢失。",
+"intensity": "low",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "整理浴室柜里的洗护用品",
+"description": "将快用完的瓶子放在外侧，整理备用的小样。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "准备一份简单的伴手礼",
+"description": "拜访亲友前，挑选并简单包装一份体面的礼物。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 20,
+"locale": "zh"
+},
+{
+"title": "核对手表或挂钟时间",
+"description": "确认机械表或石英钟的准度，确保家里没有“误差区”。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 5,
+"locale": "zh"
+},
+{
+"title": "检查常用账户密码记录",
+"description": "更新近期修改过的密码至管理软件中，防止遗忘。",
+"intensity": "low",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 20,
+"locale": "zh"
+},
+{
+"title": "擦拭并收纳应季鞋靴",
+"description": "在换季前清理好鞋底，放入干燥剂后装盒存放。",
+"intensity": "high",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 50,
+"locale": "zh"
+},
+{
+"title": "回复学校班级群消息",
+"description": "核对通知，确认接龙或提交孩子相关的统计信息。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 10,
+"locale": "zh"
+},
+{
+"title": "给绿植施肥或松土",
+"description": "按量添加缓释肥，改善盆土透气性，助力生长。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "整理办公位的数据线",
+"description": "使用夹子或理线器收纳，避免桌下线缆缠绕。",
+"intensity": "low",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 20,
+"locale": "zh"
+},
+{
+"title": "练习一首新乐谱的开头",
+"description": "不求整首曲子，只攻克前几个小节的指法与节奏。",
+"intensity": "high",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 30,
+"locale": "zh"
+},
+{
+"title": "给手机卡充值话费",
+"description": "检查剩余流量和余额，防止因欠费停机耽误事。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 5,
+"locale": "zh"
+},
+{
+"title": "整理床头柜的杂物",
+"description": "拿走空杯子和随手扔的纸巾，只留下一本书和一盏灯。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 10,
+"locale": "zh"
+},
+{
+"title": "撰写一封感谢邮件",
+"description": "给协助你完成项目的同事或合作伙伴发送真诚的致谢。",
+"intensity": "low",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "给钱包瘦身",
+"description": "拿走没用的收据、过期会员卡，整理现钞和硬币。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 10,
+"locale": "zh"
+},
+{
+"title": "清洗玻璃窗或镜面",
+"description": "使用专用清洁剂抹去手印和雾渍，增加室内亮度。",
+"intensity": "high",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 40,
+"locale": "zh"
+},
+{
+"title": "确认下一次牙齿预约",
+"description": "查看日历，确认洗牙或正畸复诊的具体时间点。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 5,
+"locale": "zh"
+},
+{
+"title": "整理厨房的小家电线缆",
+"description": "将电饭煲、空气炸锅的电线缠好，让台面更规整。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "更新朋友圈封面图",
+"description": "换一张能代表近期心境或审美的新照片。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 5,
+"locale": "zh"
+},
+{
+"title": "核对本月会员订阅项",
+"description": "检查视频、音乐等App的扣费，取消不再需要的自动续费。",
+"intensity": "low",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "清洗浴室毛巾和地毯",
+"description": "集中进行高温洗涤，杀菌除异味。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 10,
+"locale": "zh"
+},
+{
+"title": "给手机贴一张新保护膜",
+"description": "清理屏幕并精准贴合，让视觉效果焕然一新。",
+"intensity": "high",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "确认汽车备胎状态",
+"description": "检查胎压和随车工具，为长途出行做基础保障。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 10,
+"locale": "zh"
+},
+{
+"title": "整理旧衣服捐赠箱",
+"description": "叠放好确认不再穿着的衣物，预约上门取件。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 25,
+"locale": "zh"
+},
+{
+"title": "学习一个省力的小家务技巧",
+"description": "了解如何快速去除水垢或折叠T恤不留褶皱。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 10,
+"locale": "zh"
+},
+{
+"title": "检查家庭急救包存货",
+"description": "补充创可贴、消毒酒精片和基础包扎带。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "静坐喝完一杯温开水",
+"description": "放下一切，只是专注于喝水这一动作，缓解喉咙干渴。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "reminder",
+"default_duration_minutes": 5,
+"locale": "zh"
+}
+[
+{
+"title": "约老同学叙旧",
+"description": "打个电话或发个信息，定下见面的餐厅和时间，聊聊彼此近况。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "meeting",
+"default_duration_minutes": 120,
+"locale": "zh"
+},
+{
+"title": "与同事共进午餐",
+"description": "离开工位，在饭桌上聊聊非工作的话题，缓解办公紧张氛围。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "meeting",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": "陪孩子玩亲子游戏",
+"description": "放下手机，全神贯注地参与搭积木、读绘本或户外捉迷藏。",
+"intensity": "high",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 45,
+"locale": "zh"
+},
+{
+"title": "一对一业务对接",
+"description": "找相关负责人当面沟通细节，比反复拉群发语音更有效率。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "meeting",
+"default_duration_minutes": 30,
+"locale": "zh"
+},
+{
+"title": "给远方的父母打视频",
+"description": "分享当天的晚餐或生活小事，关心一下家人的身体和心情。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 30,
+"locale": "zh"
+},
+{
+"title": "和邻居打个招呼",
+"description": "在电梯或楼道相遇时，简单点个头或寒暄两句天气。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "reminder",
+"default_duration_minutes": 5,
+"locale": "zh"
+},
+{
+"title": "组队进行羽毛球赛",
+"description": "约上三两好友在球场切磋，在挥拍和跑动中增进友谊。",
+"intensity": "high",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 90,
+"locale": "zh"
+},
+{
+"title": "参加社区兴趣小组",
+"description": "参与摄影、读书或手工交流会，认识住处附近的同好。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "meeting",
+"default_duration_minutes": 90,
+"locale": "zh"
+},
+{
+"title": "辅导新人业务流程",
+"description": "耐心地演示系统操作，回答对方入职初期的琐碎疑问。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 45,
+"locale": "zh"
+},
+{
+"title": "向导师请教近期困惑",
+"description": "预约一个时间段，就目前的职业瓶颈听取前辈的经验建议。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "meeting",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": "和伴侣商量家务分工",
+"description": "平和地讨论洗碗、打扫和购物的排班，避免生活摩擦。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "meeting",
+"default_duration_minutes": 20,
+"locale": "zh"
+},
+{
+"title": "参与线上头脑风暴",
+"description": "在会议软件里实时发言，针对新产品点子进行碰撞和记录。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "meeting",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": "带宠物去公园社交",
+"description": "在草坪观察宠物互动，顺便和其他主人交换养宠心得。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": "帮同事领咖啡或外卖",
+"description": "顺手的小忙能显著改善职场人际关系的“气候”。",
+"intensity": "low",
+"mode_tags": ["productive"],
+"type": "reminder",
+"default_duration_minutes": 10,
+"locale": "zh"
+},
+{
+"title": "预约牙医或健身教练",
+"description": "打电话确认预约时间，沟通身体现状及调整需求。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 10,
+"locale": "zh"
+},
+{
+"title": "组织家庭聚餐菜单讨论",
+"description": "在群里确认每个人的忌口，选定大家都能满意的菜式。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "和朋友联机玩电子游戏",
+"description": "戴上耳机通过语音协作，在虚拟世界里完成关卡挑战。",
+"intensity": "high",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 90,
+"locale": "zh"
+},
+{
+"title": "参加线下技术分享会",
+"description": "听完讲座后，在茶歇时间与同行交换名片或联系方式。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "meeting",
+"default_duration_minutes": 150,
+"locale": "zh"
+},
+{
+"title": "给合作伙伴发节日问候",
+"description": "不发群发模板，而是根据对方近况写一句专属的祝福。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 20,
+"locale": "zh"
+},
+{
+"title": "和导师进行学术探讨",
+"description": "针对研究进展或论文大纲，进行一次深入的思想对齐。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "meeting",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": "邀请好友来家里做客",
+"description": "打扫房间并准备茶水点心，享受私密的居家聚会时光。",
+"intensity": "high",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 180,
+"locale": "zh"
+},
+{
+"title": "处理客户投诉或反馈",
+"description": "耐心地倾听对方诉求，给出合情合理的解决方案。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "meeting",
+"default_duration_minutes": 40,
+"locale": "zh"
+},
+{
+"title": "陪家里的老人散步",
+"description": "放慢脚步，听他们讲讲过去的事，给予情绪上的陪伴。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 45,
+"locale": "zh"
+},
+{
+"title": "组织部门团建小游戏",
+"description": "准备简单的道具和规则，带动大家在空余时间轻松一下。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "meeting",
+"default_duration_minutes": 30,
+"locale": "zh"
+},
+{
+"title": "和室友协商公共区清洁",
+"description": "商定卫生间的清扫轮次，保持居住空间的和谐。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "meeting",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "给志愿者机构回个电话",
+"description": "确认周末参与公益活动的时间，领取具体的分工任务。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 10,
+"locale": "zh"
+},
+{
+"title": "参加线上的读书会",
+"description": "连线讨论本月读完的书目，听听别人对同一情节的看法。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "meeting",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": "去花店请老板搭配花束",
+"description": "告知对方赠送的对象和场合，听取专业的美学建议。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "在健身房找人辅助推举",
+"description": "简单沟通保护节奏，确保大重量训练时的安全。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 5,
+"locale": "zh"
+},
+{
+"title": “陪孩子做作业”,
+"description": “那我就玩会儿手机吧”,
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": "约牙科诊所进行洗牙",
+"description": "和前台核对有空的时间档，完成每半年的牙齿维护。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 5,
+"locale": "zh"
+},
+{
+"title": "确认快递员上门时间",
+"description": "打电话协商退货取件的具体时段，确保家里有人。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 5,
+"locale": "zh"
+},
+{
+"title": "组织一次宿舍聚餐",
+"description": "商量是点外卖还是去外面吃，庆祝某个舍友的小成就。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "meeting",
+"default_duration_minutes": 90,
+"locale": "zh"
+},
+{
+"title": "帮邻居取个大件包裹",
+"description": "利用顺路回家的机会提供协助，积攒邻里好感度。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "在会议上发表独立观点",
+"description": "针对当前方案提出不同意见，并逻辑严密地陈述理由。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "meeting",
+"default_duration_minutes": 20,
+"locale": "zh"
+},
+{
+"title": "向伴侣表达今日的谢意",
+"description": "说出具体的一件小事，真诚地肯定对方在家庭中的付出。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "reminder",
+"default_duration_minutes": 5,
+"locale": "zh"
+},
+{
+"title": "陪朋友逛二手市集",
+"description": "互相参考意见，在砍价和挑选奇珍异宝中度过午后。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "todo",
+"default_duration_minutes": 120,
+"locale": "zh"
+},
+{
+"title": "参与跨公司的行业饭局",
+"description": "在轻松的社交氛围中获取一些圈内未公开的市场动态。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "meeting",
+"default_duration_minutes": 150,
+"locale": "zh"
+},
+{
+"title": "协助导师整理实验设备",
+"description": "配合搬运或清点器材，顺便聊聊最近的学术想法。",
+"intensity": "high",
+"mode_tags": ["productive"],
+"type": "todo",
+"default_duration_minutes": 60,
+"locale": "zh"
+},
+{
+"title": "和保险经理确认保单条款",
+"description": "就意外险或重疾险的具体赔付细节进行电话核对。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "meeting",
+"default_duration_minutes": 30,
+"locale": "zh"
+},
+{
+"title": “”和孩子学校老师沟通,
+"description": "沟通孩子在家的特殊表现，以便学校老师协同关注。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "meeting",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "邀请新同事一起喝咖啡",
+"description": "利用午休时间进行简单的破冰，帮助其更快融入环境。",
+"intensity": "low",
+"mode_tags": ["productive"],
+"type": "meeting",
+"default_duration_minutes": 20,
+"locale": "zh"
+},
+{
+"title": "确认中介带看房的时间",
+"description": "沟通地段和预算需求，定下周末看房的路线图。",
+"intensity": "low",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "协助室友搬运沉重包裹",
+"description": "出力搭把手，这种互动是维护共同生活空间的关键。",
+"intensity": "high",
+"mode_tags": ["both"],
+"type": "todo",
+"default_duration_minutes": 15,
+"locale": "zh"
+},
+{
+"title": "和好久不见的朋友视频",
+"description": "同步彼此最近的重大抉择，跨越距离进行情绪支持。",
+"intensity": "low",
+"mode_tags": ["chill"],
+"type": "meeting",
+"default_duration_minutes": 45,
+"locale": "zh"
+}
+
+</user_query>

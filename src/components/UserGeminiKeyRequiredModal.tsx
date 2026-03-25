@@ -39,7 +39,7 @@ export const UserGeminiKeyRequiredModal: React.FC<UserGeminiKeyRequiredModalProp
             className="fixed inset-0 z-[61] flex items-center justify-center p-4 pointer-events-none"
           >
             <div
-              className="w-full max-w-md rounded-3xl shadow-2xl p-6 pointer-events-auto border"
+              className="w-full max-w-[31.36rem] rounded-3xl shadow-2xl p-6 pointer-events-auto border"
               style={{ background: 'var(--app-surface)', borderColor: 'var(--app-border)' }}
               role="dialog"
               aria-labelledby="user-gemini-key-title"

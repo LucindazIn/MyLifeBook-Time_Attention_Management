@@ -20,8 +20,8 @@ export function buildChapterPeriodExportText(
   const blocks = buildChapterPeriodDataBlocks(events, journalEntriesByDate, options);
 
   const header = langIsZh
-    ? `Feather Schedule — 章节周期导出\n周期：${periodLabel}\n日期范围：${periodStart} .. ${periodEnd}\n导出时间：${exportedAt}\n`
-    : `Feather Schedule — Chapter Period Export\nPeriod: ${periodLabel}\nRange: ${periodStart} .. ${periodEnd}\nExported: ${exportedAt}\n`;
+    ? `人生之书 — 章节周期导出\n周期：${periodLabel}\n日期范围：${periodStart} .. ${periodEnd}\n导出时间：${exportedAt}\n`
+    : `My Life Book — Chapter Period Export\nPeriod: ${periodLabel}\nRange: ${periodStart} .. ${periodEnd}\nExported: ${exportedAt}\n`;
 
   const roleSection = langIsZh
     ? `=== Suggested Role (System Message) ===
@@ -91,7 +91,7 @@ ${roleBlock ? roleBlock + '\n\n' : ''}任务：
 - 禁止复述扁平事件列表；整体读起来要像「这一段的缩影」。
 - 语气：中性偏鼓励；不夸大、不有毒积极。
 - 禁止编造素材中没有的事实或细节。
-- **语言**：**章节名**与**章节内容**须使用**简体中文**，与 Feather Schedule 当前界面语言一致；即使下方 Period Data 中含英文片段，仍须用中文撰写。
+- **语言**：**章节名**与**章节内容**须使用**简体中文**，与「人生之书」当前界面语言一致；即使下方 Period Data 中含英文片段，仍须用中文撰写。
 
 输出结构（先理解内容，再按最后一项封装为 JSON）：
 
@@ -101,10 +101,10 @@ ${roleBlock ? roleBlock + '\n\n' : ''}任务：
 **章节内容**
 第一人称；长度不少于 500 个字符且不超过 2000 个字符（.length）；正文内可使用 Markdown：**双星号**包裹关键句；可选用 ==双等号== 表示高亮。
 
-**封装为 JSON**：将上述「章节名」与「章节内容」合并为**一个** JSON 对象（单行或多行均可），**不要用 markdown 代码块包裹**。两个键名固定为英文字段名 chapterTitle 与 narrativeSummary（便于粘贴回 Feather Schedule），键名本身不必翻译。
+**封装为 JSON**：将上述「章节名」与「章节内容」合并为**一个** JSON 对象（单行或多行均可），**不要用 markdown 代码块包裹**。两个键名固定为英文字段名 chapterTitle 与 narrativeSummary（便于粘贴回人生之书），键名本身不必翻译。
 
 **固定提示行（在 JSON 之后）**：JSON 结束后，先连续输出**两个空行**（即两段换行之间留出两行空白），再单独一行输出下面这句话，**纯文本，不属于 JSON**，一字不差：
-现在可以将上方内容复制回 Feather Schedule 中保存本章。
+现在可以将上方内容复制回人生之书中保存本章。
 `;
   }
 
@@ -125,7 +125,7 @@ Constraints:
 - Do not repeat a flat event list; the piece should read like "this period in a nutshell."
 - Tone: neutral to encouraging. No exaggeration, no toxic positivity.
 - Do not invent facts not present in the source material.
-- **Language**: **Chapter Name** and **Chapter Content** must be in **English**, matching the Feather Schedule UI language for this export. Even if Period Data contains Chinese or other fragments, keep both in English.
+- **Language**: **Chapter Name** and **Chapter Content** must be in **English**, matching the My Life Book UI language for this export. Even if Period Data contains Chinese or other fragments, keep both in English.
 
 Output structure (understand the content first, then wrap as JSON in the final step):
 
@@ -135,10 +135,10 @@ One line; **at most 60 characters** (JavaScript string .length).
 **Chapter Content**
 First person; **at least 500 and at most 2000 characters** (.length); you may use **bold** and ==highlight== in the text.
 
-**Wrap as JSON**: Combine the above **Chapter Name** and **Chapter Content** into **one** JSON object (single or multi-line). **Do not** wrap it in a markdown code block. Use the ASCII key names chapterTitle and narrativeSummary (for pasting back into Feather Schedule). The chapterTitle value corresponds to **Chapter Name**; narrativeSummary corresponds to **Chapter Content**.
+**Wrap as JSON**: Combine the above **Chapter Name** and **Chapter Content** into **one** JSON object (single or multi-line). **Do not** wrap it in a markdown code block. Use the ASCII key names chapterTitle and narrativeSummary (for pasting back into My Life Book). The chapterTitle value corresponds to **Chapter Name**; narrativeSummary corresponds to **Chapter Content**.
 
 **Fixed reminder line (after the JSON)**: After the JSON, output **two blank lines** (two empty lines between the JSON and the next line), then on its own line output the following **plain text**, **not** part of JSON, **verbatim**:
-You Can Now Copy The Above Into Feather Schedule To Save This Chapter.
+You Can Now Copy The Above Into My Life Book To Save This Chapter.
 `;
 }
 

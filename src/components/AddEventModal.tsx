@@ -373,7 +373,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
           >
-            <div className="w-full max-w-lg rounded-[2rem] shadow-2xl p-0 pointer-events-auto border overflow-hidden flex flex-col max-h-[90vh]" style={{ background: 'var(--app-surface)', borderColor: 'var(--app-border)' }}>
+            <div className="w-full max-w-[35.84rem] rounded-[2rem] shadow-2xl p-0 pointer-events-auto border overflow-hidden flex flex-col max-h-[90vh]" style={{ background: 'var(--app-surface)', borderColor: 'var(--app-border)' }}>
               
               {/* Header */}
               <div className="p-6 pb-0 flex items-center justify-between">

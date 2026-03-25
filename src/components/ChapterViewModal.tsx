@@ -167,7 +167,7 @@ export const ChapterViewModal: React.FC<ChapterViewModalProps> = ({
         onKeyDown={(e) => e.key === 'Escape' && onClose()}
       />
       <div
-        className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border shadow-xl flex flex-col"
+        className="relative w-full max-w-[35.84rem] max-h-[90vh] overflow-y-auto rounded-2xl border shadow-xl flex flex-col"
         style={{
           backgroundColor: 'var(--app-surface)',
           borderColor: 'var(--app-border)',

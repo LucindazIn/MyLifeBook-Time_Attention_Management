@@ -1,4 +1,4 @@
--- Supabase schema for Feather Schedule (online-first, full history)
+-- Supabase schema for My Life Book / 人生之书 (online-first, full history)
 -- Includes: events, event_tags, event_instance_completions, day_meta, daily_quotes, devices, subscriptions
 -- RLS: all private to auth.uid()
 -- RPC: register_device (free=1 device cap in V1)

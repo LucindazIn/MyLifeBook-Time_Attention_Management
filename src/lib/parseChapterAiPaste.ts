@@ -3,8 +3,15 @@ import { MAX_CHAPTER_SUMMARY_CHARS } from '@/lib/chaptersStorage';
 /** Align with external export prompt. */
 export const CHAPTER_TITLE_MAX_CHARS = 60;
 
-const TAIL_ZH = '现在可以将上方内容复制回 Feather Schedule 中保存本章。';
-const TAIL_EN = 'You Can Now Copy The Above Into Feather Schedule To Save This Chapter.';
+/** Current product tail lines (must match chapterExternalPrompt). */
+const TAIL_ZH = '现在可以将上方内容复制回人生之书中保存本章。';
+const TAIL_EN = 'You Can Now Copy The Above Into My Life Book To Save This Chapter.';
+
+/** Legacy tails from "Feather Schedule" — keep stripping so old clipboard text still parses. */
+const LEGACY_TAIL_ZH = '现在可以将上方内容复制回 Feather Schedule 中保存本章。';
+const LEGACY_TAIL_EN = 'You Can Now Copy The Above Into Feather Schedule To Save This Chapter.';
+
+const TRAILING_REMINDER_TAILS = [TAIL_ZH, TAIL_EN, LEGACY_TAIL_ZH, LEGACY_TAIL_EN];
 
 export type ParseChapterAiPasteResult =
   | { ok: true; chapterTitle: string; narrativeSummary: string }
@@ -28,7 +35,7 @@ function stripMarkdownCodeFence(s: string): string {
 
 function stripTrailingReminders(s: string): string {
   let t = s.trimEnd();
-  const tails = [TAIL_ZH, TAIL_EN];
+  const tails = TRAILING_REMINDER_TAILS;
   let changed = true;
   while (changed) {
     changed = false;
@@ -88,7 +95,7 @@ function truncateSummary(t: string): string {
 
 /**
  * Parse external AI reply: optional code fence, JSON with chapterTitle + narrativeSummary,
- * optional trailing Feather Schedule reminder line(s).
+ * optional trailing product reminder line(s) (current or legacy).
  */
 export function parseChapterAiPaste(raw: string, isZh: boolean): ParseChapterAiPasteResult {
   const err = (key: 'noJson' | 'parseJson' | 'missingFields' | 'badTypes'): string => {

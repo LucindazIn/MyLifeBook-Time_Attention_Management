@@ -1,0 +1,635 @@
+{
+  "batchRange": [30, 99],
+  "items": [
+    {
+      "title": "Eat a Nutritious Lunch",
+      "description": "Refuel your body's little engine; this is a grand daily ceremony.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "reminder",
+      "default_duration_minutes": 45,
+      "locale": "en"
+    },
+    {
+      "title": "Clear Physical Desk Clutter",
+      "description": "A tidy space usually whispers peace to a busy heart.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 20,
+      "locale": "en"
+    },
+    {
+      "title": "Tidy Your Inbox",
+      "description": "Archive those finished emails and watch the scary red dots disappear.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 30,
+      "locale": "en"
+    },
+    {
+      "title": "Have Tea with a Dear Friend",
+      "description": "Exchange the latest news and feelings in a light, happy chat.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "meeting",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Set Today's Top Priority",
+      "description": "Find that one little thing that would make you feel most uneasy if left undone.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "reminder",
+      "default_duration_minutes": 10,
+      "locale": "en"
+    },
+    {
+      "title": "Train Your Core Muscles",
+      "description": "Wake up your body through sweating and build the strength to fight fatigue.",
+      "intensity": "high",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 45,
+      "locale": "en"
+    },
+    {
+      "title": "Deep Clean Your Home",
+      "description": "Regain control of your life by making every corner sparkle.",
+      "intensity": "high",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 90,
+      "locale": "en"
+    },
+    {
+      "title": "Practice Forest Breathing",
+      "description": "Try to copy the rhythm of a deep forest, even if you're just staying indoors.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "reminder",
+      "default_duration_minutes": 5,
+      "locale": "en"
+    },
+    {
+      "title": "Organize Memo Scraps",
+      "description": "Gather the little sparks scattered everywhere and turn them into a real fire.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 20,
+      "locale": "en"
+    },
+    {
+      "title": "Grab an Afternoon Snack",
+      "description": "A little blood sugar boost is your secret weapon to make it until off-work.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "reminder",
+      "default_duration_minutes": 15,
+      "locale": "en"
+    },
+    {
+      "title": "Maintain Contact List",
+      "description": "Send a short 'hello' to an old friend and wake up a sleeping relationship.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 30,
+      "locale": "en"
+    },
+    {
+      "title": "Check Your Health Status",
+      "description": "Listen to the sound of your heart and stomach; adjust your schedule for them.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "reminder",
+      "default_duration_minutes": 5,
+      "locale": "en"
+    },
+    {
+      "title": "Track Daily Expenses",
+      "description": "Take the steering wheel of your money by counting where it all went.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 15,
+      "locale": "en"
+    },
+    {
+      "title": "Read a Long Feature Story",
+      "description": "Try a long-distance mental run in this age of fast-food information.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 40,
+      "locale": "en"
+    },
+    {
+      "title": "Capture Instant Inspirations",
+      "description": "Quickly jot down that weird, funny thought that just flashed by.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "reminder",
+      "default_duration_minutes": 5,
+      "locale": "en"
+    },
+    {
+      "title": "Do Flexibility Stretches",
+      "description": "Help your body recover its bounce by easing the stiffness from sitting too long.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 20,
+      "locale": "en"
+    },
+    {
+      "title": "Pre-Schedule Next Week",
+      "description": "Quietly place future tasks in their boxes to reduce surprise anxiety.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 30,
+      "locale": "en"
+    },
+    {
+      "title": "Listen to Podcasts",
+      "description": "Borrow someone else's senses to see the world while doing chores or commuting.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 45,
+      "locale": "en"
+    },
+    {
+      "title": "Pick Gifts for Loved Ones",
+      "description": "Turn your feelings into a real object and enjoy the joy of choosing.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 40,
+      "locale": "en"
+    },
+    {
+      "title": "Watch the Sunset",
+      "description": "This is a grand, beautiful show that nature gives us for free every day.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "reminder",
+      "default_duration_minutes": 10,
+      "locale": "en"
+    },
+    {
+      "title": "Trace Your Life Narrative",
+      "description": "Look back at recent life clips and find the meaning that connects them like a movie.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Review and Connect Notes",
+      "description": "Build logical neural paths between different pieces of information you've learned.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 90,
+      "locale": "en"
+    },
+    {
+      "title": "Update Your Mission Statement",
+      "description": "Look at your values today and update the inner guide that helps you decide.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 45,
+      "locale": "en"
+    },
+    {
+      "title": "Break Down Big Goals",
+      "description": "Use a mental scalpel to slice that scary big project into tiny, doable pieces.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Enter Flow State",
+      "description": "Focus deeply to finish the core task that eats up the most brainpower.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 120,
+      "locale": "en"
+    },
+    {
+      "title": "Practice a Core Skill",
+      "description": "Work at the edge of your comfort zone to polish your most important talent.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 90,
+      "locale": "en"
+    },
+    {
+      "title": "Audit Inner Biases",
+      "description": "Reflect on how you think; watch out for the mental walls that limit your view.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 45,
+      "locale": "en"
+    },
+    {
+      "title": "Read Classic Books Closely",
+      "description": "Say no to fast summaries; have a slow chat with the great minds of history.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Analyze Past Projects",
+      "description": "Dig out the reasons for success and the logic behind failures.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 50,
+      "locale": "en"
+    },
+    {
+      "title": "Build Personal Principles",
+      "description": "Turn lessons into a list to be your defense when facing future troubles.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 40,
+      "locale": "en"
+    },
+    {
+      "title": "Map Your Knowledge System",
+      "description": "Visualize what you know to see which areas are fertile and which are still empty.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 90,
+      "locale": "en"
+    },
+    {
+      "title": "Calibrate Long-Term Goals",
+      "description": "Throw away the fake needs borrowed from others and return to your true wishes.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 45,
+      "locale": "en"
+    },
+    {
+      "title": "Let Your Soul Wander",
+      "description": "No KPIs, no goals; let your thoughts run like wild horses in an open field.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "todo",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Touch Nature's Textures",
+      "description": "Feel the bark of a tree or the edge of a stone; reconnect with the earth.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "todo",
+      "default_duration_minutes": 40,
+      "locale": "en"
+    },
+    {
+      "title": "Drift in Music",
+      "description": "Close your eyes and let the notes take you anywhere; just feel the emotions.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "todo",
+      "default_duration_minutes": 30,
+      "locale": "en"
+    },
+    {
+      "title": "Go on a Taste Journey",
+      "description": "Eat a nice meal very slowly; say thank you to every gift from the land.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "reminder",
+      "default_duration_minutes": 20,
+      "locale": "en"
+    },
+    {
+      "title": "Write a Letter to Future You",
+      "description": "Record your current doubts and bravery for the future you to read.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "todo",
+      "default_duration_minutes": 45,
+      "locale": "en"
+    },
+    {
+      "title": "Become a Cloud Appraiser",
+      "description": "Watch the shapes and colors of clouds; stay humble before this grand, daily show.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "reminder",
+      "default_duration_minutes": 15,
+      "locale": "en"
+    },
+    {
+      "title": "Walk Unnoticed Streets",
+      "description": "Be a tourist in your own city; find the hidden stories in the corners you missed.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "todo",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Adjust Social Ties",
+      "description": "Maintain the emotional bonds that nourish you with a call or a sincere note.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 40,
+      "locale": "en"
+    },
+    {
+      "title": "Organize Your Surroundings",
+      "description": "Tidying your room is actually tidying the logic of your current life.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Make a Scrapbook",
+      "description": "Find reasons to be happy in tiny things to fight off the dullness of life.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "reminder",
+      "default_duration_minutes": 10,
+      "locale": "en"
+    },
+    {
+      "title": "Have a Deep Talk",
+      "description": "Discuss life, love, or freedom with someone on your wavelength.",
+      "intensity": "high",
+      "mode_tags": ["both"],
+      "type": "meeting",
+      "default_duration_minutes": 90,
+      "locale": "en"
+    },
+    {
+      "title": "Explore Someone's Life",
+      "description": "Experience another life's logic through a biography or documentary.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Cook a Homemade Meal",
+      "description": "Touch the ingredients and cook some warmth into a normal day.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Send Kindness to the World",
+      "description": "Better the world with a small donation, a compliment, or just being patient.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "reminder",
+      "default_duration_minutes": 10,
+      "locale": "en"
+    },
+    {
+      "title": "Talk to Your Inner Self",
+      "description": "Comfort yourself like you would a best friend; make peace with being imperfect.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "reminder",
+      "default_duration_minutes": 15,
+      "locale": "en"
+    },
+    {
+      "title": "Try Random Cross-overs",
+      "description": "Touch a totally new field and let new facts create ripples in your old thoughts.",
+      "intensity": "high",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Catch Fading Moments",
+      "description": "Take a photo or write a note to prove that this unique moment happened.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 15,
+      "locale": "en"
+    },
+    {
+      "title": "Find Order Anchors",
+      "description": "Keep doing a few small things daily to build certainty even if the world is messy.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "reminder",
+      "default_duration_minutes": 10,
+      "locale": "en"
+    },
+    {
+      "title": "Clean Up Your Thoughts",
+      "description": "Clear out old regrets and useless shame to regain a fresh, 'beginner' mind.",
+      "intensity": "high",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 45,
+      "locale": "en"
+    },
+    {
+      "title": "Hang Out in Silence",
+      "description": "Be in the same room with friends, each doing their own thing in happy silence.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "meeting",
+      "default_duration_minutes": 120,
+      "locale": "en"
+    },
+    {
+      "title": "Check Your Mini-Hero Moment",
+      "description": "Find that second when you beat your fear or laziness and give yourself a thumbs up.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "reminder",
+      "default_duration_minutes": 5,
+      "locale": "en"
+    },
+    {
+      "title": "Start a 'Happy Lab'",
+      "description": "Try one tiny new fun thing to see if it can be your new energy source.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 45,
+      "locale": "en"
+    },
+    {
+      "title": "Nod to the Universe",
+      "description": "Realize you're part of the big stars and space; accept your gains and losses.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "reminder",
+      "default_duration_minutes": 5,
+      "locale": "en"
+    },
+    {
+      "title": "Work in Deep Focus",
+      "description": "Mute social apps and focus on the core tasks or complex papers.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 90,
+      "locale": "en"
+    },
+    {
+      "title": "Do Grocery Shopping",
+      "description": "Fill your kitchen with food and life supplies for the next few days.",
+      "intensity": "high",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Clear Backlog Messages",
+      "description": "Reply to tasks and clear the red dots to keep your info flowing.",
+      "intensity": "low",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 30,
+      "locale": "en"
+    },
+    {
+      "title": "Clean House Floors",
+      "description": "Vacuum or mop the ground to keep your home feeling fresh and tidy.",
+      "intensity": "high",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 40,
+      "locale": "en"
+    },
+    {
+      "title": "Prep Meals and Lunchboxes",
+      "description": "Wash and cut your veggies and meat for the coming week's healthy eating.",
+      "intensity": "high",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Reconcile Personal Finances",
+      "description": "Check your bills and see if you're following your monthly budget plan.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 20,
+      "locale": "en"
+    },
+    {
+      "title": "Practice and Review Knowledge",
+      "description": "Digest new things you've learned through exercises or note-taking.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Sync Project Progress",
+      "description": "Check milestones with the team and talk about any 'blocks' you're facing.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "meeting",
+      "default_duration_minutes": 45,
+      "locale": "en"
+    },
+    {
+      "title": "Change Bed Linens",
+      "description": "Put on clean sheets and pillowcases for a much better sleep tonight.",
+      "intensity": "high",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 30,
+      "locale": "en"
+    },
+    {
+      "title": "Fold Dry Laundry",
+      "description": "Bring your clothes in and fold them neatly into the closet.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "todo",
+      "default_duration_minutes": 20,
+      "locale": "en"
+    },
+    {
+      "title": "Plan Tomorrow's Actions",
+      "description": "Pick three core tasks for tomorrow to stop the morning worry.",
+      "intensity": "low",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 15,
+      "locale": "en"
+    },
+    {
+      "title": "Stretch and Relax Body",
+      "description": "Ease the stiffness in your neck and back with a few simple moves.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 20,
+      "locale": "en"
+    },
+    {
+      "title": "Water and Trim Plants",
+      "description": "Check if your green friends are thirsty and snip off any yellow leaves.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "todo",
+      "default_duration_minutes": 15,
+      "locale": "en"
+    },
+    {
+      "title": "Deep Clean Kitchen Stovetop",
+      "description": "Wipe away the oil and grime to keep your cooking zone healthy.",
+      "intensity": "high",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 45,
+      "locale": "en"
+    },
+    {
+      "title": "Listen to Stories",
+      "description": "Enjoy an audiobook or podcast while you're moving or doing chores.",
+      "intensity": "low",
+      "mode_tags": ["both"],
+      "type": "todo",
+      "default_duration_minutes": 45,
+      "locale": "en"
+    }
+  ]
+}

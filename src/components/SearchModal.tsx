@@ -178,7 +178,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
             initial={{ opacity: 0, scale: 0.95, y: -20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -20 }}
-            className="fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-2xl px-4"
+            className="fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-[47.04rem] px-4"
           >
             <div className="bg-surface rounded-2xl shadow-2xl border border-border overflow-hidden flex flex-col max-h-[70vh]">
               <div className="p-4 border-b border-border flex items-center gap-3">

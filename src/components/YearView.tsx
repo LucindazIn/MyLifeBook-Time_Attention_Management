@@ -24,9 +24,9 @@ interface YearViewProps {
 }
 
 const METRICS = [
-  { key: 'energy' as const, labelZh: '能量', labelEn: 'Energy', icon: '⚡', colorHigh: 'bg-emerald-400', colorMid: 'bg-amber-400', colorLow: 'bg-slate-300' },
-  { key: 'mood'   as const, labelZh: '心情', labelEn: 'Mood',   icon: '🙂', colorHigh: 'bg-rose-400',   colorMid: 'bg-rose-300',   colorLow: 'bg-slate-300' },
-  { key: 'focus'  as const, labelZh: '专注', labelEn: 'Focus',  icon: '🎯', colorHigh: 'bg-indigo-400', colorMid: 'bg-indigo-300', colorLow: 'bg-slate-300' },
+  { key: 'energy' as const, labelZh: '能量', labelEn: 'Energy', iconSrc: '/vibes/energy-high.svg', colorHigh: 'bg-emerald-400', colorMid: 'bg-amber-400', colorLow: 'bg-slate-300' },
+  { key: 'mood'   as const, labelZh: '心情', labelEn: 'Mood',   iconSrc: '/vibes/mood-happy.svg', colorHigh: 'bg-rose-400',   colorMid: 'bg-rose-300',   colorLow: 'bg-slate-300' },
+  { key: 'focus'  as const, labelZh: '专注', labelEn: 'Focus',  iconSrc: '/vibes/focus-focused.svg', colorHigh: 'bg-indigo-400', colorMid: 'bg-indigo-300', colorLow: 'bg-slate-300' },
 ];
 
 function metricColor(m: typeof METRICS[0], avg: number) {
@@ -140,7 +140,7 @@ export const YearView: React.FC<YearViewProps> = ({
                     const avg = monthAvgs[m.key];
                     return (
                       <span key={m.key} className="flex items-center gap-0.5 text-[10px] text-foreground" title={`${language === 'zh' ? m.labelZh : m.labelEn}: ${avg ?? '—'}/100`}>
-                        <span>{m.icon}</span>
+                        <img src={m.iconSrc} alt="" className="w-3.5 h-3.5 flex-shrink-0 opacity-90" />
                         <span className="tabular-nums font-medium">{avg != null ? avg : '—'}</span>
                       </span>
                     );

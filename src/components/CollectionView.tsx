@@ -30,7 +30,7 @@ export const CollectionView: React.FC<CollectionViewProps> = ({
 }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-5 gap-6 md:gap-8 max-w-6xl mx-auto px-4">
-      {/* Left column: 概览 + 长期目标 + 角色能量 + 事件量 */}
+      {/* Left column: 概览 + 长期目标 + 角色能量 + 事件平衡 */}
       <div className="md:col-span-2 space-y-6">
         <div
           className="rounded-2xl p-6 border bg-surface"

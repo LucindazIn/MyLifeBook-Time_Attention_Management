@@ -1,0 +1,767 @@
+{
+  "batchRange": [
+    200,
+    268
+  ],
+  "items": [
+    {
+      "title": "Prepare a Small Souvenir",
+      "description": "Pick and wrap a thoughtful little gift to bring some sunshine to your friends or family.",
+      "intensity": "low",
+      "mode_tags": [
+        "chill"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 20,
+      "locale": "en"
+    },
+    {
+      "title": "Calibrate Your Clocks",
+      "description": "Check your watches and wall clocks to ensure there are no 'time-traveling' zones in your home.",
+      "intensity": "low",
+      "mode_tags": [
+        "both"
+      ],
+      "type": "reminder",
+      "default_duration_minutes": 5,
+      "locale": "en"
+    },
+    {
+      "title": "Audit Account Passwords",
+      "description": "Sync your latest passwords to your manager app so you never have to play hide-and-seek with them.",
+      "intensity": "low",
+      "mode_tags": [
+        "productive"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 20,
+      "locale": "en"
+    },
+    {
+      "title": "Store Seasonal Footwear",
+      "description": "Give your shoes a nice wipe and tuck them into cozy boxes with desiccant for their long nap.",
+      "intensity": "high",
+      "mode_tags": [
+        "both"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 50,
+      "locale": "en"
+    },
+    {
+      "title": "Reply to School Groups",
+      "description": "Check the latest notifications and finish those little forms for your kid's school life.",
+      "intensity": "low",
+      "mode_tags": [
+        "both"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 10,
+      "locale": "en"
+    },
+    {
+      "title": "Nourish Your Greenery",
+      "description": "Add some slow-release fertilizer and loosen the soil to help your plants breathe and grow.",
+      "intensity": "low",
+      "mode_tags": [
+        "chill"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 15,
+      "locale": "en"
+    },
+    {
+      "title": "Tidy Desk Cables",
+      "description": "Use clips or organizers to stop the 'cable jungle' from growing under your feet.",
+      "intensity": "low",
+      "mode_tags": [
+        "productive"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 20,
+      "locale": "en"
+    },
+    {
+      "title": "Practice a New Score",
+      "description": "Don't worry about the whole song; just conquer the rhythm of the first few bars.",
+      "intensity": "high",
+      "mode_tags": [
+        "chill"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 30,
+      "locale": "en"
+    },
+    {
+      "title": "Top Up Phone Credit",
+      "description": "Check your balance and data to make sure your digital connection stays awake.",
+      "intensity": "low",
+      "mode_tags": [
+        "both"
+      ],
+      "type": "reminder",
+      "default_duration_minutes": 5,
+      "locale": "en"
+    },
+    {
+      "title": "Clear Your Nightstand",
+      "description": "Remove the empty cups and clutter, leaving only a good book and a warm lamp for your dreams.",
+      "intensity": "low",
+      "mode_tags": [
+        "chill"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 10,
+      "locale": "en"
+    },
+    {
+      "title": "Draft a Thank-You Note",
+      "description": "Send a sincere 'thank you' to a colleague or partner who helped your project shine.",
+      "intensity": "low",
+      "mode_tags": [
+        "productive"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 15,
+      "locale": "en"
+    },
+    {
+      "title": "Declutter Your Wallet",
+      "description": "Evict those old receipts and expired cards to give your cash some breathing room.",
+      "intensity": "low",
+      "mode_tags": [
+        "both"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 10,
+      "locale": "en"
+    },
+    {
+      "title": "Clean Glass Surfaces",
+      "description": "Wipe away fingerprints and fog to let more light dance around your rooms.",
+      "intensity": "high",
+      "mode_tags": [
+        "both"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 40,
+      "locale": "en"
+    },
+    {
+      "title": "Confirm Dental Appointment",
+      "description": "Check your calendar and make sure you're ready for your next bright-smile session.",
+      "intensity": "low",
+      "mode_tags": [
+        "both"
+      ],
+      "type": "reminder",
+      "default_duration_minutes": 5,
+      "locale": "en"
+    },
+    {
+      "title": "Organize Kitchen Appliances",
+      "description": "Wrap up those messy cords on the counter so your kitchen looks neat and professional.",
+      "intensity": "low",
+      "mode_tags": [
+        "both"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 15,
+      "locale": "en"
+    },
+    {
+      "title": "Refresh Social Media Cover",
+      "description": "Pick a new photo that captures your current mood or a beautiful memory.",
+      "intensity": "low",
+      "mode_tags": [
+        "chill"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 5,
+      "locale": "en"
+    },
+    {
+      "title": "Review App Subscriptions",
+      "description": "Audit those monthly fees and cancel the ones that aren't sparking joy anymore.",
+      "intensity": "low",
+      "mode_tags": [
+        "productive"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 15,
+      "locale": "en"
+    },
+    {
+      "title": "Sanitize Bathroom Textiles",
+      "description": "Give your towels and rugs a hot wash to keep them fluffy, fresh, and germ-free.",
+      "intensity": "low",
+      "mode_tags": [
+        "both"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 10,
+      "locale": "en"
+    },
+    {
+      "title": "Apply a New Screen Protector",
+      "description": "Clear the dust and align the film perfectly for a brand-new visual experience.",
+      "intensity": "high",
+      "mode_tags": [
+        "both"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 15,
+      "locale": "en"
+    },
+    {
+      "title": "Check Car Spare Tire",
+      "description": "Inspect the air pressure and tools so you're always ready for a safe adventure.",
+      "intensity": "low",
+      "mode_tags": [
+        "both"
+      ],
+      "type": "reminder",
+      "default_duration_minutes": 10,
+      "locale": "en"
+    },
+    {
+      "title": "Sort Donation Box",
+      "description": "Fold up the clothes you no longer wear and book a pickup to share the love.",
+      "intensity": "low",
+      "mode_tags": [
+        "both"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 25,
+      "locale": "en"
+    },
+    {
+      "title": "Learn a Household Hack",
+      "description": "Find out how to vanish limescale or fold a T-shirt like a pro in seconds.",
+      "intensity": "low",
+      "mode_tags": [
+        "chill"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 10,
+      "locale": "en"
+    },
+    {
+      "title": "Restock First-Aid Kit",
+      "description": "Check your bandages and alcohol wipes to keep your 'safety net' strong.",
+      "intensity": "low",
+      "mode_tags": [
+        "both"
+      ],
+      "type": "reminder",
+      "default_duration_minutes": 15,
+      "locale": "en"
+    },
+    {
+      "title": "Sip Water in Silence",
+      "description": "Put everything down and focus on a glass of warm water; let it soothe your throat.",
+      "intensity": "low",
+      "mode_tags": [
+        "chill"
+      ],
+      "type": "reminder",
+      "default_duration_minutes": 5,
+      "locale": "en"
+    },
+    {
+      "title": "Catch Up with Old Classmates",
+      "description": "Give them a ring or a text to pick a cozy place and time to talk about life.",
+      "intensity": "low",
+      "mode_tags": [
+        "chill"
+      ],
+      "type": "meeting",
+      "default_duration_minutes": 120,
+      "locale": "en"
+    },
+    {
+      "title": "Share Lunch with Colleagues",
+      "description": "Step away from your desk and chat about non-work stuff to ease the office tension.",
+      "intensity": "low",
+      "mode_tags": [
+        "both"
+      ],
+      "type": "meeting",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Play with Your Kids",
+      "description": "Put your phone away and dive into blocks, picture books, or a game of hide-and-seek.",
+      "intensity": "high",
+      "mode_tags": [
+        "both"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 45,
+      "locale": "en"
+    },
+    {
+      "title": "Have a One-on-One Sync",
+      "description": "Talk through details face-to-face; it's much faster than endless group texts.",
+      "intensity": "high",
+      "mode_tags": [
+        "productive"
+      ],
+      "type": "meeting",
+      "default_duration_minutes": 30,
+      "locale": "en"
+    },
+    {
+      "title": "Video Call Your Parents",
+      "description": "Share a little about your dinner or tiny daily wins to warm their hearts.",
+      "intensity": "low",
+      "mode_tags": [
+        "both"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 30,
+      "locale": "en"
+    },
+    {
+      "title": "Greet Your Neighbors",
+      "description": "A simple nod or a quick chat about the weather when you meet in the hallway.",
+      "intensity": "low",
+      "mode_tags": [
+        "chill"
+      ],
+      "type": "reminder",
+      "default_duration_minutes": 5,
+      "locale": "en"
+    },
+    {
+      "title": "Play a Badminton Match",
+      "description": "Team up with friends to sweat it out and boost your bond on the court.",
+      "intensity": "high",
+      "mode_tags": [
+        "both"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 90,
+      "locale": "en"
+    },
+    {
+      "title": "Join a Community Group",
+      "description": "Meet local people who share your love for photography, books, or crafts.",
+      "intensity": "low",
+      "mode_tags": [
+        "chill"
+      ],
+      "type": "meeting",
+      "default_duration_minutes": 90,
+      "locale": "en"
+    },
+    {
+      "title": "Mentor a New Teammate",
+      "description": "Patiently walk them through the system and answer their 'newbie' questions.",
+      "intensity": "high",
+      "mode_tags": [
+        "productive"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 45,
+      "locale": "en"
+    },
+    {
+      "title": "Consult Your Mentor",
+      "description": "Schedule a chat to discuss your career bottlenecks and get some expert wisdom.",
+      "intensity": "high",
+      "mode_tags": [
+        "productive"
+      ],
+      "type": "meeting",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Discuss Chores with Partner",
+      "description": "Peacefully align on who does the dishes or shopping to keep home life smooth.",
+      "intensity": "low",
+      "mode_tags": [
+        "both"
+      ],
+      "type": "meeting",
+      "default_duration_minutes": 20,
+      "locale": "en"
+    },
+    {
+      "title": "Join Online Brainstorming",
+      "description": "Share your wildest ideas in real-time and see what sparks fly during the meeting.",
+      "intensity": "high",
+      "mode_tags": [
+        "productive"
+      ],
+      "type": "meeting",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Socialize Pets at the Park",
+      "description": "Watch the furry interactions and swap pet-parenting tips with other owners.",
+      "intensity": "low",
+      "mode_tags": [
+        "chill"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Help Colleagues with Coffee",
+      "description": "A small favor like grabbing a latte can really brighten the office climate.",
+      "intensity": "low",
+      "mode_tags": [
+        "productive"
+      ],
+      "type": "reminder",
+      "default_duration_minutes": 10,
+      "locale": "en"
+    },
+    {
+      "title": "Schedule Dentist or Coach",
+      "description": "Confirm your appointment and update them on your current health goals.",
+      "intensity": "low",
+      "mode_tags": [
+        "both"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 10,
+      "locale": "en"
+    },
+    {
+      "title": "Discuss Family Dinner Menu",
+      "description": "Check everyone's preferences to pick a feast that makes everyone happy.",
+      "intensity": "low",
+      "mode_tags": [
+        "both"
+      ],
+      "type": "reminder",
+      "default_duration_minutes": 15,
+      "locale": "en"
+    },
+    {
+      "title": "Team Up for Online Games",
+      "description": "Put on your headset and conquer virtual challenges through voice teamwork.",
+      "intensity": "high",
+      "mode_tags": [
+        "chill"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 90,
+      "locale": "en"
+    },
+    {
+      "title": "Attend Tech Meetups",
+      "description": "Listen to the talks and swap business cards during the coffee break.",
+      "intensity": "high",
+      "mode_tags": [
+        "productive"
+      ],
+      "type": "meeting",
+      "default_duration_minutes": 150,
+      "locale": "en"
+    },
+    {
+      "title": "Send Sincere Greetings",
+      "description": "Skip the templates; write a personal note to your partners based on their latest news.",
+      "intensity": "low",
+      "mode_tags": [
+        "both"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 20,
+      "locale": "en"
+    },
+    {
+      "title": "Align Research with Mentor",
+      "description": "Deep-dive into your study progress or paper outline to stay on the same page.",
+      "intensity": "high",
+      "mode_tags": [
+        "productive"
+      ],
+      "type": "meeting",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Invite Friends Over",
+      "description": "Prep some snacks and tidy up for a cozy, private gathering at your place.",
+      "intensity": "high",
+      "mode_tags": [
+        "chill"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 180,
+      "locale": "en"
+    },
+    {
+      "title": "Handle Client Feedback",
+      "description": "Listen patiently to their needs and offer a fair, reasonable solution.",
+      "intensity": "high",
+      "mode_tags": [
+        "productive"
+      ],
+      "type": "meeting",
+      "default_duration_minutes": 40,
+      "locale": "en"
+    },
+    {
+      "title": "Walk with the Elderly",
+      "description": "Slow down and listen to their old stories; your company means the world to them.",
+      "intensity": "low",
+      "mode_tags": [
+        "chill"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 45,
+      "locale": "en"
+    },
+    {
+      "title": "Organize Team-Building Games",
+      "description": "Prep some simple props and rules to help everyone relax during the break.",
+      "intensity": "high",
+      "mode_tags": [
+        "productive"
+      ],
+      "type": "meeting",
+      "default_duration_minutes": 30,
+      "locale": "en"
+    },
+    {
+      "title": "Sync Common Area Cleaning",
+      "description": "Chat with roommates about the bathroom schedule to keep your space harmonious.",
+      "intensity": "low",
+      "mode_tags": [
+        "both"
+      ],
+      "type": "meeting",
+      "default_duration_minutes": 15,
+      "locale": "en"
+    },
+    {
+      "title": "Call a Volunteer Agency",
+      "description": "Confirm your weekend charity schedule and pick up your specific tasks.",
+      "intensity": "low",
+      "mode_tags": [
+        "both"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 10,
+      "locale": "en"
+    },
+    {
+      "title": "Join an Online Book Club",
+      "description": "Discuss the book of the month and see the plot through someone else's eyes.",
+      "intensity": "low",
+      "mode_tags": [
+        "chill"
+      ],
+      "type": "meeting",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Consult a Florist",
+      "description": "Tell them about the occasion and let their aesthetic wisdom pick the perfect bouquet.",
+      "intensity": "low",
+      "mode_tags": [
+        "chill"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 15,
+      "locale": "en"
+    },
+    {
+      "title": "Find a Gym Spotter",
+      "description": "Align on the rhythm of support to keep your heavy lifting safe and focused.",
+      "intensity": "low",
+      "mode_tags": [
+        "both"
+      ],
+      "type": "reminder",
+      "default_duration_minutes": 5,
+      "locale": "en"
+    },
+    {
+      "title": "Help Your Child With Homework",
+      "description": "Sit nearby to answer questions, check progress, and gently steer attention back to the homework.",
+      "intensity": "low",
+      "mode_tags": [
+        "both"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Book a Dental Cleaning",
+      "description": "Check the available slots for your semi-annual tooth maintenance.",
+      "intensity": "low",
+      "mode_tags": [
+        "both"
+      ],
+      "type": "reminder",
+      "default_duration_minutes": 5,
+      "locale": "en"
+    },
+    {
+      "title": "Coordinate Courier Pickup",
+      "description": "Align on a time for your return package to make sure someone is home.",
+      "intensity": "low",
+      "mode_tags": [
+        "both"
+      ],
+      "type": "reminder",
+      "default_duration_minutes": 5,
+      "locale": "en"
+    },
+    {
+      "title": "Plan a Dorm Dinner",
+      "description": "Decide on takeout or a restaurant to celebrate a roommate's tiny win.",
+      "intensity": "low",
+      "mode_tags": [
+        "chill"
+      ],
+      "type": "meeting",
+      "default_duration_minutes": 90,
+      "locale": "en"
+    },
+    {
+      "title": "Help Neighbors with Parcels",
+      "description": "Grab a heavy box for them on your way in; a little kindness builds a great neighborhood.",
+      "intensity": "low",
+      "mode_tags": [
+        "both"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 15,
+      "locale": "en"
+    },
+    {
+      "title": "Share a Fresh Perspective",
+      "description": "Offer a different view on the current plan and state your reasons logically.",
+      "intensity": "high",
+      "mode_tags": [
+        "productive"
+      ],
+      "type": "meeting",
+      "default_duration_minutes": 20,
+      "locale": "en"
+    },
+    {
+      "title": "Thank Your Partner",
+      "description": "Pick one specific thing and sincerely appreciate their contribution to the family.",
+      "intensity": "low",
+      "mode_tags": [
+        "both"
+      ],
+      "type": "reminder",
+      "default_duration_minutes": 5,
+      "locale": "en"
+    },
+    {
+      "title": "Visit a Thrift Market",
+      "description": "Enjoy an afternoon of bargaining and hunting for hidden treasures with a friend.",
+      "intensity": "low",
+      "mode_tags": [
+        "chill"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 120,
+      "locale": "en"
+    },
+    {
+      "title": "Attend Industry Networking",
+      "description": "Pick up some insider market news in a relaxed social setting.",
+      "intensity": "high",
+      "mode_tags": [
+        "productive"
+      ],
+      "type": "meeting",
+      "default_duration_minutes": 150,
+      "locale": "en"
+    },
+    {
+      "title": "Assist Mentor with Gear",
+      "description": "Help count or move equipment and chat about your latest academic thoughts.",
+      "intensity": "high",
+      "mode_tags": [
+        "productive"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Verify Insurance Terms",
+      "description": "Double-check the specific payout details for your accident or health policy.",
+      "intensity": "low",
+      "mode_tags": [
+        "both"
+      ],
+      "type": "meeting",
+      "default_duration_minutes": 30,
+      "locale": "en"
+    },
+    {
+      "title": "Talk to Your Kid's Teacher",
+      "description": "Discuss their behavior at home so the school can offer coordinated support.",
+      "intensity": "low",
+      "mode_tags": [
+        "both"
+      ],
+      "type": "meeting",
+      "default_duration_minutes": 15,
+      "locale": "en"
+    },
+    {
+      "title": "Invite New Colleagues for Coffee",
+      "description": "Use the lunch break for a simple ice-breaker to help them settle in.",
+      "intensity": "low",
+      "mode_tags": [
+        "productive"
+      ],
+      "type": "meeting",
+      "default_duration_minutes": 20,
+      "locale": "en"
+    },
+    {
+      "title": "Confirm House Viewing",
+      "description": "Align on the area and budget, then set the route for your weekend house hunt.",
+      "intensity": "low",
+      "mode_tags": [
+        "both"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 15,
+      "locale": "en"
+    },
+    {
+      "title": "Help Roommate Move Boxes",
+      "description": "Lend a hand with the heavy lifting; it's the secret to a happy shared home.",
+      "intensity": "high",
+      "mode_tags": [
+        "both"
+      ],
+      "type": "todo",
+      "default_duration_minutes": 15,
+      "locale": "en"
+    },
+    {
+      "title": "Video Call a Long-Time Friend",
+      "description": "Update each other on big life choices and offer some long-distance support.",
+      "intensity": "low",
+      "mode_tags": [
+        "chill"
+      ],
+      "type": "meeting",
+      "default_duration_minutes": 45,
+      "locale": "en"
+    }
+  ]
+}

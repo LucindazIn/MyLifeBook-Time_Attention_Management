@@ -1,11 +1,11 @@
 ---
-name: Feather-Schedule 布局与 i18n 统一
+name: My-Life-Book 布局与 i18n 统一
 overview: 合并「2:1 布局 + Vibes 指标」与「顶部导航对齐」两份计划，并增加中英文界面/视图一致性检查与修复需求。
 todos: []
 isProject: false
 ---
 
-# Feather Schedule：布局、导航与 i18n 统一计划
+# My Life Book / 人生之书：布局、导航与 i18n 统一计划
 
 ---
 
@@ -89,7 +89,7 @@ isProject: false
 
 ### 需求
 
-- **选中文时**：界面和各视图内不得出现英文文案（系统/品牌名如 “Feather Schedule” 可保留，或改为「羽程」等统一品牌译名）。
+- **选中文时**：界面和各视图内不得出现英文文案（系统/品牌名如 “My Life Book” 可保留，或统一为「人生之书」等品牌译名）。
 - **选英文时**：界面和各视图内不得出现中文文案。
 
 ### 检查范围
@@ -106,7 +106,7 @@ isProject: false
 1. **清单化**：按组件/页面列出所有面向用户的字符串，标注当前是否随 `settings.language` 切换；未切换的记为待修复。
 2. **统一模式**：所有 UI 文案通过 `settings.language === 'zh'` 分支或统一文案表（如 `uiStrings[language].xxx`）输出，避免硬编码单语。
 3. **回归检查**：切换语言后逐页、逐弹窗检查，确保无漏网之鱼；特别关注错误信息、placeholder、tooltip、fallback 文案。
-4. **品牌与第三方**：若保留 “Feather Schedule”“Crafted with Gemini” 等，在中文模式下可考虑统一译为「羽程日程」「由 Gemini 驱动」等，或保留英文并在计划中注明例外。
+4. **品牌与第三方**：若保留 “My Life Book”“Crafted with Gemini” 等，在中文模式下可考虑统一译为「人生之书」「由 Gemini 驱动」等，或保留英文并在计划中注明例外。
 
 ### 涉及文件（需逐文件扫字符串）
 

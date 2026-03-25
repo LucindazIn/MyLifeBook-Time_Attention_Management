@@ -232,7 +232,7 @@ export async function chatWithGemini(
   context: string
 ): Promise<string> {
   const prompt = `
-      Context: You are a helpful assistant for a scheduling app called "Feather Schedule".
+      Context: You are a helpful assistant for a scheduling app called "My Life Book".
       The user's current schedule is:
       ${context}
 

@@ -68,7 +68,7 @@ export const ScheduleSuggestionModal: React.FC<ScheduleSuggestionModalProps> = (
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-100"
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-[35.84rem] overflow-hidden border border-slate-100"
           >
             {/* Header */}
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">

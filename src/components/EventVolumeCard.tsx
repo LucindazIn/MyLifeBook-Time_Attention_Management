@@ -53,7 +53,7 @@ export const EventVolumeCard: React.FC<EventVolumeCardProps> = ({
     <div className="space-y-4">
       <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--app-text)' }}>
         <BarChart3 className="w-4 h-4" style={{ color: 'var(--app-accent)' }} />
-        {isZh ? '事件量' : 'Event Volume'}
+        {isZh ? '事件平衡' : 'Event Balance'}
       </h3>
       <div className="flex gap-2">
         {RANGE_OPTIONS.map((r) => (

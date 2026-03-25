@@ -118,7 +118,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, language,
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
           >
-            <div className="w-full max-w-md rounded-[2rem] shadow-2xl p-0 pointer-events-auto border overflow-hidden" style={{ background: 'var(--app-surface)', borderColor: 'var(--app-border)' }}>
+            <div className="w-full max-w-[31.36rem] rounded-[2rem] shadow-2xl p-0 pointer-events-auto border overflow-hidden" style={{ background: 'var(--app-surface)', borderColor: 'var(--app-border)' }}>
               <div className="p-6 pb-4 flex items-center justify-between border-b" style={{ borderColor: 'var(--app-border)' }}>
                 <h2 className="text-xl font-serif font-bold text-foreground">{labels.title}</h2>
                 {onClose && (

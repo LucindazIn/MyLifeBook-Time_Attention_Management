@@ -69,7 +69,7 @@ export const Timeline: React.FC<TimelineProps> = ({
         </p>
 
         {onGenerateSchedule && (
-          <div className="flex flex-col sm:flex-row gap-3 w-full max-w-md justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 w-full max-w-[31.36rem] justify-center">
             <Button 
               variant="outline"
               onClick={onAddEvent}

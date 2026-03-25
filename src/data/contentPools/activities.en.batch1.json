@@ -1,0 +1,278 @@
+{
+  "version": 1,
+  "locale": "en",
+  "generatedAt": "2024-05-22T09:00:00Z",
+  "batchRange": [0, 29],
+  "items": [
+    {
+      "title": "Spark Creative Ideas",
+      "description": "Feed the little inspiration monsters in your head and see what kind of flowers they grow.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 90,
+      "locale": "en"
+    },
+    {
+      "title": "Align Team Strategies",
+      "description": "Tear down the little walls of communication and connect the scattered stars into a galaxy.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "meeting",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Review and Plan the Week",
+      "description": "Piece together the past week like a puzzle, then paint next week's blueprint with your favorite colors.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 45,
+      "locale": "en"
+    },
+    {
+      "title": "Solve Core Tech Issues",
+      "description": "Dive into the ocean of logic to hunt down the giant kraken blocking your progress.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 120,
+      "locale": "en"
+    },
+    {
+      "title": "Discuss Industry Insights",
+      "description": "Peel away the market noise and whisper with others about the secret rhythm of the industry.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "meeting",
+      "default_duration_minutes": 90,
+      "locale": "en"
+    },
+    {
+      "title": "Write in Deep Focus",
+      "description": "Mute the world and let your fingertips dance out high-value thoughts on the keyboard.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Approve Key Decisions",
+      "description": "Wake up the stuck nodes in your projects to keep the energy flowing smoothly.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 30,
+      "locale": "en"
+    },
+    {
+      "title": "Shape Your Personal Brand",
+      "description": "Think about how to share your magic and create a unique social glow that belongs only to you.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "meeting",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Run a Brainstorm Session",
+      "description": "Let ideas collide and explode in the dark to find those tiny, brilliant sparks of possibility.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "meeting",
+      "default_duration_minutes": 45,
+      "locale": "en"
+    },
+    {
+      "title": "Organize Logical Architectures",
+      "description": "Tidy up messy business flows into clear little boxes and beautiful connections.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Sync Project Progress",
+      "description": "Check the milestones together and build a little safety net for potential risks.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "meeting",
+      "default_duration_minutes": 30,
+      "locale": "en"
+    },
+    {
+      "title": "Master Advanced Language",
+      "description": "Leave your comfort zone and learn to chat with the world in a more colorful way.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Optimize Efficiency Tools",
+      "description": "Polish your 'secret weapons' so they can do the boring work for you.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 45,
+      "locale": "en"
+    },
+    {
+      "title": "Audit Core Business Data",
+      "description": "Find the honest truth hidden behind the forest of numbers to guide your next step.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "todo",
+      "default_duration_minutes": 90,
+      "locale": "en"
+    },
+    {
+      "title": "Host a Skill-Sharing Workshop",
+      "description": "Let knowledge flow like a river; it's the only way for the team to evolve together.",
+      "intensity": "high",
+      "mode_tags": ["productive"],
+      "type": "meeting",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Read Poetry by the Window",
+      "description": "Borrow a poet's eyes to take a fresh, curious look at this world.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "reminder",
+      "default_duration_minutes": 15,
+      "locale": "en"
+    },
+    {
+      "title": "Enjoy a Slow Hand-Brewed Coffee",
+      "description": "Feel the aroma of grinding beans and wait for a drop of pure peace to fall.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "reminder",
+      "default_duration_minutes": 20,
+      "locale": "en"
+    },
+    {
+      "title": "Wander Through the Neighborhood",
+      "description": "No destination needed; just watch how the sunset paints the signs on the street corner.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "todo",
+      "default_duration_minutes": 45,
+      "locale": "en"
+    },
+    {
+      "title": "Find an Urban Oasis",
+      "description": "Go to the park and find a quiet patch of grass that hasn't been found by anyone else.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "todo",
+      "default_duration_minutes": 90,
+      "locale": "en"
+    },
+    {
+      "title": "Practice Bedtime Meditation",
+      "description": "Send a 'resting' command to your brain and sweep away the day's noisy static.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "reminder",
+      "default_duration_minutes": 15,
+      "locale": "en"
+    },
+    {
+      "title": "Listen to a Vinyl Record",
+      "description": "Reconnect with the most honest texture of music through the gentle crackle of the needle.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "todo",
+      "default_duration_minutes": 40,
+      "locale": "en"
+    },
+    {
+      "title": "Doodle Without Purpose",
+      "description": "Forget about beauty; just let your pen wander freely wherever your heart takes it.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "todo",
+      "default_duration_minutes": 30,
+      "locale": "en"
+    },
+    {
+      "title": "Stroll Through the Flower Market",
+      "description": "Bring the colors of the season home and pick a bundle of fresh vitality.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "todo",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Spend Half a Day in a Bookstore",
+      "description": "Hide between the shelves and have a quiet chat with souls from a thousand years ago.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "todo",
+      "default_duration_minutes": 120,
+      "locale": "en"
+    },
+    {
+      "title": "Chat with Balcony Plants",
+      "description": "Trim the old leaves and watch the new buds; feel the silent power of growing up.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "reminder",
+      "default_duration_minutes": 10,
+      "locale": "en"
+    },
+    {
+      "title": "Take a Daydream Trip",
+      "description": "Allow your thoughts to disconnect and wander through a magical, imaginary world.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "reminder",
+      "default_duration_minutes": 20,
+      "locale": "en"
+    },
+    {
+      "title": "Sort Out Old Trinkets",
+      "description": "Wipe the dust off old things and rediscover those forgotten, happy moments.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "todo",
+      "default_duration_minutes": 60,
+      "locale": "en"
+    },
+    {
+      "title": "Collect the Sound of Wind",
+      "description": "Sit still for a moment and listen to the rustling leaves to guess how fast the wind is running.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "reminder",
+      "default_duration_minutes": 15,
+      "locale": "en"
+    },
+    {
+      "title": "Enjoy Light Reading Under Warm Light",
+      "description": "No goals, no pressure; just satisfy a tiny bit of your curiosity.",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "todo",
+      "default_duration_minutes": 45,
+      "locale": "en"
+    },
+    {
+      "title": "Do a Gentle Bedtime Stretch",
+      "description": "Soothe your tired muscles and tell your body, 'Thank you for working so hard today.'",
+      "intensity": "low",
+      "mode_tags": ["chill"],
+      "type": "reminder",
+      "default_duration_minutes": 20,
+      "locale": "en"
+    }
+  ]
+}

@@ -1446,11 +1446,10 @@ export default function App() {
                           <Timeline 
                             events={currentDayEvents} 
                             onAddEvent={() => { setEditingEvent(null); setIsAddModalOpen(true); }}
-                            onEventClick={(e) => console.log(e)}
-                            onEventDoubleClick={(e) => { 
+                            onEventClick={(e) => {
                               const baseEvent = events.find(ev => ev.id === (e.baseEventId || e.id));
-                              setEditingEvent(baseEvent || e); 
-                              setIsAddModalOpen(true); 
+                              setEditingEvent(baseEvent || e);
+                              setIsAddModalOpen(true);
                             }}
                             onToggleComplete={handleToggleComplete}
                             language={settings.language}

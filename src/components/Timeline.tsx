@@ -12,7 +12,6 @@ interface TimelineProps {
   events: ScheduleEvent[];
   onAddEvent: () => void;
   onEventClick: (event: ScheduleEvent) => void;
-  onEventDoubleClick?: (event: ScheduleEvent) => void;
   onToggleComplete: (id: string) => void;
   language: AppLanguage;
   timeDisplay: TimeDisplayFormat;
@@ -26,8 +25,7 @@ interface TimelineProps {
 export const Timeline: React.FC<TimelineProps> = ({ 
   events, 
   onAddEvent, 
-  onEventClick, 
-  onEventDoubleClick,
+  onEventClick,
   onToggleComplete, 
   language,
   timeDisplay,
@@ -173,7 +171,6 @@ export const Timeline: React.FC<TimelineProps> = ({
 
               <div 
                 onClick={() => onEventClick(event)} 
-                onDoubleClick={() => onEventDoubleClick && onEventDoubleClick(event)}
                 className={cn(
                   "cursor-pointer transition-transform duration-300",
                   isOverlap && "scale-[0.98] origin-top-left shadow-lg"

@@ -191,15 +191,18 @@ export const ChapterViewModal: React.FC<ChapterViewModalProps> = ({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between gap-3 p-4 border-b shrink-0" style={{ borderColor: 'var(--app-border)' }}>
+        <div
+          className="flex items-start justify-between gap-3 p-4 border-b shrink-0 sticky top-0 z-20"
+          style={{ borderColor: 'var(--app-border)', backgroundColor: 'var(--app-surface)' }}
+        >
           <h2
             id="chapter-modal-title"
-            className="text-base font-semibold min-w-0 flex-1 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5"
+            className="text-base font-semibold min-w-0 flex-1 pr-2 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5"
             style={{ color: 'var(--app-text)' }}
           >
-            <span>{chapter?.periodLabel ?? (isZh ? '章节' : 'Chapter')}</span>
+            <span className="min-w-0 break-words">{chapter?.periodLabel ?? (isZh ? '章节' : 'Chapter')}</span>
             {periodBracket ? (
-              <span className="text-sm font-normal" style={{ color: 'var(--app-muted)' }}>
+              <span className="text-sm font-normal break-words" style={{ color: 'var(--app-muted)' }}>
                 {periodBracket}
               </span>
             ) : null}
@@ -207,19 +210,56 @@ export const ChapterViewModal: React.FC<ChapterViewModalProps> = ({
           <button
             type="button"
             onClick={tryClose}
-            className="shrink-0 rounded-lg p-1.5 transition-colors hover:bg-field"
-            style={{ color: 'var(--app-muted)' }}
+            className="shrink-0 rounded-lg p-2 -mr-1 -mt-0.5 transition-colors hover:bg-field"
+            style={{ color: 'var(--app-text)' }}
             aria-label={isZh ? '关闭' : 'Close'}
           >
-            <X className="w-5 h-5" />
+            <X className="w-6 h-6" strokeWidth={2} />
           </button>
         </div>
 
         <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
           <div className="flex flex-col lg:flex-row min-h-0">
-          {/* 左：工作流说明 + 导出/复制 + 粘贴 + 本期状态 */}
+          {/* 1. 章节名 + 章节内容（优先展示；移动端在最上） */}
+          <div className="flex-1 min-w-0 flex flex-col p-4 lg:pr-6 gap-6 pb-6 lg:pb-8 order-1 border-b lg:border-b-0 lg:border-r" style={{ borderColor: 'var(--app-border)' }}>
+            <div>
+              <p className="text-xs font-bold mb-2" style={{ color: 'var(--app-text)' }}>
+                {isZh ? '章节名' : 'Chapter Name'}
+              </p>
+              <input
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                className="w-full text-sm rounded-lg border px-3 py-2 bg-field border-border"
+                style={{ color: 'var(--app-text)' }}
+                placeholder={isZh ? '输入章节名' : 'Enter Chapter Name'}
+              />
+            </div>
+
+            <div className="flex flex-col flex-1 min-h-0">
+              <p className="text-xs font-bold mb-1.5 shrink-0" style={{ color: 'var(--app-text)' }}>
+                {isZh ? '章节内容' : 'Chapter Content'}
+                <span className="ml-2 font-normal tabular-nums" style={{ color: 'var(--app-muted)' }}>
+                  {summaryCharCount} / {MAX_CHAPTER_SUMMARY_CHARS}
+                </span>
+                {editSummary.length > MAX_CHAPTER_SUMMARY_CHARS && (
+                  <span className="text-amber-600 dark:text-amber-400"> ({isZh ? '超出将截断' : 'Will Be Truncated'})</span>
+                )}
+              </p>
+              <textarea
+                value={editSummary}
+                onChange={(e) => setEditSummary(e.target.value)}
+                rows={16}
+                maxLength={MAX_CHAPTER_SUMMARY_CHARS + 500}
+                className="w-full min-h-[min(48vh,380px)] text-sm rounded-lg border px-3 py-2 bg-field border-border resize-y"
+                style={{ color: 'var(--app-text)' }}
+                placeholder={isZh ? '输入章节内容（第一人称叙事）' : 'Enter Chapter Content (First-Person Narrative)'}
+              />
+            </div>
+          </div>
+
+          {/* 2. 工作流说明 + 导出/复制 + 粘贴 + 本期状态 */}
           <aside
-            className="w-full lg:w-[min(42%,26rem)] lg:max-w-md shrink-0 border-b lg:border-b-0 lg:border-r"
+            className="w-full lg:w-[min(42%,26rem)] lg:max-w-md shrink-0 order-2"
             style={{ borderColor: 'var(--app-border)' }}
           >
             <div className="p-4 space-y-4 flex flex-col min-h-0">
@@ -317,43 +357,6 @@ export const ChapterViewModal: React.FC<ChapterViewModalProps> = ({
               )}
             </div>
           </aside>
-
-          {/* 右：章节名 + 章节内容 + 字数 */}
-          <div className="flex-1 min-w-0 flex flex-col p-4 lg:pl-6 gap-6 pb-8">
-            <div>
-              <p className="text-xs font-bold mb-2" style={{ color: 'var(--app-text)' }}>
-                {isZh ? '章节名' : 'Chapter Name'}
-              </p>
-              <input
-                value={editTitle}
-                onChange={(e) => setEditTitle(e.target.value)}
-                className="w-full text-sm rounded-lg border px-3 py-2 bg-field border-border"
-                style={{ color: 'var(--app-text)' }}
-                placeholder={isZh ? '输入章节名' : 'Enter Chapter Name'}
-              />
-            </div>
-
-            <div className="flex flex-col flex-1 min-h-0">
-              <p className="text-xs font-bold mb-1.5 shrink-0" style={{ color: 'var(--app-text)' }}>
-                {isZh ? '章节内容' : 'Chapter Content'}
-                <span className="ml-2 font-normal tabular-nums" style={{ color: 'var(--app-muted)' }}>
-                  {summaryCharCount} / {MAX_CHAPTER_SUMMARY_CHARS}
-                </span>
-                {editSummary.length > MAX_CHAPTER_SUMMARY_CHARS && (
-                  <span className="text-amber-600 dark:text-amber-400"> ({isZh ? '超出将截断' : 'Will Be Truncated'})</span>
-                )}
-              </p>
-              <textarea
-                value={editSummary}
-                onChange={(e) => setEditSummary(e.target.value)}
-                rows={16}
-                maxLength={MAX_CHAPTER_SUMMARY_CHARS + 500}
-                className="w-full min-h-[min(48vh,380px)] text-sm rounded-lg border px-3 py-2 bg-field border-border resize-y"
-                style={{ color: 'var(--app-text)' }}
-                placeholder={isZh ? '输入章节内容（第一人称叙事）' : 'Enter Chapter Content (First-Person Narrative)'}
-              />
-            </div>
-          </div>
         </div>
         </div>
 

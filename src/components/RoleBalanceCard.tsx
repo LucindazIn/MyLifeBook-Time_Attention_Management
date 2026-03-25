@@ -304,15 +304,21 @@ function EnergyLineChart({
     return `M ${pts.join(' L ')}`;
   }, [dailyEnergy, scaleX, scaleY]);
 
-  const handleMouseDown = useCallback(
-    (e: React.MouseEvent, dateKey: string) => {
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent, dateKey: string) => {
       e.preventDefault();
+      e.stopPropagation();
       if (hoverClearTimerRef.current != null) {
         window.clearTimeout(hoverClearTimerRef.current);
         hoverClearTimerRef.current = null;
       }
       setHoveredDateKey(dateKey);
       setDragging(dateKey);
+      try {
+        (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+      } catch {
+        /* ignore */
+      }
     },
     [setDragging]
   );
@@ -322,22 +328,24 @@ function EnergyLineChart({
     const point = dailyEnergy.find((p) => p.dateKey === dragging);
     if (!point) return;
 
-    const onMove = (e: MouseEvent) => {
+    const onMove = (e: PointerEvent) => {
       const el = containerRef.current;
       if (!el) return;
       const rect = el.getBoundingClientRect();
-      const chartTop = rect.top + PADDING.top;
+      const chartTop = rect.top + PADDING.top + CHART_TOP_PAD;
       const relativeY = e.clientY - chartTop;
       const energy = 100 * (1 - relativeY / innerH);
       const clamped = Math.min(100, Math.max(0, energy));
       onEnergyDrag(dragging, clamped);
     };
     const onUp = () => setDragging(null);
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
+    window.addEventListener('pointermove', onMove, { passive: false });
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
     return () => {
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseup', onUp);
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
     };
   }, [dragging, innerH, onEnergyDrag]);
 
@@ -405,9 +413,9 @@ function EnergyLineChart({
                   cy={y}
                   r={POINT_HIT_R}
                   fill="transparent"
-                  className="cursor-grab active:cursor-grabbing"
+                  className="cursor-grab active:cursor-grabbing touch-none"
                   style={{ touchAction: 'none' }}
-                  onMouseDown={(e) => handleMouseDown(e, p.dateKey)}
+                  onPointerDown={(e) => handlePointerDown(e, p.dateKey)}
                   onMouseEnter={() => {
                     if (hoverClearTimerRef.current != null) {
                       window.clearTimeout(hoverClearTimerRef.current);

@@ -74,7 +74,7 @@ export const LifeBookView: React.FC<LifeBookViewProps> = ({
   if (chapters.length === 0) {
     return (
       <div className="flex h-full min-h-0 w-full items-center justify-center p-4 max-md:min-h-[calc(60vh*1.2)] md:p-6">
-        <div className="w-[min(50vw,100%)] max-w-full min-w-0">
+        <div className="w-[min(50vw,100%)] max-md:w-[min(61vw,100%)] max-w-full min-w-0">
           <LifeBookEmptyCover language={language} />
         </div>
       </div>
@@ -178,7 +178,7 @@ export const LifeBookView: React.FC<LifeBookViewProps> = ({
         className="flex h-[82vh] max-md:h-[calc(82vh*1.2)] min-h-[420px] w-full min-w-0 flex-col items-center justify-center"
       >
         <div
-          className="relative flex min-h-0 w-[min(50vw,100%)] max-w-full flex-1 items-center justify-center"
+          className="relative flex min-h-0 w-[min(50vw,100%)] max-md:w-[min(61vw,100%)] max-w-full flex-1 items-center justify-center"
           style={{
             aspectRatio: '185 / 260',
             maxHeight: '100%',

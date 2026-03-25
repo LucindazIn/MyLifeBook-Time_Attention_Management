@@ -112,17 +112,17 @@ export const ScheduleSuggestionModal: React.FC<ScheduleSuggestionModalProps> = (
                             {isSelected && <Check className="w-3 h-3" />}
                           </div>
                           
-                          <div className="flex-1">
-                            <div className="flex justify-between items-start mb-1">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start gap-3 mb-1">
                               <h3 className={cn(
-                                "font-medium text-slate-800",
+                                "flex-1 min-w-0 font-medium text-slate-800 pr-1",
                                 isSelected ? "text-indigo-900" : "text-slate-600"
                               )}>
                                 {event.title}
                               </h3>
-                              <div className="flex items-center text-xs font-medium text-slate-400 bg-slate-100 px-2 py-1 rounded-md">
-                                <Clock className="w-3 h-3 mr-1" />
-                                {format(new Date(event.startTime), 'HH:mm')} - {event.endTime ? format(new Date(event.endTime), 'HH:mm') : ''}
+                              <div className="shrink-0 whitespace-nowrap inline-flex items-center text-xs font-medium tabular-nums text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">
+                                <Clock className="w-3 h-3 mr-1 shrink-0" />
+                                {format(new Date(event.startTime), 'HH:mm')} – {event.endTime ? format(new Date(event.endTime), 'HH:mm') : ''}
                               </div>
                             </div>
                             {event.description && (

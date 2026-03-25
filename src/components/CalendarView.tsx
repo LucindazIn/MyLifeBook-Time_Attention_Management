@@ -139,74 +139,6 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
     return rows;
   }, [calendarDays]);
 
-  // #region agent log
-  const logVibeImgError = React.useCallback((failedSrc: string, hypothesisId: string) => {
-    fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'd67620' },
-      body: JSON.stringify({
-        sessionId: 'd67620',
-        hypothesisId,
-        location: 'CalendarView.tsx:img.onError',
-        message: 'vibe svg img error',
-        data: { failedSrc },
-        timestamp: Date.now(),
-        runId: 'post-fix',
-      }),
-    }).catch(() => {});
-  }, []);
-
-  React.useEffect(() => {
-    const base = import.meta.env.BASE_URL;
-    const src = METRICS[0].iconSrc;
-    const absolute = new URL(src, window.location.origin).href;
-    fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'd67620' },
-      body: JSON.stringify({
-        sessionId: 'd67620',
-        hypothesisId: 'H1',
-        location: 'CalendarView.tsx:mount',
-        message: 'vibe icon URL resolve',
-        data: { base, src, absolute, origin: window.location.origin },
-        timestamp: Date.now(),
-        runId: 'post-fix',
-      }),
-    }).catch(() => {});
-    fetch(absolute, { method: 'HEAD' })
-      .then((r) => {
-        fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'd67620' },
-          body: JSON.stringify({
-            sessionId: 'd67620',
-            hypothesisId: 'H2',
-            location: 'CalendarView.tsx:HEAD',
-            message: 'HEAD svg status',
-            data: { status: r.status, ok: r.ok, absolute },
-            timestamp: Date.now(),
-            runId: 'post-fix',
-          }),
-        }).catch(() => {});
-      })
-      .catch((e) => {
-        fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'd67620' },
-          body: JSON.stringify({
-            sessionId: 'd67620',
-            hypothesisId: 'H5',
-            location: 'CalendarView.tsx:HEAD-catch',
-            message: 'HEAD svg failed',
-            data: { err: String(e), absolute },
-            timestamp: Date.now(),
-            runId: 'post-fix',
-          }),
-        }).catch(() => {});
-      });
-  }, []);
-  // #endregion
-
   return (
     <div className="w-full rounded-[2rem] p-5 md:p-6 shadow-xl border border-border min-h-[200px]" style={{ background: 'var(--app-surface)' }}>
       {/* Calendar grid: 7 days + 1 metrics column (after Saturday). Month title is in App header. */}
@@ -292,12 +224,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                     const avg = weekData[m.key];
                     return (
                       <span key={m.key} className="flex items-center gap-0.5 text-[10px] text-foreground" title={`${language === 'zh' ? m.labelZh : m.labelEn}: ${avg ?? '—'}/100`}>
-                        <img
-                          src={m.iconSrc}
-                          alt=""
-                          className="vibe-kpi-icon w-4 h-4 flex-shrink-0"
-                          onError={() => logVibeImgError(m.iconSrc, 'H3')}
-                        />
+                        <img src={m.iconSrc} alt="" className="vibe-kpi-icon w-4 h-4 flex-shrink-0" />
                         <span className="tabular-nums font-medium">{avg != null ? avg : '—'}</span>
                       </span>
                     );
@@ -305,12 +232,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                 ) : (
                   METRICS.map(m => (
                     <span key={m.key} className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
-                      <img
-                        src={m.iconSrc}
-                        alt=""
-                        className="vibe-kpi-icon w-4 h-4 flex-shrink-0"
-                        onError={() => logVibeImgError(m.iconSrc, 'H3')}
-                      />
+                      <img src={m.iconSrc} alt="" className="vibe-kpi-icon w-4 h-4 flex-shrink-0" />
                       <span className="tabular-nums">—</span>
                     </span>
                   ))

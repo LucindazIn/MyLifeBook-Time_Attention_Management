@@ -130,7 +130,7 @@ export default function App() {
       setIsSyncing(true);
       setAuthError(null);
       try {
-        // Device cap: subscriptions.max_devices (default 8); enforced by register_device RPC.
+        // Device cap: subscriptions.max_devices (default 10); enforced by register_device RPC.
         const deviceId = deviceIdRef.current;
         if (deviceId) {
           const { error } = await supabase.rpc('register_device', {

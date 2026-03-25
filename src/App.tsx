@@ -17,6 +17,7 @@ import { OnboardingModal } from '@/components/OnboardingModal';
 import { SettingsModal } from '@/components/SettingsModal';
 import { DailyJournal } from '@/components/DailyJournal';
 import { AuthModal } from '@/components/AuthModal';
+import { PasswordRecoveryModal } from '@/components/PasswordRecoveryModal';
 import { Button } from '@/components/ui/button';
 import { ScheduleEvent, AppSettings, AppTheme, AppLanguage, CustomTag } from '@/types';
 import { normalizeAppSettings } from '@/lib/appSettings';
@@ -58,7 +59,18 @@ function formatSyncErrorMessage(err: unknown, language: AppLanguage): string {
 }
 
 export default function App() {
-  const { user, isLoading: authLoading, signInWithEmail, verifyEmailOtp, signOut, authCallbackError, clearAuthCallbackError } = useAuth();
+  const {
+    user,
+    isLoading: authLoading,
+    signUpWithPassword,
+    signInWithPassword,
+    resetPasswordForEmail,
+    completePasswordRecovery,
+    passwordRecoveryPending,
+    signOut,
+    authCallbackError,
+    clearAuthCallbackError,
+  } = useAuth();
   const [authError, setAuthError] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [dailyQuotes, setDailyQuotes] = useState<Record<string, { text: string; author?: string }>>({});
@@ -718,7 +730,7 @@ export default function App() {
       }}
     >
     <div className="min-h-screen font-sans" style={{ background: 'var(--app-bg)', color: 'var(--app-text)' }}>
-      {!settings.hasCompletedOnboarding && (
+      {!settings.hasCompletedOnboarding && !passwordRecoveryPending && (
         <OnboardingModal onComplete={setSettings} />
       )}
 
@@ -739,42 +751,40 @@ export default function App() {
         isOpen={!authLoading && !user && !hasSkippedAuth}
         language={settings.language}
         errorMessage={authCallbackError}
-        onVerifyOtp={async (email, token) => {
+        onSignIn={async (email, pin, options) => {
           clearAuthCallbackError();
-          const { error } = await verifyEmailOtp(email, token);
+          const { error } = await signInWithPassword(email, pin, options);
           return { error: error ?? undefined };
         }}
-        onSendMagicLink={async (email, options) => {
+        onSignUp={async (email, pin, options) => {
           clearAuthCallbackError();
-          const { error } = await signInWithEmail(email, options);
+          const { error } = await signUpWithPassword(email, pin, options);
           if (error) {
-            // 调试：输出 Supabase 原始错误，便于排查
-            console.warn('[Auth] Supabase error:', { message: error.message, name: error.name, status: (error as { status?: number }).status });
-            const msg = error.message || '';
-            const isRateLimit = /rate limit|429/i.test(msg) || msg.includes('Email rate limit exceeded');
-            const isCaptchaError = /captcha|verification process failed/i.test(msg);
-            const isSmtpError = /error sending confirmation email|confirmation email|smtp|mail|535/i.test(msg);
-            const friendlyMessage = isRateLimit
-              ? (settings.language === 'zh'
-                ? '发送次数过多，请稍后再试（约一小时后恢复）。'
-                : 'Too many attempts. Please try again later (limit resets in about an hour).')
-              : isCaptchaError
-                ? (settings.language === 'zh'
-                  ? 'CAPTCHA 验证失败。请在 Supabase 控制台关闭 CAPTCHA：Authentication → Settings → Bot and Abuse Protection → 关闭 Enable CAPTCHA protection；或在前端集成 reCAPTCHA/Turnstile 后传入 captcha_token。'
-                  : 'CAPTCHA verification failed. Disable CAPTCHA in Supabase: Authentication → Settings → Bot and Abuse Protection; or integrate reCAPTCHA/Turnstile and pass captcha_token.')
-                : isSmtpError
-                  ? (settings.language === 'zh'
-                    ? '邮件发送失败，请检查 Supabase 控制台：Authentication → SMTP 配置与 Auth 日志。'
-                    : 'Email could not be sent. Check Supabase Dashboard: Authentication → SMTP settings and Auth logs.')
-                  : msg;
-            return { error: { ...error, message: friendlyMessage } };
+            console.warn('[Auth] Supabase signUp:', { message: error.message });
           }
-          return { error: undefined };
+          return { error: error ?? undefined };
+        }}
+        onResetPassword={async (email, options) => {
+          clearAuthCallbackError();
+          const { error } = await resetPasswordForEmail(email, options);
+          if (error) {
+            console.warn('[Auth] Supabase resetPassword:', { message: error.message });
+          }
+          return { error: error ?? undefined };
         }}
         onSkip={() => {
           setHasSkippedAuth(true);
           localStorage.setItem('feather_skipped_auth', '1');
           clearAuthCallbackError();
+        }}
+      />
+
+      <PasswordRecoveryModal
+        isOpen={passwordRecoveryPending && !!user}
+        language={settings.language}
+        onSubmitNewPin={async (pin) => {
+          const { error } = await completePasswordRecovery(pin);
+          return { error: error ? { message: error.message } : undefined };
         }}
       />
 
@@ -1023,7 +1033,7 @@ export default function App() {
                       initial={{ opacity: 0, y: 8, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                      className="absolute right-0 z-[60] w-48 max-h-[min(16rem,70vh)] overflow-y-auto overflow-x-hidden rounded-xl border border-border bg-surface py-1 shadow-xl max-lg:bottom-full max-lg:top-auto max-lg:mb-2 max-lg:mt-0 lg:top-full lg:mt-2"
+                      className="absolute right-0 top-full z-[60] mt-2 w-48 max-h-[min(16rem,70vh)] overflow-y-auto overflow-x-hidden rounded-xl border border-border bg-surface py-1 shadow-xl"
                     >
                     {viewOptions.map((option) => (
                       <button
@@ -1137,7 +1147,7 @@ export default function App() {
                       initial={{ opacity: 0, y: 8, scale: 0.96 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.96 }}
-                      className="absolute right-0 w-[260px] bg-surface rounded-xl border border-border shadow-xl p-3 z-[60] max-lg:bottom-full max-lg:top-auto max-lg:mb-2 max-lg:mt-0 lg:top-full lg:mt-2"
+                      className="absolute right-0 top-full z-[60] mt-2 w-[260px] rounded-xl border border-border bg-surface p-3 shadow-xl"
                     >
                       <div className="space-y-3">
                         <div>
@@ -1352,7 +1362,7 @@ export default function App() {
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.98 }}
-                className="flex-1 flex flex-col min-h-[60vh] py-8"
+                className="flex flex-1 flex-col min-h-[60vh] max-md:min-h-[calc(60vh*1.2)] py-8"
               >
                 <LifeBookView
                   chapters={lifeBookChapters}

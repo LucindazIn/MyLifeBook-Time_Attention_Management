@@ -125,4 +125,7 @@
 
 ## 3.0 仓库与本地运行（开发者）
 克隆本仓库即可在本地运行。如需二次开发请联系我授权（sunqy0310@163.com).
+
+**认证（Supabase）：** 应用使用 **邮箱 + 6 位数字 PIN** 注册与登录（非 OTP）。首次注册后需在邮件中 **Confirm email**；忘记 PIN 可走邮件重置链接并在站内设置新 PIN。部署前请在 Supabase 控制台完成：**Authentication → Providers → Email** 开启邮箱密码登录；**Password** 最小长度 **6** 且允许 **纯数字**（若强制混合字符则 6 位数字会被拒绝）；**Confirm email** 按需开启；**URL Configuration** 的 Site URL 与 Redirect URLs 需包含生产与本地 origin；若使用 Turnstile，与 Supabase Bot Protection 策略一致。
+
 **Prerequisites:** Node.js

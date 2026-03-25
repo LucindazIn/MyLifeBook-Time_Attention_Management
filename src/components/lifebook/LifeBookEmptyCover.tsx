@@ -52,7 +52,7 @@ export const LifeBookEmptyCover: React.FC<LifeBookEmptyCoverProps> = ({ language
 
   return (
     <div
-      className={`w-full h-full flex flex-col items-center justify-center px-6 py-10 text-center max-w-lg mx-auto min-h-[min(100%,28rem)] ${lifeBookPageCard}`}
+      className={`w-full h-full flex flex-col items-center justify-center px-6 py-10 text-center max-w-lg mx-auto min-h-[min(100%,28rem)] max-md:min-h-[min(100%,33.6rem)] ${lifeBookPageCard}`}
     >
       <div className={`w-full max-w-md space-y-4 mb-6 px-5 py-7 ${lifeBookReadingPanel}`}>
         <input

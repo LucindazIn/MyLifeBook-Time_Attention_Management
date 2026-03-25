@@ -163,7 +163,7 @@ export const Timeline: React.FC<TimelineProps> = ({
                 return (
                   <div
                     className={cn(
-                      'absolute -left-[100px] w-[60px] text-right text-xs font-medium text-muted-foreground overflow-visible translate-x-[0.6mm]',
+                      'absolute -left-[100px] w-[60px] text-right text-xs font-medium text-muted-foreground overflow-visible translate-x-[0.9mm]',
                       is12hBlock
                         ? 'top-4 flex flex-col items-end'
                         : 'top-5 flex h-3 items-center justify-end leading-none'

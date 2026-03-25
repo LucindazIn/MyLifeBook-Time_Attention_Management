@@ -1,28 +1,136 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Feather Schedule 产品介绍
 
-# Run and deploy your AI Studio app
+一款把「过日子」变成「讲故事」的日程 Web 应用：时间不只是被填满，而是被你**设计**——用角色、意义与长期目标，把零散安排串成可回看、可讲述的人生叙事。
 
-This contains everything you need to run your app locally.
+---
 
-View your app in AI Studio: https://ai.studio/apps/54045701-b3f4-419c-9a42-dce3af590f10
+## 目录
 
-## Run Locally
+- [1.0 产品与价值主张](#10-产品与价值主张)
+- [2.0 产品说明](#20-产品说明)
+  - [2.1 产品目标](#21-产品目标)
+  - [2.2 目标用户](#22-目标用户)
+  - [2.3 平台与技术范围](#23-平台与技术范围)
+  - [2.4 核心功能模块](#24-核心功能模块)
+  - [2.5 界面设计规范](#25-界面设计规范)
+  - [2.6 系统架构](#26-系统架构)
+  - [2.7 数据库结构](#27-数据库结构)
+  - [2.8 非功能性要求](#28-非功能性要求)
+  - [2.9 数据安全](#29-数据安全)
 
-**Prerequisites:**  Node.js
+---
 
-1. Install dependencies: `npm install`
-2. Optional — **developer fallback (Tier A):** set `GEMINI_API_KEY` or `VITE_GEMINI_PROXY_URL` in `.env.local` so **day titles** and **journal meaning summaries** work without a per-user key. See [.env.example](.env.example).
-3. **Your Gemini API key (Tier B):** in the app, open **Settings** and paste a key from [Google AI Studio](https://aistudio.google.com/apikey). Required for **chat**, **random schedule**, **AI summaries by tag/role**, and **Life Book chapters**. The key is stored **only in your browser** (localStorage), not sent to the app developer’s servers.
-4. Run the app: `npm run dev`
-5. Tests: `npm test`
+## 1.0 产品与价值主张
 
-### AI tiers (short)
+**产品类型：** 日程 Web 应用（响应式，手机与桌面浏览器均可使用；后续可演进为完整 PWA 安装体验）。
 
-| Tier | Who pays / which key | Features |
-|------|----------------------|----------|
-| A (free fallback) | Host `GEMINI_API_KEY` or proxy | Day name, journal “meaning” summary |
-| B (user key) | User’s key in Settings | Chat, random schedule, filter AI summary, Life Book chapter generation |
+**产品定位：** **叙事型时间设计系统**——你不是在管理一串待办，而是在编排「今天的剧情」：谁在场（角色）、什么事值得被记住（意义与高光）、这些事最终通向哪里（长期目标）。
 
-If you use a browser-stored API key, treat XSS and dependency supply-chain risk seriously; restrict keys in Google Cloud where possible.
+### 用户真正想完成的事（JTBD）
+
+- **当我受够了冷冰冰的「会议 / 待办」列表时**，我需要一个地方，让同一件事能写成「作为某个角色的成长或付出」，而不只是一行标题。
+- **当我想分清「活着」和「活出名堂」时**，我需要在日历里标出哪些日子、哪些事真正塑造了我——而不只是按时完成。
+- **当我想把一段日子收成故事、而不是一堆数据时**，我希望能把日程、心情与能量放进同一套叙事里，甚至交给 AI 帮忙整理成章节，让过去对未来说话。
+
+### 核心主张
+
+**时间不是被填满，而是被设计。**
+
+### 我们如何把主张落到体验里
+
+日程体现时间的**广度**——你仍然拥有熟悉的多日视图与安排能力，看见生活展开的形状。
+
+**标签与角色体系**决定生命的**深度**——同一件事，是「买菜」还是「作为家庭支柱的付出」，取决于你给自己哪张叙事名片。
+
+**生命能量与当日心境**（如精力、情绪、专注等）反映生命的**强度**——不是只有「忙不忙」，还有「这一天我是燃尽了还是在蓄力」。
+
+三者合在一起：**看得见安排、读得懂意义、对得上状态**——这才是「设计时间」，而不只是「填满格子」。
+
+### 三大核心能力（卖点）
+
+**1）角色标签（Role）—— 叙事的主角**
+
+日程不再是扁平的「事项」，而是挂在某个身份之下的行动：可以是职场里的角色，也可以是你在意的自我定义。角色帮你固定**视角**：从谁的眼睛看这一天，冲突与成长才站得住脚。
+
+**2）事件意义与高光（Meaning / Star / Highlight）—— 叙事的权重**
+
+并不是所有一小时都同等重要。当前产品支持为事件写下**一句对你有意义的话**，并用**星标**标记重点、用**高光**标记值得进入「人生之书」的里程碑——让「洗碗」和「第一次面试」在叙事里自然分出轻重。（未来若引入数值化「意义分」，也会是在这条逻辑上延伸。）
+
+**3）长期目标（Long-term Goals）—— 叙事的线索**
+
+目标是连接过去与未来的钩子。日程可以挂载到长期目标上：挂不上时，它更像噪音；大量日程指向同一目标时，那一段时间就有了**章节主轴**——你在为什么而忙，一眼能看出来。
+
+## 2.0 产品说明
+
+### 2.1 产品目标
+
+- 提供**可叙事、可复盘**的日程体验，超越传统待办与日历的「清单感」。
+- 在**同一套界面**里连接：事件、角色、意义、长期目标、日记与当日状态，减少「多个 App 拼不出一天」的割裂。
+- 支持登录后**云端同步**与多设备使用（受当前订阅与设备策略约束），让叙事随人走、不锁在一台机器上。
+- 在保护隐私的前提下，**可选**接入 Google Gemini：用于当日命名、日记意义总结、对话、随机日程启发、按标签/角色的 AI 总结，以及「人生之书」章节生成等（部分能力依赖用户自备 API Key，见下文）。
+
+### 2.2 目标用户
+
+**尤其适合：**
+
+- 爱读故事的、爱思考人生意义的、喜欢自我管理的、知识工作者，以及希望**从日程里看见意义与方向**的人。
+- 愿意用少量「叙事性标注」换长期回报的用户——多写一句意义、多选一个角色，久了就是自己的人生数据库。
+
+**未必适合：**
+
+- 只想要极简勾选、完全不愿为「意义与角色」多花 10 秒的人。
+- 不需要账号与同步、只接受纯离线单机的场景（本产品以在线同步为设计重心）。
+
+### 2.3 平台与技术范围
+
+| 层级 | 说明 |
+|------|------|
+| 前端 | React 19、Vite 6、TypeScript、Tailwind CSS 4、Motion、Swiper 等 |
+| 数据与账号 | Supabase（PostgreSQL + Row Level Security；邮箱 OTP 登录等） |
+| AI | `@google/genai`；可选本地代理 [server/gemini-proxy.mjs](server/gemini-proxy.mjs)，避免把宿主 Key 打进前端 |
+
+### 2.4 核心功能模块
+
+- **日历与事件**：多视图浏览、创建/编辑事件、重复规则、按日完成状态（含重复事件的实例级完成记录）。
+- **叙事字段**：角色、标签、文本意义、星标、高光、长期目标（目标与标签在存储层统一沉淀，便于统计与回顾）。
+- **日记与当日元数据**：每日标题/标签、日记正文、每日一句；以及精力、情绪、专注等维度，与日程对照阅读。
+- **设置**：六大视觉主题、中/英语言、Gemini 用户密钥（仅存浏览器）、登录与登出。
+- **人生之书 / 章节**：将一段时间内的叙事材料组织为可阅读的章节与呈现（具体能力随产品与 AI 配置而定）。
+
+### 2.5 界面设计规范
+
+产品提供 **六大主题**，同一套功能、六种气质。
+| **Artsy 文艺** 
+| **Tech 赛博** 
+| **Anime 二次元** 
+| **Nature 自然** 
+| **Retro 复古** 
+
+
+### 2.6 系统架构
+
+客户端为 **React 单页应用**：经 Supabase 完成身份验证与业务数据读写（RLS 保障用户只能访问自己的数据）
+
+### 2.7 数据库结构
+
+**关键关系简述：**
+
+- 用户与数据：**一行数据只属于一个登录用户**（RLS 以 `auth.uid()` 为界）。
+- `events` 与 `event_tags`：**一对多**；标签与长期目标在实现上共享扩展机制。
+- 完成记录：按用户、事件、日期唯一约束，支撑「同一重复任务在不同日期分别勾选」的体验。
+
+### 2.8 非功能性要求
+
+以下为**产品与工程上的目标方向**（是否达到需结合实际部署与压测验证，不等同于对外 SLA 承诺）：
+
+- 首屏与常用交互在常见网络下**尽量轻快**，主观上「打开即用」。
+- 涉及 AI 文档或长文本解析的场景，**力争在可接受秒级范围内**返回（具体取决于模型与网络）。
+- 日程规模在**千级事件**量级下仍保持可用流畅度（依赖前端实现与索引设计持续优化）。
+- 登录用户的数据**默认云端持久化**，减少因单设备丢失造成的叙事断裂。
+
+### 2.9 数据安全
+
+- **服务端隔离**：业务数据存放在 Supabase，依赖 **Row Level Security**，用户只能读写自己的行。
+- **密钥不进公开仓库**：`VITE_SUPABASE_ANON_KEY`、Gemini Key、数据库密码等只应出现在本机或受控密钥系统中；**切勿**把密码或 Service Role Key 写进 README、产品介绍或聊天截图。
+- **Gemini 用户密钥**：按设计保存在用户浏览器本地；请意识到 XSS、恶意扩展与依赖供应链风险，并在云控制台为密钥设置**最小必要权限**与用量上限。
+- **传输与认证**：生产环境应使用 HTTPS；若启用 Turnstile 等验证，与 Supabase Auth 策略配套使用。

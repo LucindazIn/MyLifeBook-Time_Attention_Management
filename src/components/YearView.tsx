@@ -7,6 +7,7 @@ import { ScheduleEvent } from '@/types';
 import { expandRecurringEvents } from '@/lib/events';
 import { AppLanguage } from '@/types';
 import { DayVibes } from '@/lib/repositories/dayMetaRepo';
+import { VIBE_ICON_URL } from '@/lib/vibeIcons';
 
 interface YearViewProps {
   currentDate: Date;
@@ -24,9 +25,9 @@ interface YearViewProps {
 }
 
 const METRICS = [
-  { key: 'energy' as const, labelZh: '能量', labelEn: 'Energy', iconSrc: '/vibes/energy-high.svg', colorHigh: 'bg-emerald-400', colorMid: 'bg-amber-400', colorLow: 'bg-slate-300' },
-  { key: 'mood'   as const, labelZh: '心情', labelEn: 'Mood',   iconSrc: '/vibes/mood-happy.svg', colorHigh: 'bg-rose-400',   colorMid: 'bg-rose-300',   colorLow: 'bg-slate-300' },
-  { key: 'focus'  as const, labelZh: '专注', labelEn: 'Focus',  iconSrc: '/vibes/focus-focused.svg', colorHigh: 'bg-indigo-400', colorMid: 'bg-indigo-300', colorLow: 'bg-slate-300' },
+  { key: 'energy' as const, labelZh: '能量', labelEn: 'Energy', iconSrc: VIBE_ICON_URL.energy, colorHigh: 'bg-emerald-400', colorMid: 'bg-amber-400', colorLow: 'bg-slate-300' },
+  { key: 'mood'   as const, labelZh: '心情', labelEn: 'Mood',   iconSrc: VIBE_ICON_URL.mood, colorHigh: 'bg-rose-400',   colorMid: 'bg-rose-300',   colorLow: 'bg-slate-300' },
+  { key: 'focus'  as const, labelZh: '专注', labelEn: 'Focus',  iconSrc: VIBE_ICON_URL.focus, colorHigh: 'bg-indigo-400', colorMid: 'bg-indigo-300', colorLow: 'bg-slate-300' },
 ];
 
 function metricColor(m: typeof METRICS[0], avg: number) {
@@ -140,7 +141,7 @@ export const YearView: React.FC<YearViewProps> = ({
                     const avg = monthAvgs[m.key];
                     return (
                       <span key={m.key} className="flex items-center gap-0.5 text-[10px] text-foreground" title={`${language === 'zh' ? m.labelZh : m.labelEn}: ${avg ?? '—'}/100`}>
-                        <img src={m.iconSrc} alt="" className="w-3.5 h-3.5 flex-shrink-0 opacity-90" />
+                        <img src={m.iconSrc} alt="" className="vibe-kpi-icon w-3.5 h-3.5 flex-shrink-0 opacity-90" />
                         <span className="tabular-nums font-medium">{avg != null ? avg : '—'}</span>
                       </span>
                     );

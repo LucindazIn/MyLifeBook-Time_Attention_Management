@@ -167,9 +167,9 @@ body {
 }
 
 /* Tech, Retro & Minimalist: vibes KPI SVGs as <img> render dark on dark UI — invert for light icons */
-[data-theme="tech"] img[src^='/vibes/'],
-[data-theme="retro"] img[src^='/vibes/'],
-[data-theme="minimalist"] img[src^='/vibes/'] {
+[data-theme="tech"] .vibe-kpi-icon,
+[data-theme="retro"] .vibe-kpi-icon,
+[data-theme="minimalist"] .vibe-kpi-icon {
   filter: brightness(0) invert(1);
 }
 

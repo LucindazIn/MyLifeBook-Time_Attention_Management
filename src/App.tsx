@@ -27,6 +27,7 @@ import { supabase } from '@/lib/supabase/client';
 import { listAllEventsWithTags, upsertEventWithTags } from '@/lib/repositories/eventsRepo';
 import { listAllCompletions, setInstanceCompletion } from '@/lib/repositories/completionsRepo';
 import { listAllDayMeta, upsertDayMeta, DayVibes as DayVibesData } from '@/lib/repositories/dayMetaRepo';
+import { VIBE_ICON_URL } from '@/lib/vibeIcons';
 import { listAllDailyQuotes, upsertDailyQuote } from '@/lib/repositories/dailyQuotesRepo';
 
 import { ScheduleSuggestionModal } from '@/components/ScheduleSuggestionModal';
@@ -1111,16 +1112,16 @@ export default function App() {
               )}
               {viewMode === 'year' && yearKpiAvg && (
                 <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-0.5 text-sm" style={{ color: 'var(--app-muted)' }}>
-                  <span className="inline-flex items-center gap-1"><img src="/vibes/energy-high.svg" alt="" className="w-4 h-4" /> {settings.language === 'zh' ? '能量' : 'Energy'} {yearKpiAvg.energy != null ? yearKpiAvg.energy : '–'}</span>
-                  <span className="inline-flex items-center gap-1"><img src="/vibes/mood-happy.svg" alt="" className="w-4 h-4" /> {settings.language === 'zh' ? '心情' : 'Mood'} {yearKpiAvg.mood != null ? yearKpiAvg.mood : '–'}</span>
-                  <span className="inline-flex items-center gap-1"><img src="/vibes/focus-focused.svg" alt="" className="w-4 h-4" /> {settings.language === 'zh' ? '专注' : 'Focus'} {yearKpiAvg.focus != null ? yearKpiAvg.focus : '–'}</span>
+                  <span className="inline-flex items-center gap-1"><img src={VIBE_ICON_URL.energy} alt="" className="vibe-kpi-icon w-4 h-4" /> {settings.language === 'zh' ? '能量' : 'Energy'} {yearKpiAvg.energy != null ? yearKpiAvg.energy : '–'}</span>
+                  <span className="inline-flex items-center gap-1"><img src={VIBE_ICON_URL.mood} alt="" className="vibe-kpi-icon w-4 h-4" /> {settings.language === 'zh' ? '心情' : 'Mood'} {yearKpiAvg.mood != null ? yearKpiAvg.mood : '–'}</span>
+                  <span className="inline-flex items-center gap-1"><img src={VIBE_ICON_URL.focus} alt="" className="vibe-kpi-icon w-4 h-4" /> {settings.language === 'zh' ? '专注' : 'Focus'} {yearKpiAvg.focus != null ? yearKpiAvg.focus : '–'}</span>
                 </div>
               )}
               {viewMode === 'month' && monthKpiAvg && (
                 <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-0.5 text-sm" style={{ color: 'var(--app-muted)' }}>
-                  <span className="inline-flex items-center gap-1"><img src="/vibes/energy-high.svg" alt="" className="w-4 h-4" /> {settings.language === 'zh' ? '能量' : 'Energy'} {monthKpiAvg.energy != null ? monthKpiAvg.energy : '–'}</span>
-                  <span className="inline-flex items-center gap-1"><img src="/vibes/mood-happy.svg" alt="" className="w-4 h-4" /> {settings.language === 'zh' ? '心情' : 'Mood'} {monthKpiAvg.mood != null ? monthKpiAvg.mood : '–'}</span>
-                  <span className="inline-flex items-center gap-1"><img src="/vibes/focus-focused.svg" alt="" className="w-4 h-4" /> {settings.language === 'zh' ? '专注' : 'Focus'} {monthKpiAvg.focus != null ? monthKpiAvg.focus : '–'}</span>
+                  <span className="inline-flex items-center gap-1"><img src={VIBE_ICON_URL.energy} alt="" className="vibe-kpi-icon w-4 h-4" /> {settings.language === 'zh' ? '能量' : 'Energy'} {monthKpiAvg.energy != null ? monthKpiAvg.energy : '–'}</span>
+                  <span className="inline-flex items-center gap-1"><img src={VIBE_ICON_URL.mood} alt="" className="vibe-kpi-icon w-4 h-4" /> {settings.language === 'zh' ? '心情' : 'Mood'} {monthKpiAvg.mood != null ? monthKpiAvg.mood : '–'}</span>
+                  <span className="inline-flex items-center gap-1"><img src={VIBE_ICON_URL.focus} alt="" className="vibe-kpi-icon w-4 h-4" /> {settings.language === 'zh' ? '专注' : 'Focus'} {monthKpiAvg.focus != null ? monthKpiAvg.focus : '–'}</span>
                 </div>
               )}
             </div>

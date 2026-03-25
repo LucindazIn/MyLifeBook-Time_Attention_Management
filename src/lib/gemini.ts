@@ -227,38 +227,6 @@ export async function generateDayName(
   }
 }
 
-export async function chatWithGemini(
-  message: string,
-  context: string
-): Promise<string> {
-  const prompt = `
-      Context: You are a helpful assistant for a scheduling app called "My Life Book".
-      The user's current schedule is:
-      ${context}
-
-      User: ${message}
-      
-      Reply in a friendly, concise, and helpful manner.
-    `;
-
-  try {
-    const response = await callGenerateContent(
-      {
-        model: GEMINI_MODEL,
-        contents: prompt,
-      },
-      "user_tier"
-    );
-    return response.text || "I'm having trouble thinking right now.";
-  } catch (error) {
-    if (error instanceof UserGeminiKeyMissing) {
-      throw error;
-    }
-    console.error("Error chatting:", error);
-    return "I'm having trouble connecting to my brain right now.";
-  }
-}
-
 export async function generateQuote(args: {
   prompt: string;
   language?: string;

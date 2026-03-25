@@ -9,7 +9,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { Timeline } from '@/components/Timeline';
 import { DayHeader } from '@/components/DayHeader';
 import { AddEventModal } from '@/components/AddEventModal';
-import { Chatbot } from '@/components/Chatbot';
 import { CalendarView } from '@/components/CalendarView';
 import { YearView } from '@/components/YearView';
 import { SurpriseWidgets } from '@/components/SurpriseWidgets';
@@ -1652,8 +1651,6 @@ export default function App() {
         getRoleColor={getRoleColor}
         getRoleDisplayName={getRoleDisplayName}
       />
-
-      <Chatbot context={JSON.stringify(currentDayEvents)} />
     </div>
     </GeminiUserKeyProvider>
   );

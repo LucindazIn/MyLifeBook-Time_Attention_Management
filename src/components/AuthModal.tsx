@@ -46,6 +46,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, language,
     verify: language === 'zh' ? '验证' : 'Verify',
     verifying: language === 'zh' ? '验证中…' : 'Verifying…',
     sending: language === 'zh' ? '发送中…' : 'Sending Code…',
+    sendingHint:
+      language === 'zh'
+        ? '使用人数较多，请耐心等待'
+        : 'High Traffic Right Now, Please Wait A Moment',
     resend: language === 'zh' ? '重新发送' : 'Resend',
     otpPlaceholder: language === 'zh' ? '验证码' : 'Verification code',
   };
@@ -231,25 +235,33 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, language,
                       <div className="text-sm text-red-600">{error}</div>
                     )}
 
-                    <Button
-                      type="button"
-                      onClick={handleSend}
-                      disabled={!email.trim() || isSending || (!!TURNSTILE_SITE_KEY && !captchaToken)}
-                      aria-busy={isSending}
-                      className={cn('w-full rounded-xl py-6', isSending && 'pointer-events-none')}
-                    >
-                      {isSending ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin shrink-0" aria-hidden />
-                          {labels.sending}
-                        </>
-                      ) : (
-                        <>
-                          <ArrowRight className="w-4 h-4 mr-2 shrink-0" aria-hidden />
-                          {labels.send}
-                        </>
+                    <div className="space-y-2">
+                      <Button
+                        type="button"
+                        onClick={handleSend}
+                        disabled={!email.trim() || isSending || (!!TURNSTILE_SITE_KEY && !captchaToken)}
+                        aria-busy={isSending}
+                        aria-describedby={isSending ? 'auth-send-hint' : undefined}
+                        className={cn('w-full rounded-xl py-6', isSending && 'pointer-events-none')}
+                      >
+                        {isSending ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin shrink-0" aria-hidden />
+                            {labels.sending}
+                          </>
+                        ) : (
+                          <>
+                            <ArrowRight className="w-4 h-4 mr-2 shrink-0" aria-hidden />
+                            {labels.send}
+                          </>
+                        )}
+                      </Button>
+                      {isSending && (
+                        <p id="auth-send-hint" className="text-xs text-center leading-snug" style={{ color: 'var(--app-muted)' }}>
+                          {labels.sendingHint}
+                        </p>
                       )}
-                    </Button>
+                    </div>
 
                     {onSkip && (
                       <button

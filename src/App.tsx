@@ -42,6 +42,21 @@ import { PRESET_ROLES, getRoleDisplayName, getRoleColor } from '@/lib/constants/
 
 const AUTH_ERROR_AUTO_DISMISS_MS = 10_000;
 
+function formatSyncErrorMessage(err: unknown, language: AppLanguage): string {
+  let raw = '';
+  if (err && typeof err === 'object' && err !== null) {
+    const o = err as Record<string, unknown>;
+    raw = String(o.message ?? o.error_description ?? o.details ?? '');
+  }
+  if (!raw.trim()) raw = String(err);
+  if (/device_limit_reached/i.test(raw)) {
+    return language === 'zh'
+      ? '已达到可同时登录的设备数量上限，请在其他设备退出登录后再试。'
+      : 'The Maximum Number Of Active Devices Has Been Reached. Sign Out On Another Device And Try Again.';
+  }
+  return raw.trim() || (language === 'zh' ? '同步失败' : 'Sync failed');
+}
+
 export default function App() {
   const { user, isLoading: authLoading, signInWithEmail, verifyEmailOtp, signOut, authCallbackError, clearAuthCallbackError } = useAuth();
   const [authError, setAuthError] = useState<string | null>(null);
@@ -139,8 +154,8 @@ export default function App() {
         setJournalEntries(dayMeta.journalEntries);
         setDayVibesData(dayMeta.dayVibes);
         setDailyQuotes(quotes);
-      } catch (e: any) {
-        setAuthError(e?.message || 'Failed to sync');
+      } catch (e: unknown) {
+        setAuthError(formatSyncErrorMessage(e, settings.language));
       } finally {
         setIsSyncing(false);
       }

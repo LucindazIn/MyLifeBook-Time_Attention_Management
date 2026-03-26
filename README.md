@@ -4,9 +4,24 @@
 
 # 人生之书（My Life Book）产品介绍
 
-一款把「过日子」变成「讲故事」的日程 Web 应用：时间不只是被填满，而是被你**设计**——用角色、意义与长期目标，把零散安排串成可回看、可讲述的人生叙事。
+一款把「过日子」变成「讲故事」的日程 Web 应用——把日程从“清单管理”升级为“叙事设计”。
 
----
+时间不只是被填满，而是被你**设计**。你不仅记录做了什么，还记录你以什么角色、为何而做，以及它通向哪个长期目标。用角色、意义与长期目标，把零散安排串成可回看、可讲述的人生叙事。
+
+## Why This Project
+- 传统日历擅长记录时间，不擅长记录意义  
+- 人生之书把事件、角色、意义、目标与状态放进同一叙事系统  
+- 让复盘不再是数据回放，而是可阅读的成长章节
+
+## Quick Start
+网页端：https://mylifebook.us.ci/
+本地安装：
+```bash
+git clone --branch master --single-branch https://github.com/LucindazIn/Feather-Schedule.git
+cd Feather-Schedule
+npm install
+npm run dev
+```
 
 ## 1.0 产品与价值主张
 
@@ -23,8 +38,6 @@
 ### 1.1 核心主张
 
 **时间不是被填满，而是被设计。**
-
-### 我们如何把主张落到体验里
 
 日程体现时间的**广度**——你仍然拥有熟悉的多日视图与安排能力，看见生活展开的形状。
 
@@ -124,8 +137,5 @@
 
 
 ## 3.0 仓库与本地运行（开发者）
-克隆本仓库即可在本地运行。如需二次开发请联系我授权（sunqy0310@163.com).
-
-**认证（Supabase）：** 应用使用 **邮箱 + 6 位数字 PIN** 注册与登录（非 OTP）。首次注册后需在邮件中 **Confirm email**；忘记 PIN 可走邮件重置链接并在站内设置新 PIN。部署前请在 Supabase 控制台完成：**Authentication → Providers → Email** 开启邮箱密码登录；**Password** 最小长度 **6** 且允许 **纯数字**（若强制混合字符则 6 位数字会被拒绝）；**Confirm email** 按需开启；**URL Configuration** 的 Site URL 与 Redirect URLs 需包含生产与本地 origin；若使用 Turnstile，与 Supabase Bot Protection 策略一致。
-
+克隆本仓库即可在本地运行。
 **Prerequisites:** Node.js

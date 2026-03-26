@@ -422,8 +422,8 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                             autoFocus
                             className="text-lg font-medium placeholder:font-normal rounded-md border border-border focus:border-accent mb-2 bg-field"
                           />
-                          <div className="flex justify-between items-center gap-2 flex-nowrap">
-                            <div className="flex items-center gap-1.5 shrink-0">
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="flex items-center gap-1.5 flex-wrap">
                               <span className="text-xs text-muted-foreground whitespace-nowrap">{language === 'zh' ? '属性' : 'Type'}</span>
                               <button
                                 type="button"
@@ -452,7 +452,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                                 {labels.todo}
                               </button>
                             </div>
-                            <div className="flex items-center gap-1.5 shrink-0">
+                            <div className="flex items-center gap-1.5 flex-wrap">
                               <span className="text-xs text-muted-foreground whitespace-nowrap">{language === 'zh' ? '标记' : 'Mark'}</span>
                               <button
                                 type="button"
@@ -680,7 +680,10 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                                 {language === 'zh' ? '清除' : 'Clear'}
                               </button>
                             </div>
-                            <div className="mt-3 flex flex-nowrap items-center gap-2 overflow-x-auto">
+                            <div
+                              className="mt-3 flex flex-nowrap items-center gap-2 overflow-x-auto pb-1"
+                              style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-x' }}
+                            >
                               {suggestedLabels.map((label) => (
                                 <button
                                   key={label}

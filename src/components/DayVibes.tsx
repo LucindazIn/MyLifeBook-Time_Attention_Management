@@ -58,9 +58,12 @@ export const DayVibes: React.FC<DayVibesProps> = ({ dateKey, energy, mood, focus
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-base leading-none">{low}</span>
-                <div className="relative flex-1 h-2 rounded-full bg-field overflow-hidden">
+                <div className="relative flex-1 h-8">
                   <div
-                    className="absolute left-0 top-0 h-full rounded-full transition-[width]"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 h-2 w-full rounded-full bg-field"
+                  />
+                  <div
+                    className="absolute left-0 top-1/2 -translate-y-1/2 h-2 rounded-full transition-[width]"
                     style={{ width: `${val}%`, backgroundColor: 'var(--app-accent)' }}
                   />
                   <input
@@ -72,6 +75,7 @@ export const DayVibes: React.FC<DayVibesProps> = ({ dateKey, energy, mood, focus
                     onMouseUp={handleCommit}
                     onTouchEnd={handleCommit}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    style={{ touchAction: 'pan-x' }}
                   />
                 </div>
                 <span className="text-base leading-none">{high}</span>

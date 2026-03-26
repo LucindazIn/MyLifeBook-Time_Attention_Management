@@ -98,7 +98,7 @@ export const DailyJournal: React.FC<DailyJournalProps> = ({
         }
       }
       // #region agent log
-      fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c2683e'},body:JSON.stringify({sessionId:'c2683e',runId:'pre-fix',hypothesisId:'H9',location:'DailyJournal.tsx:onresult-meta',message:'recognition result meta',data:{resultIndex:event?.resultIndex,resultsLength:event?.results?.length ?? null,finalCount,interimCount,finalCharLen:finalTranscript.trim().length,containsCJK:/[\u3400-\u9FBF]/.test(finalTranscript),uiLanguage:language},timestamp:Date.now()})}).catch(()=>{});
+      fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c2683e'},body:JSON.stringify({sessionId:'c2683e',runId:'pre-fix',hypothesisId:'H9',location:'DailyJournal.tsx:onresult-meta',message:'recognition result meta',data:{resultIndex:event?.resultIndex,resultsLength:event?.results?.length ?? null,finalCount,interimCount,finalCharLen:finalTranscript.trim().length,containsCJK:/[\u3400-\u9FBF]/.test(finalTranscript),containsPunctuation:/[.,!?;:，。！？；：]/.test(finalTranscript),endsWithPunctuation:/[.,!?;:，。！？；：]\s*$/.test(finalTranscript),uiLanguage:language},timestamp:Date.now()})}).catch(()=>{});
       // #endregion
 
       if (finalTranscript) {

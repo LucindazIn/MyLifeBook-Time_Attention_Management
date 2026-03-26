@@ -75,6 +75,36 @@ describe('composeRandomDaySchedule', () => {
     const zhOnly = [base({ title: 'Z', locale: 'zh', mode_tags: ['productive'] })];
     expect(composeRandomDaySchedule(zhOnly, 'productive', 'en', 'x')).toEqual([]);
   });
+
+  it('keeps generated times within 07:00-22:00 window', () => {
+    const out = composeRandomDaySchedule(catalog, 'productive', 'en', 'window-seed');
+    const toMin = (hhmm: string) => {
+      const [h, m] = hhmm.split(':').map(Number);
+      return h * 60 + m;
+    };
+    for (const e of out) {
+      expect(toMin(e.startTime)).toBeGreaterThanOrEqual(7 * 60);
+      expect(toMin(e.endTime)).toBeLessThanOrEqual(22 * 60);
+    }
+  });
+
+  it('guarantees at least one morning and one afternoon event', () => {
+    const out = composeRandomDaySchedule(catalog, 'productive', 'en', 'segment-seed');
+    const toMin = (hhmm: string) => {
+      const [h, m] = hhmm.split(':').map(Number);
+      return h * 60 + m;
+    };
+    const hasMorning = out.some((e) => {
+      const s = toMin(e.startTime);
+      return s >= 7 * 60 && s < 12 * 60;
+    });
+    const hasAfternoon = out.some((e) => {
+      const s = toMin(e.startTime);
+      return s >= 12 * 60 && s < 18 * 60;
+    });
+    expect(hasMorning).toBe(true);
+    expect(hasAfternoon).toBe(true);
+  });
 });
 
 describe('createRng / shuffleInPlace', () => {

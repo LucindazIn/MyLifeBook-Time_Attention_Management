@@ -19,10 +19,14 @@ export type ComposerSuggestion = {
   endTime: string;
 };
 
-const DAY_START_MIN = 9 * 60;
+const DAY_START_MIN = 7 * 60;
+const DAY_END_MIN = 22 * 60;
+const MORNING_START_MIN = 7 * 60;
+const MORNING_END_MIN = 12 * 60;
+const AFTERNOON_START_MIN = 12 * 60;
+const AFTERNOON_END_MIN = 18 * 60;
 const LUNCH_START_MIN = 12 * 60;
 const LUNCH_END_MIN = 13 * 60;
-const GAP_MIN = 10;
 
 function hashSeed(s: string): number {
   let h = 2166136261;
@@ -114,28 +118,62 @@ function pickFive(
   return [...lows, ...highs];
 }
 
+function randomInt(min: number, max: number, rng: () => number): number {
+  if (max <= min) return min;
+  return min + Math.floor(rng() * (max - min + 1));
+}
+
+function pickStartWithinWindow(windowStart: number, windowEnd: number, durationMin: number, rng: () => number): number {
+  const latest = Math.max(windowStart, windowEnd - durationMin);
+  return randomInt(windowStart, latest, rng);
+}
+
 function assignTimeline(events: CatalogActivity[], rng: () => number): ComposerSuggestion[] {
   const order = [...events];
   shuffleInPlace(order, rng);
-  let cursor = DAY_START_MIN;
+  const count = order.length;
+  const morningIndex = count > 0 ? Math.floor(rng() * count) : -1;
+  let afternoonIndex = -1;
+  if (count > 1) {
+    afternoonIndex = Math.floor(rng() * (count - 1));
+    if (afternoonIndex >= morningIndex) afternoonIndex += 1;
+  }
+
   const out: ComposerSuggestion[] = [];
-  for (const ev of order) {
+  for (let i = 0; i < order.length; i++) {
+    const ev = order[i]!;
     const dur = Math.max(5, ev.default_duration_minutes);
-    const [startMin, endMin] = nextEventSlot(cursor, dur);
+    let tentativeStart: number;
+
+    if (i === morningIndex) {
+      tentativeStart = pickStartWithinWindow(MORNING_START_MIN, MORNING_END_MIN, dur, rng);
+    } else if (i === afternoonIndex) {
+      tentativeStart = pickStartWithinWindow(AFTERNOON_START_MIN, AFTERNOON_END_MIN, dur, rng);
+    } else {
+      tentativeStart = pickStartWithinWindow(DAY_START_MIN, DAY_END_MIN, dur, rng);
+    }
+
+    const [startMin, endMin] = nextEventSlot(tentativeStart, dur);
+    const clampedStart = endMin > DAY_END_MIN ? Math.max(DAY_START_MIN, DAY_END_MIN - dur) : startMin;
+    const clampedEnd = Math.min(DAY_END_MIN, clampedStart + dur);
     out.push({
       title: ev.title,
       description: ev.description,
       type: ev.type,
-      startTime: minutesToHHMM(startMin),
-      endTime: minutesToHHMM(endMin),
+      startTime: minutesToHHMM(clampedStart),
+      endTime: minutesToHHMM(clampedEnd),
     });
-    cursor = endMin + GAP_MIN;
   }
+  out.sort((a, b) => a.startTime.localeCompare(b.startTime));
   return out;
 }
 
 /**
- * Picks 5 catalog activities (4+1 by intensity vs mode), shuffles, assigns times from 09:00 with lunch skip 12–13.
+ * Picks 5 catalog activities (4+1 by intensity vs mode), shuffles, then distributes
+ * start times with hard constraints:
+ * - At least one event starts in 07:00–12:00
+ * - At least one event starts in 12:00–18:00
+ * Remaining events are randomly placed in 07:00–22:00 (deterministic by seed).
  */
 export function composeRandomDaySchedule(
   catalogItems: CatalogActivity[],

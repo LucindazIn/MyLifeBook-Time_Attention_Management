@@ -94,20 +94,18 @@ export const DayTagSelector: React.FC<DayTagSelectorProps> = ({
   return (
     <div className="relative inline-block" ref={menuRef}>
       <button
+        type="button"
         ref={triggerRef}
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "flex items-center justify-center transition-all",
-          currentTag
-            ? "w-auto min-w-[2.5rem] h-10 px-2 rounded-full bg-transparent border-none shadow-none hover:bg-field"
-            : "w-10 h-10 rounded-full shadow-sm border bg-field border-border hover:bg-surface hover:border-border"
+          'inline-flex w-8 h-8 items-center justify-center transition-colors rounded-full text-accent border border-transparent shadow-none hover:bg-accent/20 active:bg-accent/30'
         )}
         title={language === 'zh' ? '给今天打个标签' : 'Tag the day'}
       >
         {currentTag ? (
-          <span className="text-xl leading-none">{currentTag}</span>
+          <span className="text-base leading-none">{currentTag}</span>
         ) : (
-          <Tag className="w-4 h-4 text-muted-foreground" />
+          <Tag className="w-3.5 h-3.5" />
         )}
       </button>
 

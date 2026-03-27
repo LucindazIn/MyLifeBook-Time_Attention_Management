@@ -95,7 +95,20 @@ export async function listAllEventsWithTags(supabase: SupabaseClient, userId: st
     .map(e => toScheduleEvent(e, tagsByEventId[e.id] || [], longTermGoalsByEventId[e.id] || []));
 }
 
-export async function upsertEventWithTags(supabase: SupabaseClient, userId: string, event: ScheduleEvent): Promise<void> {
+export type UpsertEventWithTagsOptions = {
+  /**
+   * New events have no prior `event_tags` rows; skip the "mark all deleted" UPDATE
+   * to save one network round trip (common case: create with no tags).
+   */
+  isNewEvent?: boolean;
+};
+
+export async function upsertEventWithTags(
+  supabase: SupabaseClient,
+  userId: string,
+  event: ScheduleEvent,
+  options?: UpsertEventWithTagsOptions
+): Promise<void> {
   const payload: Partial<DbEventRow> = {
     id: event.id,
     user_id: userId,
@@ -118,7 +131,21 @@ export async function upsertEventWithTags(supabase: SupabaseClient, userId: stri
   const { error: upsertErr } = await supabase.from('events').upsert(payload, { onConflict: 'id' });
   if (upsertErr) throw upsertErr;
 
-  // Simplest V1: mark all existing tags deleted, then upsert the current set.
+  const tags = Array.from(new Set((event.tags || []).map(normalizeTag).filter(Boolean)));
+  const longTermGoals = Array.from(new Set((event.longTermGoals || []).map(normalizeTag).filter(Boolean)));
+  const tagRows: DbEventTagRow[] = [
+    ...tags.map(tag => ({ user_id: userId, event_id: event.id, tag, deleted: false })),
+    ...longTermGoals.map(g => ({ user_id: userId, event_id: event.id, tag: LONGTERM_PREFIX + g, deleted: false })),
+  ];
+
+  if (options?.isNewEvent) {
+    if (tagRows.length === 0) return;
+    const { error: tagsErr } = await supabase.from('event_tags').upsert(tagRows, { onConflict: 'user_id,event_id,tag' });
+    if (tagsErr) throw tagsErr;
+    return;
+  }
+
+  // Edit flow: mark all existing tags deleted, then upsert the current set.
   const { error: markDelErr } = await supabase
     .from('event_tags')
     .update({ deleted: true })
@@ -126,12 +153,6 @@ export async function upsertEventWithTags(supabase: SupabaseClient, userId: stri
     .eq('event_id', event.id);
   if (markDelErr) throw markDelErr;
 
-  const tags = Array.from(new Set((event.tags || []).map(normalizeTag).filter(Boolean)));
-  const longTermGoals = Array.from(new Set((event.longTermGoals || []).map(normalizeTag).filter(Boolean)));
-  const tagRows: DbEventTagRow[] = [
-    ...tags.map(tag => ({ user_id: userId, event_id: event.id, tag, deleted: false })),
-    ...longTermGoals.map(g => ({ user_id: userId, event_id: event.id, tag: LONGTERM_PREFIX + g, deleted: false })),
-  ];
   if (tagRows.length === 0) return;
 
   const { error: tagsErr } = await supabase.from('event_tags').upsert(tagRows, { onConflict: 'user_id,event_id,tag' });

@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Calendar, CheckCircle2, Clock, Sparkles, Star, Sparkle, Trash2 } from 'lucide-react';
+import { X, Calendar, CheckCircle2, Clock, Sparkles, Star, Sparkle, Trash2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { EventType, ScheduleEvent, AppLanguage } from '@/types';
@@ -13,7 +13,7 @@ import * as chrono from 'chrono-node';
 interface AddEventModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (event: ScheduleEvent) => void;
+  onAdd: (event: ScheduleEvent) => void | Promise<void>;
   /** 删除主日程（含重复日程母事件）；由 App 持久化 */
   onDelete?: (eventId: string) => void | Promise<void>;
   selectedDate: Date;
@@ -37,7 +37,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
 }) => {
   // Form State
   const [title, setTitle] = useState('');
-  const [type, setType] = useState<EventType>('meeting');
+  const [type, setType] = useState<EventType>('todo');
   const [date, setDate] = useState(format(selectedDate, 'yyyy-MM-dd'));
   const [startTime, setStartTime] = useState('09:00');
   const [endTime, setEndTime] = useState('10:00');
@@ -55,6 +55,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
   const [highlight, setHighlight] = useState(false);
   const [longTermGoalInput, setLongTermGoalInput] = useState('');
   const [longTermGoals, setLongTermGoals] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
   const meaningRef = useRef<HTMLTextAreaElement>(null);
@@ -201,7 +202,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
         setLongTermGoals(initialEvent.longTermGoals ?? []);
       } else {
         setTitle('');
-        setType('meeting');
+        setType('todo');
         setDate(format(selectedDate, 'yyyy-MM-dd'));
         setStartTime('09:00');
         setEndTime('10:00');
@@ -281,9 +282,13 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    if (isSubmitting) return;
+    // #region agent log
+    fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f6ac8d'},body:JSON.stringify({sessionId:'f6ac8d',runId:'pre-fix',hypothesisId:'T1',location:'AddEventModal.tsx:handleSubmit',message:'submit add/edit event',data:{innerW:typeof window!=='undefined'?window.innerWidth:null,hasLabel:!!labelText.trim(),labelColor},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
+
     // Construct full ISO strings using the selected date
     const startDateTime = new Date(date);
     const [startHour, startMinute] = startTime.split(':').map(Number);
@@ -324,7 +329,16 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
     };
 
     if (roleValue?.startsWith('custom:')) recordRoleUsage(roleValue);
-    onAdd(newEvent);
+
+    setIsSubmitting(true);
+    try {
+      await Promise.resolve(onAdd(newEvent));
+    } catch {
+      return;
+    } finally {
+      setIsSubmitting(false);
+    }
+
     const trimmedLabel = labelText.trim();
     if (trimmedLabel && !(language === 'zh' ? SUGGESTED_LABELS_ZH : SUGGESTED_LABELS_EN).includes(trimmedLabel)) {
       const next = [trimmedLabel, ...savedCustomTags.filter((t) => t !== trimmedLabel)];
@@ -343,7 +357,6 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
         } catch (_) {}
       }
     });
-    onClose();
   };
 
   // Labels based on language
@@ -424,36 +437,36 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                           />
                           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="text-xs text-muted-foreground whitespace-nowrap">{language === 'zh' ? '属性' : 'Type'}</span>
-                              <button
-                                type="button"
-                                onClick={() => setType('meeting')}
-                                className={cn(
-                                  "flex items-center justify-center py-2 px-2.5 text-sm font-medium rounded-lg transition-all border",
-                                  type === 'meeting'
-                                    ? "bg-accent/20 border-accent text-accent"
-                                    : "bg-field border-border text-muted-foreground hover:bg-surface"
-                                )}
-                              >
-                                <Calendar className="w-4 h-4 mr-1" />
-                                {labels.meeting}
-                              </button>
+                              <span className="text-xs font-medium tracking-wider text-muted-foreground whitespace-nowrap">{language === 'zh' ? '属性' : 'Type'}</span>
                               <button
                                 type="button"
                                 onClick={() => setType('todo')}
                                 className={cn(
                                   "flex items-center justify-center py-2 px-2.5 text-sm font-medium rounded-lg transition-all border",
                                   type === 'todo'
-                                    ? "bg-emerald-500/20 border-emerald-500/60 text-emerald-600"
+                                    ? "bg-accent/20 border-accent text-accent"
                                     : "bg-field border-border text-muted-foreground hover:bg-surface"
                                 )}
                               >
                                 <CheckCircle2 className="w-4 h-4 mr-1" />
                                 {labels.todo}
                               </button>
+                              <button
+                                type="button"
+                                onClick={() => setType('meeting')}
+                                className={cn(
+                                  "flex items-center justify-center py-2 px-2.5 text-sm font-medium rounded-lg transition-all border",
+                                  type === 'meeting'
+                                    ? "bg-emerald-500/20 border-emerald-500/60 text-emerald-600"
+                                    : "bg-field border-border text-muted-foreground hover:bg-surface"
+                                )}
+                              >
+                                <Calendar className="w-4 h-4 mr-1" />
+                                {labels.meeting}
+                              </button>
                             </div>
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="text-xs text-muted-foreground whitespace-nowrap">{language === 'zh' ? '标记' : 'Mark'}</span>
+                              <span className="text-xs font-medium tracking-wider text-muted-foreground whitespace-nowrap">{language === 'zh' ? '标记' : 'Mark'}</span>
                               <button
                                 type="button"
                                 onClick={() => setStarred(!starred)}
@@ -492,33 +505,33 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                         <label className="block text-xs font-medium text-muted-foreground tracking-wider mb-2">
                           {labels.when}
                         </label>
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="col-span-2">
+                        <div className="grid grid-cols-1 min-[380px]:grid-cols-2 gap-3">
+                          <div className="min-[380px]:col-span-2 min-w-0">
                              <Input
                                 type="date"
                                 value={date}
                                 onChange={(e) => setDate(e.target.value)}
                                 required
-                                className="rounded-md bg-field border-border focus:border-accent"
+                                className="w-full min-w-0 rounded-md bg-field border-border focus:border-accent text-base"
                              />
                           </div>
-                          <div className="relative">
-                            <Clock className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
+                          <div className="relative min-w-0">
+                            <Clock className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
                             <Input
                               type="time"
                               value={startTime}
                               onChange={handleStartTimeChange}
-                              className="pl-9 rounded-md border-border bg-field focus:border-accent"
+                              className="w-full min-w-0 pl-9 rounded-md border-border bg-field focus:border-accent text-base"
                               required
                             />
                           </div>
-                          <div className="relative">
-                            <Clock className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
+                          <div className="relative min-w-0">
+                            <Clock className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
                             <Input
                               type="time"
                               value={endTime}
                               onChange={(e) => setEndTime(e.target.value)}
-                              className="pl-9 rounded-md border-border bg-field focus:border-accent"
+                              className="w-full min-w-0 pl-9 rounded-md border-border bg-field focus:border-accent text-base"
                               required
                             />
                           </div>
@@ -529,7 +542,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                       <div>
                         <div className="flex flex-wrap items-end gap-3">
                           <div className="flex-1 min-w-[120px]">
-                            <label className="block text-xs text-muted-foreground mb-1">{language === 'zh' ? '重复' : 'Repeat'}</label>
+                            <label className="block text-xs font-medium tracking-wider text-muted-foreground mb-1">{language === 'zh' ? '重复' : 'Repeat'}</label>
                             <select
                               value={recurrenceFreq}
                               onChange={(e) => setRecurrenceFreq(e.target.value as any)}
@@ -544,7 +557,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                           {recurrenceFreq !== 'none' && (
                             <>
                               <div className="w-24">
-                                <label className="block text-xs text-muted-foreground mb-1">{language === 'zh' ? '间隔' : 'Interval'}</label>
+                                <label className="block text-xs font-medium tracking-wider text-muted-foreground mb-1">{language === 'zh' ? '间隔' : 'Interval'}</label>
                                 <Input
                                   type="number"
                                   min="1"
@@ -554,7 +567,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                                 />
                               </div>
                               <div className="min-w-[140px]">
-                                <label className="block text-xs text-muted-foreground mb-1">{language === 'zh' ? '结束日期 (可选)' : 'End Date (Optional)'}</label>
+                                <label className="block text-xs font-medium tracking-wider text-muted-foreground mb-1">{language === 'zh' ? '结束日期 (可选)' : 'End Date (Optional)'}</label>
                                 <Input
                                   type="date"
                                   value={recurrenceEndDate}
@@ -569,7 +582,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
 
                       {/* 长期目标：第一行与详情同 grid，输入框与详情等宽；第二行现有长期目标快捷选择 */}
                       <div className="w-full">
-                        <label className="block text-xs text-muted-foreground mb-1">{language === 'zh' ? '长期目标' : 'Long-Term Goals'}</label>
+                        <label className="block text-xs font-medium tracking-wider text-muted-foreground mb-1">{language === 'zh' ? '长期目标' : 'Long-Term Goals'}</label>
                         <div className="grid grid-cols-2 gap-4 max-w-full">
                           <div className="min-w-0">
                             <Input
@@ -633,7 +646,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                       <div>
                         <div className="grid grid-cols-2 gap-4 max-w-full">
                           <div className="min-w-0 flex flex-col">
-                            <label className="text-xs text-muted-foreground mb-1">{language === 'zh' ? '详情' : 'Details'}</label>
+                            <label className="text-xs font-medium tracking-wider text-muted-foreground mb-1">{language === 'zh' ? '详情' : 'Details'}</label>
                             <textarea
                               ref={descriptionRef}
                               value={description}
@@ -644,7 +657,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                             />
                           </div>
                           <div className="min-w-0 flex flex-col">
-                            <label className="text-xs text-muted-foreground mb-1">{language === 'zh' ? '意义' : 'What It Means to Me'}</label>
+                            <label className="text-xs font-medium tracking-wider text-muted-foreground mb-1">{language === 'zh' ? '意义' : 'What It Means to Me'}</label>
                             <textarea
                               ref={meaningRef}
                               value={meaning}
@@ -661,7 +674,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                       <div>
                         <div className="grid gap-4 grid-cols-[7fr_3fr] items-start">
                           <div className="min-w-0">
-                            <label className="block text-xs text-muted-foreground mb-1">
+                            <label className="block text-xs font-medium tracking-wider text-muted-foreground mb-1">
                               {language === 'zh' ? '日程标签' : 'Event Tag'}
                             </label>
                             <div className="flex items-center gap-2">
@@ -717,7 +730,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                             </div>
                           </div>
                           <div className="min-w-0">
-                            <label className="block text-xs text-muted-foreground mb-1">
+                            <label className="block text-xs font-medium tracking-wider text-muted-foreground mb-1">
                               {language === 'zh' ? '角色' : 'Role'}
                             </label>
                             <select
@@ -784,7 +797,12 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                           <Button type="button" variant="ghost" onClick={onClose} className="rounded-md">
                             {labels.cancel}
                           </Button>
-                          <Button type="submit" className="rounded-md px-6 shadow-sm bg-accent text-accent-foreground hover:opacity-90">
+                          <Button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="rounded-md px-6 shadow-sm bg-accent text-accent-foreground hover:opacity-90 disabled:opacity-60"
+                          >
+                            {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-2 inline" /> : null}
                             {labels.add}
                           </Button>
                         </div>

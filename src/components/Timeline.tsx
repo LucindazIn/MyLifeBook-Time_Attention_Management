@@ -82,7 +82,7 @@ export const Timeline: React.FC<TimelineProps> = ({
               variant="outline" 
               onClick={() => onGenerateSchedule('chill')}
               disabled={!!generatingMode}
-              className="bg-surface hover:bg-emerald-500/20 border-border text-foreground hover:text-emerald-600 hover:border-emerald-500/60 transition-all duration-300 group"
+              className="bg-surface hover:bg-accent/20 active:bg-accent/30 border-border text-foreground hover:text-accent hover:border-accent transition-all duration-300 group"
             >
               {generatingMode === 'chill' ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -96,7 +96,7 @@ export const Timeline: React.FC<TimelineProps> = ({
               variant="outline"
               onClick={() => onGenerateSchedule('productive')}
               disabled={!!generatingMode}
-              className="bg-surface hover:bg-accent/20 border-border text-foreground hover:text-accent hover:border-accent transition-all duration-300 group"
+              className="bg-surface hover:bg-accent/20 active:bg-accent/30 border-border text-foreground hover:text-accent hover:border-accent transition-all duration-300 group"
             >
               {generatingMode === 'productive' ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -205,7 +205,7 @@ export const Timeline: React.FC<TimelineProps> = ({
                       {event.completed ? (
                         <Check className="w-3 h-3" />
                       ) : event.type === 'meeting' ? (
-                        <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground group-hover:bg-accent transition-colors" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground group-hover:bg-emerald-600 transition-colors" />
                       ) : null}
                     </button>
                     
@@ -219,7 +219,7 @@ export const Timeline: React.FC<TimelineProps> = ({
                             <Users
                               className={cn(
                                 "w-4 h-4 flex-shrink-0",
-                                !event.label?.color && "text-accent"
+                                !event.label?.color && "text-emerald-600 dark:text-emerald-400"
                               )}
                               style={event.label?.color ? { color: event.label.color } : undefined}
                             />

@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useEffect, useState } from 'react';
+import React, { useMemo, useRef, useEffect, useState, useCallback } from 'react';
 import { format } from 'date-fns';
 import { Zap, Tag, TrendingUp } from 'lucide-react';
 import type { AppLanguage, ScheduleEvent } from '@/types';
@@ -159,6 +159,8 @@ export const ChapterPeriodStatusSection: React.FC<ChapterPeriodStatusSectionProp
 }) => {
   const isZh = language === 'zh';
   const { start, end } = useMemo(() => parseChapterPeriodBounds(periodStart, periodEnd), [periodStart, periodEnd]);
+  const [roleTapId, setRoleTapId] = useState<string | null>(null);
+  const [tagTap, setTagTap] = useState<string | null>(null);
 
   const roleData = useMemo(
     () => computeRoleEnergyPercentagesForRange(events, start, end, completedInstances),
@@ -170,6 +172,10 @@ export const ChapterPeriodStatusSection: React.FC<ChapterPeriodStatusSectionProp
     roleData.segments.forEach((s) => m.set(s.roleId, s.count));
     return m;
   }, [roleData.segments]);
+
+  const toggleRoleTap = useCallback((roleId: string) => {
+    setRoleTapId((prev) => (prev === roleId ? null : roleId));
+  }, []);
 
   const tagData = useMemo(
     () => computeEventTagSlicesForRange(events, start, end, completedInstances),
@@ -211,15 +217,31 @@ export const ChapterPeriodStatusSection: React.FC<ChapterPeriodStatusSectionProp
                   ? `${name}：${pct}%（${n}/${roleData.totalEvents}）`
                   : `${name}: ${pct}% (${n}/${roleData.totalEvents})`;
                 return (
-                  <div
+                  <button
+                    type="button"
                     key={roleId}
-                    className="h-full min-w-px shrink-0 transition-all"
+                    className="h-full min-w-px shrink-0 transition-all cursor-pointer border-0 p-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--app-accent)]"
                     style={{ width: `${pct}%`, backgroundColor: getRoleColor(roleId) }}
                     title={titleStr}
+                    aria-pressed={roleTapId === roleId}
+                    onClick={() => toggleRoleTap(roleId)}
                   />
                 );
               })}
             </div>
+            {roleTapId != null && (() => {
+              const pct = roleData.percentages.find(([id]) => id === roleTapId)?.[1] ?? 0;
+              const n = roleCountById.get(roleTapId) ?? 0;
+              const name = getRoleDisplayName(roleTapId, isZh ? 'zh' : 'en');
+              const line = isZh
+                ? `${name}：${pct}%（${n}/${roleData.totalEvents}）`
+                : `${name}: ${pct}% (${n}/${roleData.totalEvents})`;
+              return (
+                <p className="text-[11px] font-medium rounded-lg px-2 py-1.5 border mt-1" style={{ color: 'var(--app-text)', borderColor: 'var(--app-border)', backgroundColor: 'var(--app-surface)' }}>
+                  {line}
+                </p>
+              );
+            })()}
             <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-[11px]">
               {roleData.percentages.map(([roleId]) => (
                 <span
@@ -233,7 +255,7 @@ export const ChapterPeriodStatusSection: React.FC<ChapterPeriodStatusSectionProp
               ))}
             </div>
             <p className="text-[10px] leading-snug" style={{ color: 'var(--app-muted)' }}>
-              {isZh ? '悬停色条查看比例与条数' : 'Hover Bar For Proportion And Counts'}
+              {isZh ? '点击或悬停色条查看比例与条数' : 'Tap Or Hover The Bar For Proportion And Counts'}
             </p>
           </>
         ) : (
@@ -262,19 +284,34 @@ export const ChapterPeriodStatusSection: React.FC<ChapterPeriodStatusSectionProp
                   ? `${tag}：${count}（${pct.toFixed(1)}%）`
                   : `${tag}: ${count} (${pct.toFixed(1)}%)`;
                 return (
-                  <div
+                  <button
+                    type="button"
                     key={tag}
-                    className="h-full min-w-px shrink-0 transition-all"
+                    className="h-full min-w-px shrink-0 transition-all cursor-pointer border-0 p-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--app-accent)]"
                     style={{ width: `${pct}%`, backgroundColor: sliceColor(i) }}
                     title={titleStr}
+                    aria-pressed={tagTap === tag}
+                    onClick={() => setTagTap((prev) => (prev === tag ? null : tag))}
                   />
                 );
               })}
             </div>
+            {tagTap != null && (() => {
+              const count = tagData.slices.find(([t]) => t === tagTap)?.[1] ?? 0;
+              const pct = tagData.total > 0 ? (count / tagData.total) * 100 : 0;
+              const line = isZh
+                ? `${tagTap}：${count}（${pct.toFixed(1)}%）`
+                : `${tagTap}: ${count} (${pct.toFixed(1)}%)`;
+              return (
+                <p className="text-[11px] font-medium rounded-lg px-2 py-1.5 border mt-1" style={{ color: 'var(--app-text)', borderColor: 'var(--app-border)', backgroundColor: 'var(--app-surface)' }}>
+                  {line}
+                </p>
+              );
+            })()}
             <p className="text-[10px] leading-snug" style={{ color: 'var(--app-muted)' }}>
               {isZh
-                ? `${tagData.total}条标签记录，悬停色块查看各标签数量`
-                : `${tagData.total} Tag Entries, Hover Segments For Counts By Tag`}
+                ? `${tagData.total}条标签记录，点击或悬停色块查看各标签数量`
+                : `${tagData.total} Tag Entries, Tap Or Hover Segments For Counts By Tag`}
             </p>
           </div>
         )}

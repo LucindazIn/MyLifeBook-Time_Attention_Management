@@ -49,20 +49,11 @@ export const DailyJournal: React.FC<DailyJournalProps> = ({
     setSummary(initialSummary);
   }, [initialSummary]);
 
-  useEffect(() => {
-    // #region agent log
-    fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c2683e'},body:JSON.stringify({sessionId:'c2683e',runId:'pre-fix',hypothesisId:'H6',location:'DailyJournal.tsx:isListening-useEffect',message:'isListening state changed',data:{isListening,shouldListen:shouldListenRef.current},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
-  }, [isListening]);
-
   // Initialize Speech Recognition
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    // #region agent log
-    fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c2683e'},body:JSON.stringify({sessionId:'c2683e',runId:'pre-fix',hypothesisId:'H1',location:'DailyJournal.tsx:SpeechRecognitionCheck',message:'speech recognition availability checked',data:{hasSpeechRecognition:!!SpeechRecognition,language},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     if (!SpeechRecognition) {
       setIsSpeechSupported(false);
       return;
@@ -74,51 +65,30 @@ export const DailyJournal: React.FC<DailyJournalProps> = ({
     recognition.interimResults = true;
     recognition.maxAlternatives = 3;
     recognition.lang = language === 'zh' ? 'zh-CN' : 'en-US';
-    // #region agent log
-    fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c2683e'},body:JSON.stringify({sessionId:'c2683e',runId:'pre-fix',hypothesisId:'H8',location:'DailyJournal.tsx:recognition-config',message:'recognition configured',data:{lang:recognition.lang,continuous:recognition.continuous,interimResults:recognition.interimResults,maxAlternatives:recognition.maxAlternatives,isMobile:/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
 
     recognition.onstart = () => {
-      // #region agent log
-      fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c2683e'},body:JSON.stringify({sessionId:'c2683e',runId:'pre-fix',hypothesisId:'H2',location:'DailyJournal.tsx:onstart',message:'recognition onstart fired',data:{shouldListen:shouldListenRef.current},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
       setIsListening(true);
     };
 
     recognition.onresult = (event: any) => {
       let finalTranscript = '';
-      let finalCount = 0;
-      let interimCount = 0;
       for (let i = event.resultIndex; i < event.results.length; ++i) {
         if (event.results[i].isFinal) {
           finalTranscript += event.results[i][0].transcript;
-          finalCount += 1;
-        } else {
-          interimCount += 1;
         }
       }
-      // #region agent log
-      fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c2683e'},body:JSON.stringify({sessionId:'c2683e',runId:'pre-fix',hypothesisId:'H9',location:'DailyJournal.tsx:onresult-meta',message:'recognition result meta',data:{resultIndex:event?.resultIndex,resultsLength:event?.results?.length ?? null,finalCount,interimCount,finalCharLen:finalTranscript.trim().length,containsCJK:/[\u3400-\u9FBF]/.test(finalTranscript),containsPunctuation:/[.,!?;:，。！？；：]/.test(finalTranscript),endsWithPunctuation:/[.,!?;:，。！？；：]\s*$/.test(finalTranscript),uiLanguage:language},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
 
       if (finalTranscript) {
         setSummary(prev => {
           const normalized = finalTranscript.trim();
           const joiner = language === 'zh' ? '' : (prev ? ' ' : '');
-          const next = `${prev}${joiner}${normalized}`;
-          // #region agent log
-          fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c2683e'},body:JSON.stringify({sessionId:'c2683e',runId:'pre-fix',hypothesisId:'H10',location:'DailyJournal.tsx:onresult-apply',message:'final transcript applied to summary',data:{prevLen:prev.length,addedLen:normalized.length,nextLen:next.length,joinerType:language === 'zh' ? 'none' : 'space'},timestamp:Date.now()})}).catch(()=>{});
-          // #endregion
-          return next;
+          return `${prev}${joiner}${normalized}`;
         });
       }
     };
 
     recognition.onerror = (event: any) => {
       console.error('Speech recognition error', event.error);
-      // #region agent log
-      fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c2683e'},body:JSON.stringify({sessionId:'c2683e',runId:'pre-fix',hypothesisId:'H4',location:'DailyJournal.tsx:onerror',message:'recognition error event',data:{error:event?.error,shouldListenBeforeReset:shouldListenRef.current,isListeningBeforeReset:isListening},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
       shouldListenRef.current = false;
       setIsListening(false);
       if (event.error === 'not-allowed') {
@@ -129,20 +99,13 @@ export const DailyJournal: React.FC<DailyJournalProps> = ({
     };
 
     recognition.onend = () => {
-      // #region agent log
-      fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c2683e'},body:JSON.stringify({sessionId:'c2683e',runId:'pre-fix',hypothesisId:'H3',location:'DailyJournal.tsx:onend',message:'recognition onend fired',data:{shouldListen:shouldListenRef.current},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
       if (!shouldListenRef.current) {
         setIsListening(false);
         return;
       }
-      // 部分浏览器会中途结束，这里按“持续监听意图”自动续接
       try {
         recognition.start();
       } catch {
-        // #region agent log
-        fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c2683e'},body:JSON.stringify({sessionId:'c2683e',runId:'pre-fix',hypothesisId:'H3',location:'DailyJournal.tsx:onend-restart-catch',message:'restart after onend failed',data:{shouldListen:shouldListenRef.current},timestamp:Date.now()})}).catch(()=>{});
-        // #endregion
         shouldListenRef.current = false;
         setIsListening(false);
       }
@@ -168,36 +131,21 @@ export const DailyJournal: React.FC<DailyJournalProps> = ({
 
   const toggleListening = () => {
     setError(null);
-    // #region agent log
-    fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c2683e'},body:JSON.stringify({sessionId:'c2683e',runId:'pre-fix',hypothesisId:'H2',location:'DailyJournal.tsx:toggleListening-entry',message:'toggle listening invoked',data:{isSpeechSupported,isListening,shouldListen:shouldListenRef.current},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     if (!isSpeechSupported) {
       setError(language === 'zh' ? '当前浏览器不支持语音输入，请尝试使用最新版本的 Chrome 或 Edge。' : 'Your browser does not support speech input. Please try a recent version of Chrome or Edge.');
       return;
     }
     if (isListening || shouldListenRef.current) {
       shouldListenRef.current = false;
-      // #region agent log
-      fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c2683e'},body:JSON.stringify({sessionId:'c2683e',runId:'pre-fix',hypothesisId:'H7',location:'DailyJournal.tsx:toggleListening-stop-branch',message:'attempting recognition.stop',data:{hasRecognition:!!recognitionRef.current,isListening,shouldListenAfterSet:shouldListenRef.current},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
       recognitionRef.current?.stop();
       setIsListening(false);
     } else {
       shouldListenRef.current = true;
-      setIsEditing(true); // Auto-enable editing when speaking
+      setIsEditing(true);
       try {
-        // #region agent log
-        fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c2683e'},body:JSON.stringify({sessionId:'c2683e',runId:'pre-fix',hypothesisId:'H7',location:'DailyJournal.tsx:toggleListening-start-before',message:'attempting recognition.start',data:{hasRecognition:!!recognitionRef.current,isListening,shouldListenAfterSet:shouldListenRef.current},timestamp:Date.now()})}).catch(()=>{});
-        // #endregion
         recognitionRef.current?.start();
-        // #region agent log
-        fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c2683e'},body:JSON.stringify({sessionId:'c2683e',runId:'pre-fix',hypothesisId:'H7',location:'DailyJournal.tsx:toggleListening-start-after',message:'recognition.start called without throw',data:{hasRecognition:!!recognitionRef.current,isListening,shouldListen:shouldListenRef.current},timestamp:Date.now()})}).catch(()=>{});
-        // #endregion
       } catch (e) {
-        console.error("Failed to start recognition", e);
-        // #region agent log
-        fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c2683e'},body:JSON.stringify({sessionId:'c2683e',runId:'pre-fix',hypothesisId:'H5',location:'DailyJournal.tsx:toggleListening-start-catch',message:'start recognition threw',data:{error:e instanceof Error?e.message:String(e),isListening,shouldListen:shouldListenRef.current},timestamp:Date.now()})}).catch(()=>{});
-        // #endregion
+        console.error('Failed to start recognition', e);
         shouldListenRef.current = false;
         setIsListening(false);
         setError(language === 'zh' ? '无法启动语音识别' : 'Failed to start speech recognition');
@@ -222,13 +170,16 @@ export const DailyJournal: React.FC<DailyJournalProps> = ({
       onSave(generated);
       setIsEditing(true);
     } catch (error) {
-      console.error("Failed to generate summary", error);
+      console.error('Failed to generate summary', error);
     } finally {
       setIsGenerating(false);
     }
   };
 
   const handleSave = () => {
+    // #region agent log
+    fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f6ac8d'},body:JSON.stringify({sessionId:'f6ac8d',runId:'pre-fix',hypothesisId:'J1',location:'DailyJournal.tsx:handleSave',message:'user tapped save meaning',data:{summaryLen:summary.length,dateKey:typeof date?.toISOString==='function'?date.toISOString().slice(0,10):''},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     onSave(summary);
     setIsEditing(false);
   };
@@ -240,7 +191,7 @@ export const DailyJournal: React.FC<DailyJournalProps> = ({
     save: language === 'zh' ? '保存' : 'Save',
     placeholder: language === 'zh' ? '今天对你意味着什么？写一句或一段…' : "What did today mean to you? Write a line or two…",
     listening: language === 'zh' ? '正在聆听…' : 'Listening…',
-    emptyState: language === 'zh' ? '还没有意义总结。点击生成或开始写作。' : "No meaning summary yet. Generate one or start writing.",
+    emptyState: language === 'zh' ? '还没有意义总结。点击编辑开始写作。' : 'No meaning summary yet. Tap edit to write.',
   };
 
   const SNIPPETS = language === 'zh'
@@ -257,22 +208,22 @@ export const DailyJournal: React.FC<DailyJournalProps> = ({
         isPast ? "ring-4 ring-border/50" : ""
       )}
     >
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center text-accent">
+      <div className="flex items-center justify-between mb-6 gap-2 flex-wrap">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center text-accent shrink-0">
             <Edit3 className="w-5 h-5" />
           </div>
           <h2 className="text-xl font-serif font-bold text-foreground">{labels.title}</h2>
         </div>
         
-        <div className="flex gap-2">
+        <div className="flex gap-2 shrink-0">
           {!summary && events.length > 0 && (
             <Button 
               variant="outline" 
               size="sm" 
               onClick={handleGenerate} 
               disabled={isGenerating}
-              className="rounded-full border-border text-accent hover:bg-accent/20"
+              className="hidden md:inline-flex rounded-full border-border text-accent hover:bg-accent/20"
             >
               {isGenerating ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
               {labels.generate}
@@ -318,7 +269,6 @@ export const DailyJournal: React.FC<DailyJournalProps> = ({
 
       {isEditing ? (
         <div className="space-y-3">
-          {/* Snippet quick-insert buttons */}
           <div className="flex flex-wrap gap-1.5">
             {SNIPPETS.map(snippet => (
               <button

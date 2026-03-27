@@ -30,16 +30,16 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onToggleComplete, c
         {isTodo ? (
           <button
             onClick={() => onToggleComplete?.(event.id)}
-            className="text-slate-400 hover:text-emerald-500 transition-colors"
+            className="text-slate-400 hover:text-indigo-500 transition-colors"
           >
             {isCompleted ? (
-              <CheckSquare className="w-5 h-5 text-emerald-500" />
+              <CheckSquare className="w-5 h-5 text-indigo-500" />
             ) : (
               <Square className="w-5 h-5" />
             )}
           </button>
         ) : (
-          <div className="w-5 h-5 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-500">
+          <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
             <CalendarIcon className="w-3 h-3" />
           </div>
         )}
@@ -66,7 +66,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onToggleComplete, c
       {/* Decorative accent based on type */}
       <div className={cn(
         "absolute left-0 top-4 bottom-4 w-1 rounded-r-full opacity-0 group-hover:opacity-100 transition-opacity",
-        isTodo ? "bg-emerald-400" : "bg-indigo-400"
+        isTodo ? "bg-indigo-400" : "bg-emerald-400"
       )} />
     </motion.div>
   );

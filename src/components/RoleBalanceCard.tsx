@@ -224,7 +224,7 @@ export const RoleBalanceCard: React.FC<RoleBalanceCardProps> = ({
             </h4>
             <span className="text-xs flex items-center gap-1.5 shrink-0" style={{ color: 'var(--app-muted)' }}>
               <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: 'var(--app-accent)' }} />
-              {isZh ? '可拖动折线点调整' : 'Drag Points To Adjust'}
+              {isZh ? '可拖动折线点调整；点击数据点查看数值' : 'Drag Points To Adjust; Tap A Point To See Values'}
             </span>
           </div>
           <EnergyLineChart
@@ -265,6 +265,9 @@ function EnergyLineChart({
   const hoverClearTimerRef = useRef<number | null>(null);
   const [width, setWidth] = useState(400);
   const [hoveredDateKey, setHoveredDateKey] = useState<string | null>(null);
+  /** Tap-to-pin badge on touch devices (hover unreliable). */
+  const [pinnedDateKey, setPinnedDateKey] = useState<string | null>(null);
+  const dragDidMoveRef = useRef(false);
 
   const scheduleHoverClear = useCallback(() => {
     if (hoverClearTimerRef.current != null) {
@@ -308,6 +311,7 @@ function EnergyLineChart({
     (e: React.PointerEvent, dateKey: string) => {
       e.preventDefault();
       e.stopPropagation();
+      dragDidMoveRef.current = false;
       if (hoverClearTimerRef.current != null) {
         window.clearTimeout(hoverClearTimerRef.current);
         hoverClearTimerRef.current = null;
@@ -329,6 +333,7 @@ function EnergyLineChart({
     if (!point) return;
 
     const onMove = (e: PointerEvent) => {
+      dragDidMoveRef.current = true;
       const el = containerRef.current;
       if (!el) return;
       const rect = el.getBoundingClientRect();
@@ -338,7 +343,9 @@ function EnergyLineChart({
       const clamped = Math.min(100, Math.max(0, energy));
       onEnergyDrag(dragging, clamped);
     };
-    const onUp = () => setDragging(null);
+    const onUp = () => {
+      setDragging(null);
+    };
     window.addEventListener('pointermove', onMove, { passive: false });
     window.addEventListener('pointerup', onUp);
     window.addEventListener('pointercancel', onUp);
@@ -416,6 +423,11 @@ function EnergyLineChart({
                   className="cursor-grab active:cursor-grabbing touch-none"
                   style={{ touchAction: 'none' }}
                   onPointerDown={(e) => handlePointerDown(e, p.dateKey)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (dragDidMoveRef.current) return;
+                    setPinnedDateKey((prev) => (prev === p.dateKey ? null : p.dateKey));
+                  }}
                   onMouseEnter={() => {
                     if (hoverClearTimerRef.current != null) {
                       window.clearTimeout(hoverClearTimerRef.current);
@@ -444,7 +456,8 @@ function EnergyLineChart({
           {dailyEnergy.map((p) => {
             const x = PADDING.left + p.dayIndex * scaleX;
             const y = PADDING.top + (100 - p.energy) * scaleY;
-            const showBadge = hoveredDateKey === p.dateKey || dragging === p.dateKey;
+            const showBadge =
+              hoveredDateKey === p.dateKey || dragging === p.dateKey || pinnedDateKey === p.dateKey;
             if (!showBadge) return null;
             const bw = 52;
             const bx = x - bw / 2;

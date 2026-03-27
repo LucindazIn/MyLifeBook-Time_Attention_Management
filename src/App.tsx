@@ -391,12 +391,25 @@ export default function App() {
   };
 
   const handleAddEvent = async (newEvent: ScheduleEvent) => {
+    const isNewEvent = !events.some((e) => e.id === newEvent.id);
     if (user) {
+      const t0 = typeof performance !== 'undefined' ? performance.now() : 0;
       try {
-        await upsertEventWithTags(supabase, user.id, newEvent);
-      } catch (e: any) {
-        alert(e?.message || 'Failed to save event');
-        return;
+        // #region agent log
+        fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f6ac8d'},body:JSON.stringify({sessionId:'f6ac8d',runId:'perf',hypothesisId:'S1',location:'App.tsx:handleAddEvent:beforeUpsert',message:'upsert event',data:{eventId:newEvent.id,isNewEvent,hasLabel:!!newEvent.label,tagCount:(newEvent.tags?.length ?? 0),ltGoalCount:(newEvent.longTermGoals?.length ?? 0)},timestamp:Date.now()})}).catch(()=>{});
+        // #endregion
+        await upsertEventWithTags(supabase, user.id, newEvent, { isNewEvent });
+        const ms = typeof performance !== 'undefined' ? Math.round(performance.now() - t0) : -1;
+        // #region agent log
+        fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f6ac8d'},body:JSON.stringify({sessionId:'f6ac8d',runId:'perf',hypothesisId:'S2',location:'App.tsx:handleAddEvent:afterUpsert',message:'upsert event finished',data:{eventId:newEvent.id,isNewEvent,durationMs:ms},timestamp:Date.now()})}).catch(()=>{});
+        // #endregion
+      } catch (e: unknown) {
+        const pg = e && typeof e === 'object' ? (e as Record<string, unknown>) : null;
+        // #region agent log
+        fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f6ac8d'},body:JSON.stringify({sessionId:'f6ac8d',runId:'pre-fix',hypothesisId:'E2',location:'App.tsx:handleAddEvent:catch',message:'upsert event failed',data:{msg:String(pg?.message ?? e),code:pg?.code != null ? String(pg.code) : null,details:pg?.details != null ? String(pg.details) : null},timestamp:Date.now()})}).catch(()=>{});
+        // #endregion
+        alert(formatSyncErrorMessage(e, settings.language));
+        throw e;
       }
     }
     setEvents(prev => {
@@ -468,14 +481,28 @@ export default function App() {
       ...prev,
       [dateKey]: summary
     }));
+    // #region agent log
+    fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f6ac8d'},body:JSON.stringify({sessionId:'f6ac8d',runId:'pre-fix',hypothesisId:'J2',location:'App.tsx:handleSaveJournal',message:'save journal invoked',data:{dateKey,hasUser:!!user,summaryLen:summary.length},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     if (user) {
-      upsertDayMeta(supabase, user.id, dateKey, {
+      void upsertDayMeta(supabase, user.id, dateKey, {
         day_name: dayNames[dateKey]?.name || null,
         day_name_is_manual: dayNames[dateKey]?.isManual || false,
         day_name_language: (dayNames[dateKey]?.language as any) || settings.language,
         day_tag: dayTags[dateKey] || null,
         journal: summary || null,
-      }).catch(() => {});
+      })
+        .then(() => {
+          // #region agent log
+          fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f6ac8d'},body:JSON.stringify({sessionId:'f6ac8d',runId:'pre-fix',hypothesisId:'J3',location:'App.tsx:handleSaveJournal:then',message:'day_meta journal upsert ok',data:{dateKey},timestamp:Date.now()})}).catch(()=>{});
+          // #endregion
+        })
+        .catch((e: unknown) => {
+          // #region agent log
+          fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f6ac8d'},body:JSON.stringify({sessionId:'f6ac8d',runId:'pre-fix',hypothesisId:'J4',location:'App.tsx:handleSaveJournal:catch',message:'day_meta journal upsert failed',data:{msg:formatSyncErrorMessage(e, settings.language)},timestamp:Date.now()})}).catch(()=>{});
+          // #endregion
+          setAuthError(formatSyncErrorMessage(e, settings.language));
+        });
     }
   };
 
@@ -996,7 +1023,7 @@ export default function App() {
                         <button
                           type="button"
                           onClick={() => setSelectedFilterTag(null)}
-                          className="w-7 h-7 flex items-center justify-center rounded-full bg-field text-muted-foreground hover:bg-surface transition-colors flex-shrink-0"
+                          className="w-7 h-7 flex items-center justify-center rounded-full bg-field text-muted-foreground hover:bg-accent/15 active:bg-accent/25 transition-colors flex-shrink-0"
                           title={settings.language === 'zh' ? '清除筛选' : 'Clear filter'}
                         >
                           <FilterX className="w-3.5 h-3.5" />
@@ -1014,7 +1041,7 @@ export default function App() {
                               'flex items-center gap-1 pl-1.5 pr-2 h-7 rounded-full text-sm transition-all flex-shrink-0',
                               isActive
                                 ? 'bg-accent/20 ring-2 ring-accent shadow-sm'
-                                : 'bg-field hover:bg-surface hover:shadow-sm'
+                                : 'bg-field hover:bg-accent/15 active:bg-accent/25 hover:shadow-sm'
                             )}
                           >
                             <span>{tag}</span>
@@ -1053,7 +1080,12 @@ export default function App() {
                     setIsViewMenuOpen(!isViewMenuOpen);
                     setIsTimePickerOpen(false);
                   }}
-                  className="flex items-center gap-1 bg-transparent hover:bg-field px-2 sm:px-3 py-2 rounded-lg text-foreground text-sm font-medium transition-colors min-w-0 max-w-[min(11rem,42vw)] justify-between"
+                  className={cn(
+                    'flex items-center gap-1 border px-2 sm:px-3 py-2 rounded-lg text-sm font-medium transition-colors min-w-0 max-w-[min(11rem,42vw)] justify-between',
+                    isViewMenuOpen
+                      ? 'border-accent bg-accent/20 text-accent'
+                      : 'border-accent/35 bg-accent/5 text-foreground hover:bg-accent/15 hover:border-accent/55'
+                  )}
                 >
                   <div className="flex items-center gap-1.5 min-w-0">
                     {viewMode === 'year' && <Grid className="w-4 h-4 shrink-0 text-accent" />}
@@ -1065,8 +1097,8 @@ export default function App() {
                   </div>
                   <ChevronDown
                     className={cn(
-                      'w-4 h-4 shrink-0 text-muted-foreground transition-transform',
-                      isViewMenuOpen && 'rotate-180'
+                      'w-4 h-4 shrink-0 transition-transform',
+                      isViewMenuOpen ? 'text-accent rotate-180' : 'text-muted-foreground'
                     )}
                   />
                 </button>
@@ -1077,7 +1109,7 @@ export default function App() {
                       initial={{ opacity: 0, y: 8, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                      className="absolute right-0 top-full z-[60] mt-2 w-48 max-h-[min(16rem,70vh)] overflow-y-auto overflow-x-hidden rounded-xl border border-border bg-surface py-1 shadow-xl"
+                      className="absolute right-0 top-full z-[60] mt-2 w-48 max-h-[min(16rem,70vh)] overflow-y-auto overflow-x-hidden rounded-xl border border-accent/30 bg-accent/10 py-1 shadow-xl backdrop-blur-2xl backdrop-saturate-150 ring-1 ring-accent/20"
                     >
                     {viewOptions.map((option) => (
                       <button
@@ -1092,12 +1124,14 @@ export default function App() {
                           setIsTimePickerOpen(false);
                         }}
                         className={cn(
-                          "w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors hover:bg-field",
-                          viewMode === option.id ? "text-accent font-medium bg-accent/20" : "text-foreground"
+                          'w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors',
+                          viewMode === option.id
+                            ? 'text-accent font-medium bg-accent/20'
+                            : 'text-foreground hover:bg-accent/15 active:bg-accent/25'
                         )}
                       >
                         <div className="flex items-center gap-2">
-                          <option.icon className={cn("w-4 h-4", viewMode === option.id ? "text-accent" : "text-muted-foreground")} />
+                          <option.icon className={cn('w-4 h-4', viewMode === option.id ? 'text-accent' : 'text-muted-foreground')} />
                           {option.label}
                         </div>
                         {viewMode === option.id && <Check className="w-3.5 h-3.5" />}
@@ -1108,10 +1142,10 @@ export default function App() {
               </AnimatePresence>
             </div>
 
-            <div className="min-w-0 flex-1 flex items-center justify-start gap-1 overflow-x-auto">
+            <div className="min-w-0 flex-1 flex items-center justify-start gap-1">
             {viewMode === 'day' && (
-              <>
-                <Button variant="ghost" size="icon" onClick={() => navigateDate('prev')} className="rounded-full hover:bg-field transition-all shrink-0">
+              <div className="flex items-center gap-1 overflow-x-auto min-w-0 flex-1">
+                <Button variant="ghost" size="icon" onClick={() => navigateDate('prev')} className="rounded-full hover:bg-accent/15 active:bg-accent/25 transition-all shrink-0">
                   <ChevronLeft className="w-5 h-5 text-muted-foreground" />
                 </Button>
                 <input
@@ -1122,36 +1156,24 @@ export default function App() {
                   onChange={e => {
                     if (e.target.value) setCurrentDate(new Date(e.target.value + 'T12:00:00'));
                   }}
-                  className="text-sm font-medium text-foreground bg-transparent hover:bg-field px-2 sm:px-3 py-1.5 rounded-lg transition-colors focus:outline-none focus:ring-1 focus:ring-accent min-w-0"
+                  className="text-sm font-medium text-foreground bg-transparent hover:bg-accent/15 active:bg-accent/25 px-2 sm:px-3 py-1.5 rounded-lg transition-colors focus:outline-none focus:ring-1 focus:ring-accent min-w-0"
                 />
-                <Button variant="ghost" size="icon" onClick={() => navigateDate('next')} className="rounded-full hover:bg-field transition-all shrink-0">
+                <Button variant="ghost" size="icon" onClick={() => navigateDate('next')} className="rounded-full hover:bg-accent/15 active:bg-accent/25 transition-all shrink-0">
                   <ChevronRight className="w-5 h-5 text-muted-foreground" />
                 </Button>
-              </>
+              </div>
             )}
 
             {viewMode !== 'day' && viewMode !== 'collection' && viewMode !== 'lifeBook' && (
               <div className="relative flex items-stretch shrink-0">
-                <div className={cn(
-                  "flex items-center rounded-l-lg border border-r-0 transition-colors",
-                  isTimePickerOpen
-                    ? "border-accent bg-accent/20"
-                    : "border-border bg-surface/80"
-                )}>
-                  {viewMode === 'year' ? (
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={4}
-                      value={yearInputValue}
-                      onChange={(e) => setYearInputValue(e.target.value.replace(/\D/g, ''))}
-                      onBlur={handleYearBlur}
-                      onKeyDown={handleYearKeyDown}
-                      className="w-14 text-sm font-medium text-foreground bg-transparent px-2.5 py-2 rounded-l-lg focus:outline-none focus:ring-1 focus:ring-accent"
-                      placeholder={String(currentYear)}
-                    />
-                  ) : (
-                    <>
+                <div
+                  className={cn(
+                    'flex min-w-0 items-stretch overflow-hidden rounded-lg transition-colors',
+                    isTimePickerOpen ? 'bg-accent/20' : 'bg-accent/5 hover:bg-accent/15'
+                  )}
+                >
+                  <div className="flex min-w-0 items-center">
+                    {viewMode === 'year' ? (
                       <input
                         type="text"
                         inputMode="numeric"
@@ -1160,45 +1182,57 @@ export default function App() {
                         onChange={(e) => setYearInputValue(e.target.value.replace(/\D/g, ''))}
                         onBlur={handleYearBlur}
                         onKeyDown={handleYearKeyDown}
-                        className="w-14 min-w-[3.5rem] text-sm font-medium text-foreground bg-transparent px-2 py-2 rounded-l-lg focus:outline-none focus:ring-1 focus:ring-accent"
+                        className="w-14 text-sm font-medium text-accent placeholder:text-accent/50 bg-transparent px-2.5 py-2 focus:outline-none focus:ring-1 focus:ring-accent"
                         placeholder={String(currentYear)}
                       />
-                      <span className="text-sm font-medium text-foreground pr-2 whitespace-nowrap">
-                        {currentMonthLabel}
-                      </span>
-                    </>
-                  )}
+                    ) : (
+                      <>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          maxLength={4}
+                          value={yearInputValue}
+                          onChange={(e) => setYearInputValue(e.target.value.replace(/\D/g, ''))}
+                          onBlur={handleYearBlur}
+                          onKeyDown={handleYearKeyDown}
+                          className="w-14 min-w-[3.5rem] text-sm font-medium text-accent placeholder:text-accent/50 bg-transparent px-2 py-2 focus:outline-none focus:ring-1 focus:ring-accent"
+                          placeholder={String(currentYear)}
+                        />
+                        <span className="text-sm font-medium text-accent pr-1 whitespace-nowrap">
+                          {currentMonthLabel}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsTimePickerOpen(prev => !prev);
+                      setIsViewMenuOpen(false);
+                    }}
+                    className={cn(
+                      'inline-flex shrink-0 items-center justify-center px-2 text-sm font-medium text-accent transition-colors',
+                      !isTimePickerOpen && 'hover:bg-accent/15 active:bg-accent/25'
+                    )}
+                  >
+                    <ChevronDown className={cn('w-4 h-4 transition-transform', isTimePickerOpen && 'rotate-180')} />
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsTimePickerOpen(prev => !prev);
-                    setIsViewMenuOpen(false);
-                  }}
-                  className={cn(
-                    "inline-flex items-center justify-center px-2 rounded-r-lg border transition-colors text-sm font-medium",
-                    isTimePickerOpen
-                      ? "border-accent bg-accent/20 text-accent"
-                      : "border-border bg-surface/80 text-foreground hover:bg-surface border-l-0"
-                  )}
-                >
-                  <ChevronDown className={cn("w-4 h-4 transition-transform", isTimePickerOpen && "rotate-180")} />
-                </button>
 
                 <AnimatePresence>
                   {isTimePickerOpen && (
                     <motion.div
-                      initial={{ opacity: 0, y: 8, scale: 0.96 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 8, scale: 0.96 }}
-                      className="absolute right-0 top-full z-[60] mt-2 w-[260px] rounded-xl border border-border bg-surface p-3 shadow-xl"
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 8 }}
+                      className="absolute right-0 max-sm:left-1/2 max-sm:-translate-x-1/2 sm:right-0 top-full z-[70] mt-2 w-[min(260px,calc(100vw-1.5rem))] rounded-xl border border-border/50 bg-surface/65 p-3 shadow-xl overflow-x-hidden backdrop-blur-2xl backdrop-saturate-150 ring-1 ring-border/30"
                     >
                       <div className="space-y-3">
                         <div>
                           <button
                             type="button"
                             onClick={viewMode === 'year' ? handleGoToCurrentYear : handleGoToCurrentMonth}
-                            className="w-full px-2.5 py-2 rounded-md text-sm font-medium text-accent hover:bg-accent/20 text-left border border-accent/60 mb-2"
+                            className="w-full px-2.5 py-2 rounded-md text-sm font-medium text-accent bg-accent/10 hover:bg-accent/25 active:bg-accent/30 text-left border border-accent/60 mb-2 shrink-0 transition-colors"
                           >
                             {viewMode === 'year'
                               ? (settings.language === 'zh' ? '当前年' : 'Current year')
@@ -1210,7 +1244,7 @@ export default function App() {
                           {viewMode === 'year' ? (
                             <div
                               ref={yearListScrollRef}
-                              className="max-h-[200px] overflow-y-auto flex flex-col gap-0.5"
+                              className="max-h-[min(200px,45vh)] min-h-0 overflow-y-auto overscroll-y-contain touch-pan-y flex flex-col gap-0.5 [-webkit-overflow-scrolling:touch]"
                             >
                               {yearOptions.map((year) => {
                                 const isActive = currentDate.getFullYear() === year;
@@ -1222,7 +1256,7 @@ export default function App() {
                                       "w-full px-2.5 py-2 rounded-md text-sm font-medium transition-colors text-left",
                                       isActive
                                         ? "bg-accent/20 text-accent ring-1 ring-accent"
-                                        : "bg-transparent text-foreground hover:bg-field"
+                                        : "bg-transparent text-foreground hover:bg-accent/15 active:bg-accent/25"
                                     )}
                                   >
                                     {settings.language === 'zh' ? `${year}年` : year}
@@ -1234,7 +1268,7 @@ export default function App() {
                             <select
                               value={currentDate.getFullYear()}
                               onChange={(e) => handleYearSelect(parseInt(e.target.value, 10))}
-                              className="w-full text-sm font-medium text-foreground bg-field hover:bg-surface border border-border px-2.5 py-2 rounded-lg transition-colors focus:outline-none focus:ring-1 focus:ring-accent"
+                              className="block w-auto max-w-[9rem] min-w-[7rem] text-sm font-medium text-accent bg-accent/10 hover:bg-accent/25 active:bg-accent/30 border border-accent/45 px-2.5 py-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-accent/60"
                             >
                               {yearOptions.map((year) => (
                                 <option key={year} value={year}>
@@ -1261,7 +1295,7 @@ export default function App() {
                                       "px-2 py-1.5 rounded-md text-xs font-medium transition-colors",
                                       isActive
                                         ? "bg-accent/20 text-accent ring-1 ring-accent"
-                                        : "bg-field text-foreground hover:bg-surface"
+                                        : "bg-accent/5 text-foreground hover:bg-accent/15 active:bg-accent/25 border border-transparent hover:border-accent/30"
                                     )}
                                   >
                                     {label}
@@ -1293,7 +1327,7 @@ export default function App() {
                       <button
                         type="button"
                         onClick={() => setSelectedFilterTag(null)}
-                        className="w-7 h-7 flex items-center justify-center rounded-full bg-field text-muted-foreground hover:bg-surface transition-colors flex-shrink-0"
+                        className="w-7 h-7 flex items-center justify-center rounded-full bg-field text-muted-foreground hover:bg-accent/15 active:bg-accent/25 transition-colors flex-shrink-0"
                         title={settings.language === 'zh' ? '清除筛选' : 'Clear filter'}
                       >
                         <FilterX className="w-3.5 h-3.5" />
@@ -1311,7 +1345,7 @@ export default function App() {
                             'flex items-center gap-1 pl-1.5 pr-2 h-7 rounded-full text-sm transition-all flex-shrink-0',
                             isActive
                               ? 'bg-accent/20 ring-2 ring-accent shadow-sm'
-                              : 'bg-field hover:bg-surface hover:shadow-sm'
+                              : 'bg-field hover:bg-accent/15 active:bg-accent/25 hover:shadow-sm'
                           )}
                         >
                           <span>{tag}</span>
@@ -1341,13 +1375,51 @@ export default function App() {
           {/* Row 2: 年/月/时间聚合/人生之书 — 整页居中 */}
           {viewMode !== 'day' && (
             <div className="w-full flex flex-col items-center justify-center mt-5 gap-1">
-              <div className="text-xl md:text-3xl font-semibold tracking-tight text-foreground">
-                {viewMode === 'lifeBook'
-                  ? (settings.language === 'zh' ? '人生之书' : 'Life Book')
-                  : viewMode === 'collection'
-                    ? (settings.language === 'zh' ? '时间聚合' : 'Time Synthesis')
-                    : leftDateTitle}
-              </div>
+              {viewMode === 'year' || viewMode === 'month' ? (
+                <div className="flex w-full justify-center px-2">
+                  <div className="inline-flex items-center gap-0.5 sm:gap-1 max-w-full">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => navigateDate('prev')}
+                      className="rounded-full shrink-0 h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-accent hover:bg-accent/20 active:bg-accent/30"
+                      aria-label={
+                        viewMode === 'year'
+                          ? (settings.language === 'zh' ? '上一年' : 'Previous Year')
+                          : (settings.language === 'zh' ? '上一月' : 'Previous Month')
+                      }
+                    >
+                      <ChevronLeft className="w-5 h-5 sm:w-5 sm:h-5" />
+                    </Button>
+                    <div className="text-xl md:text-3xl font-semibold tracking-tight text-foreground text-center px-1 sm:px-2 shrink-0">
+                      {leftDateTitle}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => navigateDate('next')}
+                      className="rounded-full shrink-0 h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-accent hover:bg-accent/20 active:bg-accent/30"
+                      aria-label={
+                        viewMode === 'year'
+                          ? (settings.language === 'zh' ? '下一年' : 'Next Year')
+                          : (settings.language === 'zh' ? '下一月' : 'Next Month')
+                      }
+                    >
+                      <ChevronRight className="w-5 h-5 sm:w-5 sm:h-5" />
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-xl md:text-3xl font-semibold tracking-tight text-foreground">
+                  {viewMode === 'lifeBook'
+                    ? (settings.language === 'zh' ? '人生之书' : 'Life Book')
+                    : viewMode === 'collection'
+                      ? (settings.language === 'zh' ? '时间聚合' : 'Time Synthesis')
+                      : leftDateTitle}
+                </div>
+              )}
               {viewMode === 'lifeBook' && (
                 <p className="text-sm tracking-wide" style={{ color: 'var(--app-muted)' }}>
                   {settings.language === 'zh' ? '正在书写的人生故事' : 'the evolving story of who I am'}

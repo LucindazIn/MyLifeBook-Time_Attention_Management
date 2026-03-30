@@ -137,45 +137,48 @@ export default function App() {
     localStorage.setItem('feather_settings', JSON.stringify(settings));
   }, [settings]);
 
+  // Reusable full-data sync — called on login and on manual refresh
+  const syncAllUserData = React.useCallback(async () => {
+    if (!user) return;
+    setIsSyncing(true);
+    setAuthError(null);
+    try {
+      // Device cap: subscriptions.max_devices (default 10); enforced by register_device RPC.
+      const deviceId = deviceIdRef.current;
+      if (deviceId) {
+        const { error } = await supabase.rpc('register_device', {
+          device_id: deviceId,
+          device_name: navigator.userAgent,
+        });
+        if (error) throw error;
+      }
+
+      const [evts, comps, dayMeta, quotes] = await Promise.all([
+        listAllEventsWithTags(supabase, user.id),
+        listAllCompletions(supabase, user.id),
+        listAllDayMeta(supabase, user.id),
+        listAllDailyQuotes(supabase, user.id),
+      ]);
+
+      setEvents(evts);
+      setCompletedInstances(comps);
+      setDayNames(dayMeta.dayNames);
+      setDayTags(dayMeta.dayTags);
+      setJournalEntries(dayMeta.journalEntries);
+      setDayVibesData(dayMeta.dayVibes);
+      setDailyQuotes(quotes);
+    } catch (e: unknown) {
+      setAuthError(formatSyncErrorMessage(e, settings.language));
+    } finally {
+      setIsSyncing(false);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
   // Online-first sync: load all user data after login
   useEffect(() => {
-    const run = async () => {
-      if (!user) return;
-      setIsSyncing(true);
-      setAuthError(null);
-      try {
-        // Device cap: subscriptions.max_devices (default 10); enforced by register_device RPC.
-        const deviceId = deviceIdRef.current;
-        if (deviceId) {
-          const { error } = await supabase.rpc('register_device', {
-            device_id: deviceId,
-            device_name: navigator.userAgent,
-          });
-          if (error) throw error;
-        }
-
-        const [evts, comps, dayMeta, quotes] = await Promise.all([
-          listAllEventsWithTags(supabase, user.id),
-          listAllCompletions(supabase, user.id),
-          listAllDayMeta(supabase, user.id),
-          listAllDailyQuotes(supabase, user.id),
-        ]);
-
-        setEvents(evts);
-        setCompletedInstances(comps);
-        setDayNames(dayMeta.dayNames);
-        setDayTags(dayMeta.dayTags);
-        setJournalEntries(dayMeta.journalEntries);
-        setDayVibesData(dayMeta.dayVibes);
-        setDailyQuotes(quotes);
-      } catch (e: unknown) {
-        setAuthError(formatSyncErrorMessage(e, settings.language));
-      } finally {
-        setIsSyncing(false);
-      }
-    };
-    run();
-  }, [user]);
+    syncAllUserData();
+  }, [syncAllUserData]);
 
   useEffect(() => {
     if (!authError) return;
@@ -1475,6 +1478,8 @@ export default function App() {
                   language={settings.language}
                   timeDisplay={settings.timeDisplay}
                   journalEntries={journalEntries}
+                  onRefresh={user ? syncAllUserData : undefined}
+                  isSyncing={isSyncing}
                 />
               </motion.div>
             )}
@@ -1575,72 +1580,18 @@ export default function App() {
                   onRemoveCustomTag={handleRemoveCustomTag}
                 />
 
-                {/* 2:1 grid layout: left=content, right=widgets */}
+                {/*
+                  Layout strategy:
+                  DOM order = mobile visual order: DayVibes → DailyJournal → Timeline
+                  Desktop: explicit col-start/row-start overrides auto-placement so that
+                    DayVibes   → col 3, rows 1-2 (sticky right)
+                    DailyJournal → col 1-2, row 1 (left-top)
+                    Timeline   → col 1-2, row 2 (left-bottom)
+                */}
                 <div className="grid gap-6 md:grid-cols-3">
-                  {/* Left column (2/3): Timeline + Journal */}
-                  <div className="md:col-span-2 min-w-0 space-y-6">
-                    {isPast ? (
-                      <DailyJournal
-                        key={dateKey}
-                        date={currentDate}
-                        entryDateKey={dateKey}
-                        events={currentDayEvents}
-                        initialSummary={currentJournal}
-                        onSave={handleSaveJournal}
-                        language={settings.language}
-                        isPast={true}
-                        dayName={dayNames[dateKey]?.name}
-                        dayNameIsManual={dayNames[dateKey]?.isManual}
-                        dayTag={dayTags[dateKey]}
-                        energy={dayVibesData[dateKey]?.energy}
-                        mood={dayVibesData[dateKey]?.mood}
-                        focus={dayVibesData[dateKey]?.focus}
-                      />
-                    ) : (
-                      <>
-                        <div className="bg-surface/90 backdrop-blur-xl w-full min-w-0 rounded-2xl md:rounded-[2.5rem] px-3 py-4 md:p-10 shadow-xl border border-border min-h-0 md:min-h-[400px] max-md:max-h-[min(70vh,560px)] max-md:overflow-y-auto overscroll-y-contain" style={{ boxShadow: 'var(--app-card-shadow)' }}>
-                          <Timeline 
-                            events={currentDayEvents} 
-                            onAddEvent={() => { setEditingEvent(null); setIsAddModalOpen(true); }}
-                            onEventClick={(e) => {
-                              const baseEvent = events.find(ev => ev.id === (e.baseEventId || e.id));
-                              setEditingEvent(baseEvent || e);
-                              setIsAddModalOpen(true);
-                            }}
-                            onToggleComplete={handleToggleComplete}
-                            language={settings.language}
-                            timeDisplay={settings.timeDisplay}
-                            onGenerateSchedule={handleGenerateSchedule}
-                            generatingMode={generatingMode}
-                            selectedFilterRole={selectedFilterRole}
-                            roleFilterMode={roleFilterMode}
-                            getRoleColor={getRoleColor}
-                          />
-                        </div>
-
-                        <DailyJournal
-                          key={dateKey}
-                          date={currentDate}
-                          entryDateKey={dateKey}
-                          events={currentDayEvents}
-                          initialSummary={currentJournal}
-                          onSave={handleSaveJournal}
-                          language={settings.language}
-                          isPast={false}
-                          dayName={dayNames[dateKey]?.name}
-                          dayNameIsManual={dayNames[dateKey]?.isManual}
-                          dayTag={dayTags[dateKey]}
-                          energy={dayVibesData[dateKey]?.energy}
-                          mood={dayVibesData[dateKey]?.mood}
-                          focus={dayVibesData[dateKey]?.focus}
-                        />
-                      </>
-                    )}
-                  </div>
-
-                  {/* Right column (1/3): Vibes + Widgets */}
-                  <div className="md:col-span-1 space-y-4 md:sticky md:top-4 md:self-start">
-                    {/* Day Vibes sliders */}
+                  {/* ── Item 1 (DOM): DayVibes + widgets
+                        mobile: top  |  desktop: right col, spans 2 rows ── */}
+                  <div className="md:col-start-3 md:col-span-1 md:row-start-1 md:row-span-2 space-y-4 md:sticky md:top-4 md:self-start">
                     <DayVibes
                       dateKey={dateKey}
                       energy={dayVibesData[dateKey]?.energy}
@@ -1649,8 +1600,6 @@ export default function App() {
                       language={settings.language}
                       onChange={handleSetVibes}
                     />
-
-                    {/* Quote / Visual / Song widgets */}
                     {!isPast && (
                       <SurpriseWidgets
                         theme={settings.theme}
@@ -1665,6 +1614,51 @@ export default function App() {
                         } : undefined}
                       />
                     )}
+                  </div>
+
+                  {/* ── Item 2 (DOM): DailyJournal
+                        mobile: middle  |  desktop: left col top ── */}
+                  <div className="md:col-start-1 md:col-span-2 md:row-start-1 min-w-0">
+                    <DailyJournal
+                      key={dateKey}
+                      date={currentDate}
+                      entryDateKey={dateKey}
+                      events={currentDayEvents}
+                      initialSummary={currentJournal}
+                      onSave={handleSaveJournal}
+                      language={settings.language}
+                      isPast={isPast}
+                      dayName={dayNames[dateKey]?.name}
+                      dayNameIsManual={dayNames[dateKey]?.isManual}
+                      dayTag={dayTags[dateKey]}
+                      energy={dayVibesData[dateKey]?.energy}
+                      mood={dayVibesData[dateKey]?.mood}
+                      focus={dayVibesData[dateKey]?.focus}
+                    />
+                  </div>
+
+                  {/* ── Item 3 (DOM): Timeline
+                        mobile: bottom  |  desktop: left col bottom ── */}
+                  <div className="md:col-start-1 md:col-span-2 md:row-start-2 min-w-0">
+                    <div className="bg-surface/90 backdrop-blur-xl w-full min-w-0 rounded-2xl md:rounded-[2.5rem] px-3 py-4 md:p-10 shadow-xl border border-border min-h-0 md:min-h-[400px] max-md:max-h-[min(70vh,560px)] max-md:overflow-y-auto overscroll-y-contain" style={{ boxShadow: 'var(--app-card-shadow)' }}>
+                      <Timeline
+                        events={currentDayEvents}
+                        onAddEvent={() => { setEditingEvent(null); setIsAddModalOpen(true); }}
+                        onEventClick={(e) => {
+                          const baseEvent = events.find(ev => ev.id === (e.baseEventId || e.id));
+                          setEditingEvent(baseEvent || e);
+                          setIsAddModalOpen(true);
+                        }}
+                        onToggleComplete={handleToggleComplete}
+                        language={settings.language}
+                        timeDisplay={settings.timeDisplay}
+                        onGenerateSchedule={isPast ? undefined : handleGenerateSchedule}
+                        generatingMode={generatingMode}
+                        selectedFilterRole={selectedFilterRole}
+                        roleFilterMode={roleFilterMode}
+                        getRoleColor={getRoleColor}
+                      />
+                    </div>
                   </div>
                 </div>
               </motion.div>

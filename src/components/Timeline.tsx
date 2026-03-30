@@ -157,17 +157,23 @@ export const Timeline: React.FC<TimelineProps> = ({
 
               {/* Mobile: inline time cell (hidden for overlap rows) */}
               {!isOverlap ? (
-                <div
-                  className={cn(
-                    'md:hidden shrink-0 w-14 flex flex-col items-end justify-start pt-5 pr-2',
-                    'text-xs font-medium text-muted-foreground',
-                    is12hBlock ? 'gap-0.5' : 'gap-0',
-                  )}
-                >
-                  <span className={cn(!is12hBlock && 'leading-none')}>{parts.line1}</span>
-                  {parts.line2 != null && (
-                    <span className="text-[10px] opacity-70 leading-none">{parts.line2}</span>
-                  )}
+                // Use relative container + absolute inner to replicate the same
+                // top-[calc(1.25rem+0.25rem+0.625rem)] -translate-y-1/2 formula as desktop,
+                // so the time text center aligns with the checkbox center.
+                <div className="md:hidden shrink-0 w-14 relative">
+                  <div
+                    className={cn(
+                      'absolute right-2 flex flex-col items-end',
+                      'top-[calc(1.25rem+0.25rem+0.625rem)] -translate-y-1/2',
+                      'text-xs font-medium text-muted-foreground overflow-visible',
+                      is12hBlock ? 'gap-0.5' : 'gap-0',
+                    )}
+                  >
+                    <span className={cn(!is12hBlock && 'leading-none')}>{parts.line1}</span>
+                    {parts.line2 != null && (
+                      <span className="text-[10px] opacity-70 leading-none">{parts.line2}</span>
+                    )}
+                  </div>
                 </div>
               ) : (
                 // Empty spacer keeps gutter + card aligned for overlap rows
@@ -193,12 +199,13 @@ export const Timeline: React.FC<TimelineProps> = ({
               {/* ── Gutter column (dot / overlap indicator) ─────────── */}
 
               {/* Mobile gutter cell — sits over the vertical line */}
-              <div className="md:hidden shrink-0 w-5 flex justify-center relative">
+              {/* dot uses top-7 (28px) so its center lands at 34px, matching checkbox center */}
+              <div className="md:hidden shrink-0 w-5 relative">
                 {isOverlap ? (
-                  <CornerDownRight className="w-4 h-4 text-accent mt-5 relative z-10" />
+                  <CornerDownRight className="absolute top-7 left-1/2 -translate-x-1/2 w-4 h-4 text-accent z-10" />
                 ) : (
                   <div
-                    className="absolute top-5 w-3 h-3 rounded-full bg-surface border-2 border-accent z-10 shadow-sm transition-colors"
+                    className="absolute top-7 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-surface border-2 border-accent z-10 shadow-sm transition-colors"
                     style={dotStyle}
                   />
                 )}

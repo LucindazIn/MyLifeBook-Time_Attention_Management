@@ -214,7 +214,7 @@ export const DailyJournal: React.FC<DailyJournalProps> = ({
   const labels = {
     title: language === 'zh' ? '每日意义' : "Today's Meaning",
     placeholder:
-      language === 'zh' ? '今天对你意味着什么？写一句或一段…（自动保存）' : 'What did today mean to you? A line or two… (saved automatically)',
+      language === 'zh' ? '（自动保存）' : '(Auto-Save)',
     listening: language === 'zh' ? '正在聆听…' : 'Listening…',
   };
 

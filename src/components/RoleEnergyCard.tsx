@@ -35,6 +35,10 @@ export const RoleEnergyCard: React.FC<RoleEnergyCardProps> = ({
   const [range, setRange] = useState<RangeKey>('week');
   const [customStart, setCustomStart] = useState(() => format(startOfMonth(new Date()), 'yyyy-MM-dd'));
   const [customEnd, setCustomEnd] = useState(() => format(new Date(), 'yyyy-MM-dd'));
+  const [roleTapId, setRoleTapId] = useState<string | null>(null);
+  const toggleRoleTap = useCallback((roleId: string) => {
+    setRoleTapId((prev) => (prev === roleId ? null : roleId));
+  }, []);
 
   const onCustomStartChange = useCallback(
     (value: string) => {
@@ -163,15 +167,34 @@ export const RoleEnergyCard: React.FC<RoleEnergyCardProps> = ({
                 ? `${name}：${pct}%（${n}/${totalRangeEvents}）`
                 : `${name}: ${pct}% (${n}/${totalRangeEvents})`;
               return (
-                <div
+                <button
+                  type="button"
                   key={roleId}
-                  className="h-full min-w-px shrink-0 transition-all"
+                  className="h-full min-w-px shrink-0 transition-all cursor-pointer border-0 p-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--app-accent)]"
                   style={{ width: `${pct}%`, backgroundColor: getRoleColor(roleId) }}
                   title={titleStr}
+                  aria-pressed={roleTapId === roleId}
+                  onClick={() => toggleRoleTap(roleId)}
                 />
               );
             })}
           </div>
+          {roleTapId != null && (() => {
+            const pct = rolePercentages.find(([id]) => id === roleTapId)?.[1] ?? 0;
+            const n = roleCountById.get(roleTapId) ?? 0;
+            const name = getRoleDisplayName(roleTapId, isZh ? 'zh' : 'en');
+            const line = isZh
+              ? `${name}：${pct}%（${n}/${totalRangeEvents}）`
+              : `${name}: ${pct}% (${n}/${totalRangeEvents})`;
+            return (
+              <p
+                className="text-[11px] font-medium rounded-lg px-2 py-1.5 border mt-1"
+                style={{ color: 'var(--app-text)', borderColor: 'var(--app-border)', backgroundColor: 'var(--app-surface)' }}
+              >
+                {line}
+              </p>
+            );
+          })()}
           <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-xs">
             {rolePercentages.map(([roleId]) => (
               <span
@@ -185,7 +208,7 @@ export const RoleEnergyCard: React.FC<RoleEnergyCardProps> = ({
             ))}
           </div>
           <p className="text-[10px] leading-snug" style={{ color: 'var(--app-muted)' }}>
-            {isZh ? '悬停色条查看比例与条数' : 'Hover The Bar For Proportion And Counts'}
+            {isZh ? '点击或悬停色条查看比例与条数' : 'Tap Or Hover The Bar For Proportion And Counts'}
           </p>
           {showBalanceReminder && (
             <p className="text-xs rounded-lg px-3 py-2" style={{ background: 'var(--app-field)', color: 'var(--app-muted)' }}>

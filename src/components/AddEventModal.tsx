@@ -147,7 +147,9 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
     });
   }, []);
 
-  // 曾自定义但 0 事件的长期目标从存储中删除（弹窗打开且传入 events 时执行一次）
+  // Sync saved goal pool with goals already attached to events.
+  // - Removes local-only goals that no longer exist in any event (stale suggestions).
+  // - Adds goals found in events but not yet in local storage (cross-device sync).
   useEffect(() => {
     if (!isOpen || eventsProp == null) return;
     if (typeof window === 'undefined') return;
@@ -155,10 +157,13 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
     eventsProp.forEach((e) => e.longTermGoals?.forEach((g) => goalsInEvents.add(g)));
     try {
       const saved: string[] = JSON.parse(window.localStorage.getItem(LONG_TERM_GOALS_KEY) || '[]');
-      const kept = saved.filter((g) => goalsInEvents.has(g));
-      if (kept.length < saved.length) {
-        window.localStorage.setItem(LONG_TERM_GOALS_KEY, JSON.stringify(kept));
-        setSavedLongTermGoals(kept);
+      // Keep only goals that exist in events, then merge in any goals from events not yet saved locally.
+      const keptFromSaved = saved.filter((g) => goalsInEvents.has(g));
+      const newFromEvents = Array.from(goalsInEvents).filter((g) => !saved.includes(g));
+      const merged = [...keptFromSaved, ...newFromEvents];
+      if (merged.length !== saved.length || newFromEvents.length > 0) {
+        window.localStorage.setItem(LONG_TERM_GOALS_KEY, JSON.stringify(merged));
+        setSavedLongTermGoals(merged);
       }
     } catch (_) {}
   }, [isOpen, eventsProp]);

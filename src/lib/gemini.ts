@@ -183,11 +183,15 @@ export async function generateAgenda(file: File): Promise<any> {
   }
 }
 
+export type GenerateDayNameResult = { name: string; usedFallback: boolean };
+
 export async function generateDayName(
   events: ScheduleEvent[],
   language: string = "en"
-): Promise<string> {
-  if (!canCallFreeTierGemini() || events.length === 0) return "My Day";
+): Promise<GenerateDayNameResult> {
+  if (!canCallFreeTierGemini() || events.length === 0) {
+    return { name: "My Day", usedFallback: true };
+  }
 
   try {
     const eventTitles = events.map((e) => e.title).join(", ");
@@ -216,14 +220,16 @@ export async function generateDayName(
       "free_tier"
     );
 
-    return response.text?.trim() || "A Busy Day";
+    const text = response.text?.trim();
+    if (!text) return { name: "A Busy Day", usedFallback: true };
+    return { name: text, usedFallback: false };
   } catch (error: any) {
     if (error?.status === "RESOURCE_EXHAUSTED" || error?.code === 429) {
       console.warn("Gemini quota exceeded, using fallback name.");
-      return "A Busy Day";
+      return { name: "A Busy Day", usedFallback: true };
     }
     console.error("Error generating day name:", error);
-    return "A Busy Day";
+    return { name: "A Busy Day", usedFallback: true };
   }
 }
 

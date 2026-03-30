@@ -1,17 +1,20 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'motion/react';
-import { Sparkles, Mic, MicOff, Edit3, Save, Loader2 } from 'lucide-react';
+import { Mic, MicOff, Edit3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScheduleEvent, AppLanguage } from '@/types';
-import { generateDailySummary } from '@/lib/gemini';
 import { cn } from '@/lib/utils';
+
+const SAVE_DEBOUNCE_MS = 450;
 
 interface DailyJournalProps {
   date: Date;
+  /** yyyy-MM-dd — used so auto-save targets the correct day when flushing */
+  entryDateKey: string;
   events: ScheduleEvent[];
   initialSummary?: string;
-  onSave: (summary: string) => void;
+  onSave: (summary: string, entryDateKey: string) => void;
   language: AppLanguage;
   isPast: boolean;
   dayName?: string;
@@ -23,31 +26,75 @@ interface DailyJournalProps {
 }
 
 export const DailyJournal: React.FC<DailyJournalProps> = ({
-  date,
-  events,
+  date: _date,
+  entryDateKey,
+  events: _events,
   initialSummary = '',
   onSave,
   language,
   isPast,
-  dayName,
-  dayNameIsManual,
-  dayTag,
-  energy,
-  mood,
-  focus,
+  dayName: _dayName,
+  dayNameIsManual: _dayNameIsManual,
+  dayTag: _dayTag,
+  energy: _energy,
+  mood: _mood,
+  focus: _focus,
 }) => {
   const [summary, setSummary] = useState(initialSummary);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [isListening, setIsListening] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSpeechSupported, setIsSpeechSupported] = useState(false);
   const recognitionRef = useRef<any>(null);
   const shouldListenRef = useRef(false);
+  const lastSavedRef = useRef(initialSummary);
+  const summaryRef = useRef(initialSummary);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  summaryRef.current = summary;
 
   useEffect(() => {
     setSummary(initialSummary);
+    lastSavedRef.current = initialSummary;
   }, [initialSummary]);
+
+  const persistIfDirty = useCallback(
+    (value: string) => {
+      if (value === lastSavedRef.current) return;
+      lastSavedRef.current = value;
+      onSave(value, entryDateKey);
+    },
+    [onSave, entryDateKey]
+  );
+
+  useEffect(() => {
+    if (summary === lastSavedRef.current) return;
+    if (debounceTimerRef.current != null) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    debounceTimerRef.current = window.setTimeout(() => {
+      debounceTimerRef.current = null;
+      persistIfDirty(summary);
+    }, SAVE_DEBOUNCE_MS);
+    return () => {
+      if (debounceTimerRef.current != null) {
+        clearTimeout(debounceTimerRef.current);
+        debounceTimerRef.current = null;
+      }
+    };
+  }, [summary, persistIfDirty]);
+
+  const entryDateKeyRef = useRef(entryDateKey);
+  entryDateKeyRef.current = entryDateKey;
+
+  useEffect(() => {
+    return () => {
+      const latest = summaryRef.current;
+      if (latest !== lastSavedRef.current) {
+        lastSavedRef.current = latest;
+        onSave(latest, entryDateKeyRef.current);
+      }
+    };
+  }, [onSave]);
 
   // Initialize Speech Recognition
   useEffect(() => {
@@ -79,9 +126,9 @@ export const DailyJournal: React.FC<DailyJournalProps> = ({
       }
 
       if (finalTranscript) {
-        setSummary(prev => {
+        setSummary((prev) => {
           const normalized = finalTranscript.trim();
-          const joiner = language === 'zh' ? '' : (prev ? ' ' : '');
+          const joiner = language === 'zh' ? '' : prev ? ' ' : '';
           return `${prev}${joiner}${normalized}`;
         });
       }
@@ -132,7 +179,11 @@ export const DailyJournal: React.FC<DailyJournalProps> = ({
   const toggleListening = () => {
     setError(null);
     if (!isSpeechSupported) {
-      setError(language === 'zh' ? '当前浏览器不支持语音输入，请尝试使用最新版本的 Chrome 或 Edge。' : 'Your browser does not support speech input. Please try a recent version of Chrome or Edge.');
+      setError(
+        language === 'zh'
+          ? '当前浏览器不支持语音输入，请尝试使用最新版本的 Chrome 或 Edge。'
+          : 'Your browser does not support speech input. Please try a recent version of Chrome or Edge.'
+      );
       return;
     }
     if (isListening || shouldListenRef.current) {
@@ -141,7 +192,6 @@ export const DailyJournal: React.FC<DailyJournalProps> = ({
       setIsListening(false);
     } else {
       shouldListenRef.current = true;
-      setIsEditing(true);
       try {
         recognitionRef.current?.start();
       } catch (e) {
@@ -153,59 +203,39 @@ export const DailyJournal: React.FC<DailyJournalProps> = ({
     }
   };
 
-  const handleGenerate = async () => {
-    if (events.length === 0) return;
-    setIsGenerating(true);
-    try {
-      const generated = await generateDailySummary(events, language, {
-        dayName,
-        dayNameIsManual,
-        dayTag,
-        energy,
-        mood,
-        focus,
-        journal: summary || initialSummary,
-      });
-      setSummary(generated);
-      onSave(generated);
-      setIsEditing(true);
-    } catch (error) {
-      console.error('Failed to generate summary', error);
-    } finally {
-      setIsGenerating(false);
+  const handleBlur = () => {
+    if (debounceTimerRef.current != null) {
+      clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
     }
-  };
-
-  const handleSave = () => {
-    // #region agent log
-    fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f6ac8d'},body:JSON.stringify({sessionId:'f6ac8d',runId:'pre-fix',hypothesisId:'J1',location:'DailyJournal.tsx:handleSave',message:'user tapped save meaning',data:{summaryLen:summary.length,dateKey:typeof date?.toISOString==='function'?date.toISOString().slice(0,10):''},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
-    onSave(summary);
-    setIsEditing(false);
+    persistIfDirty(summaryRef.current);
   };
 
   const labels = {
     title: language === 'zh' ? '每日意义' : "Today's Meaning",
-    generate: language === 'zh' ? '生成意义总结' : 'Generate meaning summary',
-    edit: language === 'zh' ? '编辑' : 'Edit',
-    save: language === 'zh' ? '保存' : 'Save',
-    placeholder: language === 'zh' ? '今天对你意味着什么？写一句或一段…' : "What did today mean to you? Write a line or two…",
+    placeholder:
+      language === 'zh' ? '今天对你意味着什么？写一句或一段…（自动保存）' : 'What did today mean to you? A line or two… (saved automatically)',
     listening: language === 'zh' ? '正在聆听…' : 'Listening…',
-    emptyState: language === 'zh' ? '还没有意义总结。点击编辑开始写作。' : 'No meaning summary yet. Tap edit to write.',
   };
 
-  const SNIPPETS = language === 'zh'
-    ? ['今天最有意义的一刻是…', '我学到的一点是…', '明天我想带着的意义是…', '今天感谢的是…']
-    : ["The most meaningful moment today…", "One thing I learned…", "The meaning I want to carry into tomorrow…", "I'm grateful for…"];
+  const SNIPPETS =
+    language === 'zh'
+      ? ['今天最有意义的一刻是…', '我学到的一点是…', '明天我想带着的意义是…', '今天感谢的是…']
+      : [
+          'The most meaningful moment today…',
+          'One thing I learned…',
+          'The meaning I want to carry into tomorrow…',
+          "I'm grateful for…",
+        ];
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className={cn(
-        "rounded-[2rem] p-6 md:p-8 shadow-xl border border-border transition-all duration-500",
-        "bg-surface",
-        isPast ? "ring-4 ring-border/50" : ""
+        'rounded-[2rem] p-4 md:p-8 shadow-xl border border-border transition-all duration-500 max-w-full min-w-0 overflow-hidden',
+        'bg-surface',
+        isPast ? 'ring-4 ring-border/50' : ''
       )}
     >
       <div className="flex items-center justify-between mb-6 gap-2 flex-wrap">
@@ -215,105 +245,72 @@ export const DailyJournal: React.FC<DailyJournalProps> = ({
           </div>
           <h2 className="text-xl font-serif font-bold text-foreground">{labels.title}</h2>
         </div>
-        
+
         <div className="flex gap-2 shrink-0">
-          {!summary && events.length > 0 && (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleGenerate} 
-              disabled={isGenerating}
-              className="hidden md:inline-flex rounded-full border-border text-accent hover:bg-accent/20"
-            >
-              {isGenerating ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
-              {labels.generate}
-            </Button>
-          )}
-          
           <Button
             variant="ghost"
             size="icon"
             onClick={toggleListening}
             disabled={!isSpeechSupported}
             className={cn(
-              "rounded-full transition-colors",
+              'rounded-full transition-colors',
               !isSpeechSupported
-                ? "text-muted-foreground/50 cursor-not-allowed"
+                ? 'text-muted-foreground/50 cursor-not-allowed'
                 : isListening
-                  ? "bg-red-500/20 text-red-600 hover:bg-red-500/30"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? 'bg-red-500/20 text-red-600 hover:bg-red-500/30'
+                  : 'text-muted-foreground hover:text-foreground'
             )}
             title={
               !isSpeechSupported
-                ? (language === 'zh' ? '当前浏览器不支持语音输入' : 'Speech input is not supported in this browser')
+                ? language === 'zh'
+                  ? '当前浏览器不支持语音输入'
+                  : 'Speech input is not supported in this browser'
                 : isListening
-                  ? (language === 'zh' ? '停止聆听' : 'Stop listening')
-                  : (language === 'zh' ? '开始语音输入' : 'Start voice input')
+                  ? language === 'zh'
+                    ? '停止聆听'
+                    : 'Stop listening'
+                  : language === 'zh'
+                    ? '开始语音输入'
+                    : 'Start voice input'
             }
           >
             {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
           </Button>
-
-          {isEditing ? (
-            <Button size="sm" onClick={handleSave} className="rounded-full bg-accent hover:opacity-90 text-white">
-              <Save className="w-4 h-4 mr-2" />
-              {labels.save}
-            </Button>
-          ) : (
-            <Button variant="ghost" size="icon" onClick={() => setIsEditing(true)} className="rounded-full text-muted-foreground hover:text-accent">
-              <Edit3 className="w-5 h-5" />
-            </Button>
-          )}
         </div>
       </div>
 
-      {isEditing ? (
-        <div className="space-y-3">
-          <div className="flex flex-wrap gap-1.5">
-            {SNIPPETS.map(snippet => (
-              <button
-                key={snippet}
-                onClick={() => setSummary(prev => prev ? `${prev}\n${snippet}` : snippet)}
-                className="text-xs px-3 py-1.5 rounded-full bg-accent/20 text-accent hover:bg-accent/30 border border-border transition-colors"
-              >
-                {snippet}
-              </button>
-            ))}
-          </div>
-          <div className="relative">
-            <Textarea
-              value={summary}
-              onChange={(e) => setSummary(e.target.value)}
-              placeholder={labels.placeholder}
-              className="min-h-[200px] text-lg leading-relaxed bg-field border-border focus:border-accent focus:ring-accent/30 rounded-xl resize-none p-4 font-sans text-foreground"
-            />
-            {error && (
-              <div className="absolute bottom-4 left-4 text-xs font-medium text-red-500">
-                {error}
-              </div>
-            )}
-            {isListening && (
-              <div className="absolute bottom-4 right-4 text-xs font-medium text-red-500 animate-pulse flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full bg-red-500" />
-                {labels.listening}
-              </div>
-            )}
-          </div>
+      <div className="space-y-3">
+        <div className="flex flex-wrap gap-1.5">
+          {SNIPPETS.map((snippet) => (
+            <button
+              key={snippet}
+              type="button"
+              onClick={() => setSummary((prev) => (prev ? `${prev}\n${snippet}` : snippet))}
+              className="text-xs px-3 py-1.5 rounded-full bg-accent/20 text-accent hover:bg-accent/30 border border-border transition-colors"
+            >
+              {snippet}
+            </button>
+          ))}
         </div>
-      ) : (
-        <div 
-          onClick={() => setIsEditing(true)}
-          className="min-h-[120px] text-lg leading-relaxed text-muted-foreground font-sans cursor-text hover:bg-field/50 p-4 rounded-xl transition-colors -ml-4"
-        >
-          {summary ? (
-            summary.split('\n').map((line, i) => (
-              <p key={i} className="mb-2 text-foreground">{line}</p>
-            ))
-          ) : (
-            <span className="text-muted-foreground italic">{labels.emptyState}</span>
+        <div className="relative">
+          <Textarea
+            value={summary}
+            onChange={(e) => setSummary(e.target.value)}
+            onBlur={handleBlur}
+            placeholder={labels.placeholder}
+            className="min-h-[120px] md:min-h-[200px] max-h-[min(50vh,320px)] overflow-y-auto text-lg leading-relaxed bg-field border-border focus:border-accent focus:ring-accent/30 rounded-xl resize-none p-4 font-sans text-foreground"
+          />
+          {error && (
+            <div className="absolute bottom-4 left-4 text-xs font-medium text-red-500">{error}</div>
+          )}
+          {isListening && (
+            <div className="absolute bottom-4 right-4 text-xs font-medium text-red-500 animate-pulse flex items-center gap-1">
+              <div className="w-2 h-2 rounded-full bg-red-500" />
+              {labels.listening}
+            </div>
           )}
         </div>
-      )}
+      </div>
     </motion.div>
   );
 };

@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { isBefore } from 'date-fns';
 import { Plus, Calendar, CornerDownRight, Check, Coffee, Zap, Loader2, Users } from 'lucide-react';
 import { ScheduleEvent, AppLanguage, TimeDisplayFormat } from '@/types';
-import { formatEventClockForTimeline } from '@/lib/formatEventClock';
+import { formatEventClockForTimeline, formatEventDurationAfterTitle } from '@/lib/formatEventClock';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { EventLabelChip } from '@/components/EventLabelChip';
@@ -122,6 +122,9 @@ export const Timeline: React.FC<TimelineProps> = ({
           const isMatchingRole = !selectedFilterRole || event.role === selectedFilterRole;
           const roleColor = event.role ? getRoleColor(event.role) : undefined;
           const dimmed = selectedFilterRole && roleFilterMode === 'dim' && !isMatchingRole;
+          const startD = new Date(event.startTime);
+          const endD = new Date(event.endTime);
+          const durationAfterTitle = formatEventDurationAfterTitle(startD, endD, language);
 
           return (
             <motion.div
@@ -153,9 +156,9 @@ export const Timeline: React.FC<TimelineProps> = ({
                 />
               )}
               
-              {/* Time Label - Hide if overlapping to avoid clutter */}
+              {/* Time Label — start time (same layout as original: 24h one line; 12h two lines) */}
               {!isOverlap && (() => {
-                const parts = formatEventClockForTimeline(new Date(event.startTime), timeDisplay);
+                const parts = formatEventClockForTimeline(startD, timeDisplay);
                 const is12hBlock = parts.line2 != null;
                 return (
                   <div
@@ -212,7 +215,7 @@ export const Timeline: React.FC<TimelineProps> = ({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-3">
                         <h3 className={cn(
-                          "text-lg font-medium text-foreground mb-1 truncate flex items-center gap-2",
+                          "text-lg font-medium text-foreground mb-1 min-w-0 flex flex-wrap items-baseline gap-x-2 gap-y-0.5",
                           event.completed && "text-muted-foreground line-through"
                         )}>
                           {event.type === 'meeting' && (
@@ -224,7 +227,10 @@ export const Timeline: React.FC<TimelineProps> = ({
                               style={event.label?.color ? { color: event.label.color } : undefined}
                             />
                           )}
-                          <span className="truncate">{event.title}</span>
+                          <span className="truncate min-w-0">{event.title}</span>
+                          <span className="text-sm font-serif font-normal text-muted-foreground shrink-0 tabular-nums">
+                            {durationAfterTitle}
+                          </span>
                         </h3>
 
                         <EventLabelChip label={event.label} className={event.completed ? "opacity-60" : undefined} />

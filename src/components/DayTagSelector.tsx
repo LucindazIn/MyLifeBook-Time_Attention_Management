@@ -64,16 +64,16 @@ export const DayTagSelector: React.FC<DayTagSelectorProps> = ({
   }, [isOpen]);
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handlePointerOutside = (event: PointerEvent) => {
       const target = event.target as Node;
       if (menuRef.current?.contains(target) || portalRef.current?.contains(target)) return;
       setIsOpen(false);
       setIsAdding(false);
     };
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('pointerdown', handlePointerOutside, true);
     }
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('pointerdown', handlePointerOutside, true);
   }, [isOpen]);
 
   const handleAddTag = () => {

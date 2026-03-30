@@ -91,9 +91,13 @@ export const DayHeader: React.FC<DayHeaderProps> = ({
           {onSelectTag && (
             <div
               className={cn(
-                'shrink-0',
-                currentTag ? 'opacity-100' : 'hidden sm:block sm:opacity-0 sm:group-hover:opacity-100 sm:transition-opacity sm:duration-300'
+                'flex shrink-0 items-center',
+                isEditing && 'invisible pointer-events-none',
+                currentTag
+                  ? 'opacity-100'
+                  : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:transition-opacity sm:duration-300'
               )}
+              aria-hidden={isEditing}
             >
               <DayTagSelector 
                 currentTag={currentTag} 

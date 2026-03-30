@@ -44,7 +44,7 @@ export const DayVibes: React.FC<DayVibesProps> = ({ dateKey, energy, mood, focus
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-surface rounded-2xl p-5 shadow-sm border border-border"
+      className="bg-surface rounded-2xl p-4 md:p-5 shadow-sm border border-border max-w-full min-w-0 overflow-hidden"
     >
       <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-4">{title}</h3>
       <div className="space-y-4">

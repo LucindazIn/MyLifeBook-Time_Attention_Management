@@ -271,7 +271,7 @@ export default function App() {
       if (currentDayData?.name && currentDayData?.language === settings.language) return;
 
       if (currentDayEvents.length > 0) {
-        const name = await generateDayName(currentDayEvents, settings.language);
+        const { name } = await generateDayName(currentDayEvents, settings.language);
         setDayNames(prev => ({
           ...prev,
           [dateKey]: { name, isManual: false, language: settings.language }
@@ -357,7 +357,7 @@ export default function App() {
 
   const handleGenerateName = async () => {
     if (currentDayEvents.length > 0) {
-      const name = await generateDayName(currentDayEvents, settings.language);
+      const { name, usedFallback } = await generateDayName(currentDayEvents, settings.language);
       setDayNames(prev => ({
         ...prev,
         [dateKey]: { name, isManual: true, language: settings.language } // Treat explicit regeneration as manual/locked
@@ -370,6 +370,13 @@ export default function App() {
           day_tag: dayTags[dateKey] || null,
           journal: journalEntries[dateKey] || null,
         }).catch(() => {});
+      }
+      if (usedFallback) {
+        alert(
+          settings.language === 'zh'
+            ? '无法通过 AI 生成日名（未配置或不可用），已使用默认名称。可在设置中配置 Gemini API。'
+            : 'Could Not Generate A Day Name With AI (Not Configured Or Unavailable). A Default Name Was Used. Configure Gemini In Settings If Needed.'
+        );
       }
     } else {
       // If no events, just get a new random one based on theme
@@ -476,25 +483,25 @@ export default function App() {
     }
   };
 
-  const handleSaveJournal = (summary: string) => {
+  const handleSaveJournal = (summary: string, forDateKey: string) => {
     setJournalEntries(prev => ({
       ...prev,
-      [dateKey]: summary
+      [forDateKey]: summary
     }));
     // #region agent log
-    fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f6ac8d'},body:JSON.stringify({sessionId:'f6ac8d',runId:'pre-fix',hypothesisId:'J2',location:'App.tsx:handleSaveJournal',message:'save journal invoked',data:{dateKey,hasUser:!!user,summaryLen:summary.length},timestamp:Date.now()})}).catch(()=>{});
+    fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f6ac8d'},body:JSON.stringify({sessionId:'f6ac8d',runId:'pre-fix',hypothesisId:'J2',location:'App.tsx:handleSaveJournal',message:'save journal invoked',data:{forDateKey,hasUser:!!user,summaryLen:summary.length},timestamp:Date.now()})}).catch(()=>{});
     // #endregion
     if (user) {
-      void upsertDayMeta(supabase, user.id, dateKey, {
-        day_name: dayNames[dateKey]?.name || null,
-        day_name_is_manual: dayNames[dateKey]?.isManual || false,
-        day_name_language: (dayNames[dateKey]?.language as any) || settings.language,
-        day_tag: dayTags[dateKey] || null,
+      void upsertDayMeta(supabase, user.id, forDateKey, {
+        day_name: dayNames[forDateKey]?.name || null,
+        day_name_is_manual: dayNames[forDateKey]?.isManual || false,
+        day_name_language: (dayNames[forDateKey]?.language as any) || settings.language,
+        day_tag: dayTags[forDateKey] || null,
         journal: summary || null,
       })
         .then(() => {
           // #region agent log
-          fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f6ac8d'},body:JSON.stringify({sessionId:'f6ac8d',runId:'pre-fix',hypothesisId:'J3',location:'App.tsx:handleSaveJournal:then',message:'day_meta journal upsert ok',data:{dateKey},timestamp:Date.now()})}).catch(()=>{});
+          fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f6ac8d'},body:JSON.stringify({sessionId:'f6ac8d',runId:'pre-fix',hypothesisId:'J3',location:'App.tsx:handleSaveJournal:then',message:'day_meta journal upsert ok',data:{forDateKey},timestamp:Date.now()})}).catch(()=>{});
           // #endregion
         })
         .catch((e: unknown) => {
@@ -1574,7 +1581,9 @@ export default function App() {
                   <div className="md:col-span-2 space-y-6">
                     {isPast ? (
                       <DailyJournal
+                        key={dateKey}
                         date={currentDate}
+                        entryDateKey={dateKey}
                         events={currentDayEvents}
                         initialSummary={currentJournal}
                         onSave={handleSaveJournal}
@@ -1589,7 +1598,7 @@ export default function App() {
                       />
                     ) : (
                       <>
-                        <div className="bg-surface/90 backdrop-blur-xl rounded-[2.5rem] p-6 md:p-10 shadow-xl border border-border min-h-[400px]" style={{ boxShadow: 'var(--app-card-shadow)' }}>
+                        <div className="bg-surface/90 backdrop-blur-xl rounded-[2.5rem] p-6 md:p-10 shadow-xl border border-border min-h-0 md:min-h-[400px] max-md:max-h-[min(70vh,560px)] max-md:overflow-y-auto overscroll-y-contain" style={{ boxShadow: 'var(--app-card-shadow)' }}>
                           <Timeline 
                             events={currentDayEvents} 
                             onAddEvent={() => { setEditingEvent(null); setIsAddModalOpen(true); }}
@@ -1610,7 +1619,9 @@ export default function App() {
                         </div>
 
                         <DailyJournal
+                          key={dateKey}
                           date={currentDate}
+                          entryDateKey={dateKey}
                           events={currentDayEvents}
                           initialSummary={currentJournal}
                           onSave={handleSaveJournal}

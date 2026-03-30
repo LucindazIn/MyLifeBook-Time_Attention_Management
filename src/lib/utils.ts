@@ -91,3 +91,19 @@ export function getRandomDayName(theme: AppTheme = 'artsy', language: AppLanguag
   const names = THEMED_NAMES[theme][language];
   return names[Math.floor(Math.random() * names.length)];
 }
+
+const FALLBACK_ACCENT_HEX = '#6366F1';
+
+/** Resolved `--app-accent` as hex for storing event label colors (e.g. when modal opens). */
+export function getThemeAccentHex(): string {
+  if (typeof document === 'undefined') return FALLBACK_ACCENT_HEX;
+  const raw = getComputedStyle(document.documentElement).getPropertyValue('--app-accent').trim();
+  if (/^#[0-9A-Fa-f]{6}$/i.test(raw)) return raw;
+  if (/^#[0-9A-Fa-f]{3}$/i.test(raw) && raw.length === 4) {
+    const r = raw[1];
+    const g = raw[2];
+    const b = raw[3];
+    return `#${r}${r}${g}${g}${b}${b}`;
+  }
+  return FALLBACK_ACCENT_HEX;
+}

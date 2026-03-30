@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { EventType, ScheduleEvent, AppLanguage } from '@/types';
 import { PRESET_ROLES, getPresetRole } from '@/lib/constants/roles';
 import { v4 as uuidv4 } from 'uuid';
-import { cn } from '@/lib/utils';
+import { cn, getThemeAccentHex } from '@/lib/utils';
 import { format, addHours } from 'date-fns';
 import * as chrono from 'chrono-node';
 
@@ -47,7 +47,9 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
   const [recurrenceInterval, setRecurrenceInterval] = useState(1);
   const [recurrenceEndDate, setRecurrenceEndDate] = useState('');
   const [labelText, setLabelText] = useState('');
-  const [labelColor, setLabelColor] = useState('#6366F1'); // indigo-500
+  const [labelColor, setLabelColor] = useState(() =>
+    typeof document !== 'undefined' ? getThemeAccentHex() : '#6366F1'
+  );
   const [selectedRoleId, setSelectedRoleId] = useState<string>(''); // '' = none, preset id, or 'custom'
   const [customRoleName, setCustomRoleName] = useState('');
   const [meaning, setMeaning] = useState('');
@@ -72,6 +74,12 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
     '#22C55E', // green
     '#0EA5E9', // sky
   ] as const;
+
+  const labelColorsForPicker = React.useMemo(() => {
+    const accent = getThemeAccentHex();
+    const rest = LABEL_COLORS.filter((c) => c.toLowerCase() !== accent.toLowerCase());
+    return [accent, ...rest];
+  }, [isOpen]);
 
   const SUGGESTED_LABELS_ZH = ['深度工作', '阅读', '休息', '兴趣'];
   const SUGGESTED_LABELS_EN = ['Work', 'Reading', 'Rest', 'Interest'];
@@ -183,7 +191,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
           setRecurrenceEndDate('');
         }
         setLabelText(initialEvent.label?.text || '');
-        setLabelColor(initialEvent.label?.color || '#6366F1');
+        setLabelColor(initialEvent.label?.color || getThemeAccentHex());
         if (initialEvent.role) {
           if (initialEvent.role.startsWith('custom:')) {
             setSelectedRoleId('custom');
@@ -211,7 +219,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
         setRecurrenceInterval(1);
         setRecurrenceEndDate('');
         setLabelText('');
-        setLabelColor('#6366F1');
+        setLabelColor(getThemeAccentHex());
         setSelectedRoleId('');
         setCustomRoleName('');
         setMeaning('');
@@ -223,11 +231,17 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
     }
   }, [isOpen, initialEvent, selectedDate]);
 
-  // Auto-resize detail and meaning textareas
+  // Auto-resize detail and meaning textareas (cap height on small viewports)
   const resizeTextarea = useCallback((el: HTMLTextAreaElement | null) => {
     if (!el) return;
     el.style.height = 'auto';
-    el.style.height = `${Math.max(40, el.scrollHeight)}px`;
+    const maxPx =
+      typeof window !== 'undefined'
+        ? Math.min(window.innerHeight * 0.4, 320)
+        : 320;
+    const next = Math.min(Math.max(40, el.scrollHeight), maxPx);
+    el.style.height = `${next}px`;
+    el.style.overflowY = el.scrollHeight > maxPx ? 'auto' : 'hidden';
   }, []);
   useEffect(() => {
     if (!isOpen) return;
@@ -505,35 +519,37 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                         <label className="block text-xs font-medium text-muted-foreground tracking-wider mb-2">
                           {labels.when}
                         </label>
-                        <div className="grid grid-cols-1 min-[380px]:grid-cols-2 gap-3">
-                          <div className="min-[380px]:col-span-2 min-w-0">
-                             <Input
-                                type="date"
-                                value={date}
-                                onChange={(e) => setDate(e.target.value)}
+                        <div className="flex flex-col gap-3">
+                          <div className="min-w-0 w-full">
+                            <Input
+                              type="date"
+                              value={date}
+                              onChange={(e) => setDate(e.target.value)}
+                              required
+                              className="w-full min-w-0 rounded-md bg-field border-border focus:border-accent text-base"
+                            />
+                          </div>
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                            <div className="relative w-[min(100%,7.5rem)] shrink-0">
+                              <Clock className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
+                              <Input
+                                type="time"
+                                value={startTime}
+                                onChange={handleStartTimeChange}
+                                className="w-full min-w-0 pl-8 pr-1 rounded-md border-border bg-field focus:border-accent text-base tabular-nums"
                                 required
-                                className="w-full min-w-0 rounded-md bg-field border-border focus:border-accent text-base"
-                             />
-                          </div>
-                          <div className="relative min-w-0">
-                            <Clock className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
-                            <Input
-                              type="time"
-                              value={startTime}
-                              onChange={handleStartTimeChange}
-                              className="w-full min-w-0 pl-9 rounded-md border-border bg-field focus:border-accent text-base"
-                              required
-                            />
-                          </div>
-                          <div className="relative min-w-0">
-                            <Clock className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
-                            <Input
-                              type="time"
-                              value={endTime}
-                              onChange={(e) => setEndTime(e.target.value)}
-                              className="w-full min-w-0 pl-9 rounded-md border-border bg-field focus:border-accent text-base"
-                              required
-                            />
+                              />
+                            </div>
+                            <div className="relative w-[min(100%,7.5rem)] shrink-0">
+                              <Clock className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
+                              <Input
+                                type="time"
+                                value={endTime}
+                                onChange={(e) => setEndTime(e.target.value)}
+                                className="w-full min-w-0 pl-8 pr-1 rounded-md border-border bg-field focus:border-accent text-base tabular-nums"
+                                required
+                              />
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -644,7 +660,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
 
                       {/* 详情 | 意义 */}
                       <div>
-                        <div className="grid grid-cols-2 gap-4 max-w-full">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-full">
                           <div className="min-w-0 flex flex-col">
                             <label className="text-xs font-medium tracking-wider text-muted-foreground mb-1">{language === 'zh' ? '详情' : 'Details'}</label>
                             <textarea
@@ -652,7 +668,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                               value={description}
                               onChange={(e) => setDescription(e.target.value)}
                               rows={1}
-                              className="min-h-[2.5rem] w-full rounded-md border border-border bg-field px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent resize-none overflow-hidden transition-all"
+                              className="min-h-[2.5rem] max-h-[min(40vh,20rem)] w-full rounded-md border border-border bg-field px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent resize-none overflow-y-auto transition-all"
                               placeholder={language === 'zh' ? '备注、链接或议程' : 'Notes, Links, Agenda'}
                             />
                           </div>
@@ -663,7 +679,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                               value={meaning}
                               onChange={(e) => setMeaning(e.target.value)}
                               rows={1}
-                              className="min-h-[2.5rem] w-full rounded-md border border-border bg-field px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent resize-none overflow-hidden transition-all"
+                              className="min-h-[2.5rem] max-h-[min(40vh,20rem)] w-full rounded-md border border-border bg-field px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent resize-none overflow-y-auto transition-all"
                               placeholder={language === 'zh' ? '想到了什么，便于回顾' : 'Any ideas flashing by'}
                             />
                           </div>
@@ -714,7 +730,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                               ))}
                             </div>
                             <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                              {LABEL_COLORS.map(c => (
+                              {labelColorsForPicker.map(c => (
                                 <button
                                   key={c}
                                   type="button"

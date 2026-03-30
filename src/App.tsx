@@ -1578,7 +1578,7 @@ export default function App() {
                 {/* 2:1 grid layout: left=content, right=widgets */}
                 <div className="grid gap-6 md:grid-cols-3">
                   {/* Left column (2/3): Timeline + Journal */}
-                  <div className="md:col-span-2 space-y-6">
+                  <div className="md:col-span-2 min-w-0 space-y-6">
                     {isPast ? (
                       <DailyJournal
                         key={dateKey}
@@ -1598,7 +1598,7 @@ export default function App() {
                       />
                     ) : (
                       <>
-                        <div className="bg-surface/90 backdrop-blur-xl rounded-[2.5rem] p-6 md:p-10 shadow-xl border border-border min-h-0 md:min-h-[400px] max-md:max-h-[min(70vh,560px)] max-md:overflow-y-auto overscroll-y-contain" style={{ boxShadow: 'var(--app-card-shadow)' }}>
+                        <div className="bg-surface/90 backdrop-blur-xl w-full min-w-0 rounded-2xl md:rounded-[2.5rem] px-3 py-4 md:p-10 shadow-xl border border-border min-h-0 md:min-h-[400px] max-md:max-h-[min(70vh,560px)] max-md:overflow-y-auto overscroll-y-contain" style={{ boxShadow: 'var(--app-card-shadow)' }}>
                           <Timeline 
                             events={currentDayEvents} 
                             onAddEvent={() => { setEditingEvent(null); setIsAddModalOpen(true); }}

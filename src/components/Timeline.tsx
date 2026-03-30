@@ -112,9 +112,9 @@ export const Timeline: React.FC<TimelineProps> = ({
   }
 
   return (
-    <div className="relative pl-8 pb-12">
-      {/* Vertical Line */}
-      <div className="absolute left-3.5 top-0 bottom-0 w-0.5 rounded-full bg-border" />
+    <div className="relative min-w-0 max-w-full pl-[7rem] pb-12 md:pl-8">
+      {/* Vertical line: on narrow screens sit just right of the 60px time column (-100px..-40px from card) */}
+      <div className="absolute left-[4.5rem] top-0 bottom-0 w-0.5 rounded-full bg-border md:left-3.5" />
 
       <div className="space-y-8">
         {sortedEvents.map((event, index) => {
@@ -215,7 +215,7 @@ export const Timeline: React.FC<TimelineProps> = ({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-3">
                         <h3 className={cn(
-                          "text-lg font-medium text-foreground mb-1 min-w-0 flex flex-wrap items-baseline gap-x-2 gap-y-0.5",
+                          "text-base font-medium text-foreground mb-1 min-w-0 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 md:text-lg",
                           event.completed && "text-muted-foreground line-through"
                         )}>
                           {event.type === 'meeting' && (
@@ -228,16 +228,19 @@ export const Timeline: React.FC<TimelineProps> = ({
                             />
                           )}
                           <span className="truncate min-w-0">{event.title}</span>
-                          <span className="text-sm font-serif font-normal text-muted-foreground shrink-0 tabular-nums">
+                          <span className="text-xs font-serif font-normal text-muted-foreground shrink-0 tabular-nums md:text-sm">
                             {durationAfterTitle}
                           </span>
                         </h3>
 
-                        <EventLabelChip label={event.label} className={event.completed ? "opacity-60" : undefined} />
+                        <EventLabelChip
+                          label={event.label}
+                          className={cn(event.completed && "opacity-60", "max-md:text-[10px]")}
+                        />
                       </div>
                       {event.description && (
                         <p className={cn(
-                          "text-sm text-muted-foreground line-clamp-2",
+                          "text-xs text-muted-foreground line-clamp-2 md:text-sm",
                           event.completed && "opacity-60"
                         )}>
                           {event.description}

@@ -180,6 +180,14 @@ export default function App() {
     syncAllUserData();
   }, [syncAllUserData]);
 
+  // Auto-sync when entering collection view (cross-device freshness)
+  useEffect(() => {
+    if (viewMode === 'collection' && user) {
+      syncAllUserData();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewMode]);
+
   useEffect(() => {
     if (!authError) return;
     const id = window.setTimeout(() => setAuthError(null), AUTH_ERROR_AUTO_DISMISS_MS);
@@ -1478,8 +1486,6 @@ export default function App() {
                   language={settings.language}
                   timeDisplay={settings.timeDisplay}
                   journalEntries={journalEntries}
-                  onRefresh={user ? syncAllUserData : undefined}
-                  isSyncing={isSyncing}
                 />
               </motion.div>
             )}
@@ -1581,17 +1587,15 @@ export default function App() {
                 />
 
                 {/*
-                  Layout strategy:
-                  DOM order = mobile visual order: DayVibes → DailyJournal → Timeline
-                  Desktop: explicit col-start/row-start overrides auto-placement so that
-                    DayVibes   → col 3, rows 1-2 (sticky right)
-                    DailyJournal → col 1-2, row 1 (left-top)
-                    Timeline   → col 1-2, row 2 (left-bottom)
+                  Layout:
+                  Mobile  (DOM order): DayVibes → DailyJournal → Timeline
+                  Desktop (flex order): [DailyJournal / Timeline  (left, order-1)]
+                                        [DayVibes               (right, order-2, sticky)]
                 */}
-                <div className="grid gap-6 md:grid-cols-3">
-                  {/* ── Item 1 (DOM): DayVibes + widgets
-                        mobile: top  |  desktop: right col, spans 2 rows ── */}
-                  <div className="md:col-start-3 md:col-span-1 md:row-start-1 md:row-span-2 space-y-4 md:sticky md:top-4 md:self-start">
+                <div className="flex flex-col md:flex-row md:items-start gap-6">
+                  {/* ── DOM 1: DayVibes + widgets
+                        mobile: top  |  desktop: right col (order-2) ── */}
+                  <div className="w-full md:w-1/3 md:order-2 space-y-4 md:sticky md:top-4">
                     <DayVibes
                       dateKey={dateKey}
                       energy={dayVibesData[dateKey]?.energy}
@@ -1616,9 +1620,10 @@ export default function App() {
                     )}
                   </div>
 
-                  {/* ── Item 2 (DOM): DailyJournal
-                        mobile: middle  |  desktop: left col top ── */}
-                  <div className="md:col-start-1 md:col-span-2 md:row-start-1 min-w-0">
+                  {/* ── DOM 2: Left col — DailyJournal (top) + Timeline (bottom)
+                        mobile: middle + bottom  |  desktop: left col (order-1) ── */}
+                  <div className="w-full md:w-2/3 md:order-1 min-w-0 flex flex-col gap-6">
+                    {/* 每日意义 — always on top of the left column */}
                     <DailyJournal
                       key={dateKey}
                       date={currentDate}
@@ -1635,11 +1640,7 @@ export default function App() {
                       mood={dayVibesData[dateKey]?.mood}
                       focus={dayVibesData[dateKey]?.focus}
                     />
-                  </div>
-
-                  {/* ── Item 3 (DOM): Timeline
-                        mobile: bottom  |  desktop: left col bottom ── */}
-                  <div className="md:col-start-1 md:col-span-2 md:row-start-2 min-w-0">
+                    {/* 日程表 — always below 每日意义 */}
                     <div className="bg-surface/90 backdrop-blur-xl w-full min-w-0 rounded-2xl md:rounded-[2.5rem] px-3 py-4 md:p-10 shadow-xl border border-border min-h-0 md:min-h-[400px] max-md:max-h-[min(70vh,560px)] max-md:overflow-y-auto overscroll-y-contain" style={{ boxShadow: 'var(--app-card-shadow)' }}>
                       <Timeline
                         events={currentDayEvents}

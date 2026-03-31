@@ -1588,14 +1588,17 @@ export default function App() {
 
                 {/*
                   Layout:
-                  Mobile  (DOM order): DayVibes → DailyJournal → Timeline
-                  Desktop (flex order): [DailyJournal / Timeline  (left, order-1)]
-                                        [DayVibes               (right, order-2, sticky)]
+                  Past   mobile:  每日意义 → DayVibes → 日程表
+                  Past   desktop: 每日意义（上）| DayVibes（右） / 日程表（下）
+                  Current/Future mobile:  DayVibes → 日程表 → 每日意义
+                  Current/Future desktop: 日程表（上）| DayVibes（右） / 每日意义（下）
                 */}
-                <div className="flex flex-col md:flex-row md:items-start gap-6">
-                  {/* ── DOM 1: DayVibes + widgets
-                        mobile: top  |  desktop: right col (order-2) ── */}
-                  <div className="w-full md:w-1/3 md:order-2 space-y-4 md:sticky md:top-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:items-start">
+                  {/* DayVibes: desktop 右列固定；mobile 顺序随 isPast */}
+                  <div className={cn(
+                    "space-y-4 md:col-start-3 md:row-start-1 md:row-span-2 md:sticky md:top-4",
+                    isPast ? "order-2" : "order-1"
+                  )}>
                     <DayVibes
                       dateKey={dateKey}
                       energy={dayVibesData[dateKey]?.energy}
@@ -1620,10 +1623,11 @@ export default function App() {
                     )}
                   </div>
 
-                  {/* ── DOM 2: Left col — DailyJournal (top) + Timeline (bottom)
-                        mobile: middle + bottom  |  desktop: left col (order-1) ── */}
-                  <div className="w-full md:w-2/3 md:order-1 min-w-0 flex flex-col gap-6">
-                    {/* 每日意义 — always on top of the left column */}
+                  {/* 每日意义: past → 第1位/desktop row1；current → 第3位/desktop row2 */}
+                  <div className={cn(
+                    "md:col-span-2 md:col-start-1 min-w-0",
+                    isPast ? "order-1 md:row-start-1" : "order-3 md:row-start-2"
+                  )}>
                     <DailyJournal
                       key={dateKey}
                       date={currentDate}
@@ -1640,26 +1644,30 @@ export default function App() {
                       mood={dayVibesData[dateKey]?.mood}
                       focus={dayVibesData[dateKey]?.focus}
                     />
-                    {/* 日程表 — always below 每日意义 */}
-                    <div className="bg-surface/90 backdrop-blur-xl w-full min-w-0 rounded-2xl md:rounded-[2.5rem] px-3 py-4 md:p-10 shadow-xl border border-border min-h-0 md:min-h-[400px] max-md:max-h-[min(70vh,560px)] max-md:overflow-y-auto overscroll-y-contain" style={{ boxShadow: 'var(--app-card-shadow)' }}>
-                      <Timeline
-                        events={currentDayEvents}
-                        onAddEvent={() => { setEditingEvent(null); setIsAddModalOpen(true); }}
-                        onEventClick={(e) => {
-                          const baseEvent = events.find(ev => ev.id === (e.baseEventId || e.id));
-                          setEditingEvent(baseEvent || e);
-                          setIsAddModalOpen(true);
-                        }}
-                        onToggleComplete={handleToggleComplete}
-                        language={settings.language}
-                        timeDisplay={settings.timeDisplay}
-                        onGenerateSchedule={isPast ? undefined : handleGenerateSchedule}
-                        generatingMode={generatingMode}
-                        selectedFilterRole={selectedFilterRole}
-                        roleFilterMode={roleFilterMode}
-                        getRoleColor={getRoleColor}
-                      />
-                    </div>
+                  </div>
+
+                  {/* 日程表: past → 第3位/desktop row2；current → 第2位/desktop row1 */}
+                  <div className={cn(
+                    "bg-surface/90 backdrop-blur-xl w-full min-w-0 rounded-2xl md:rounded-[2.5rem] px-3 py-4 md:p-10 shadow-xl border border-border min-h-0 md:min-h-[400px] max-md:max-h-[min(70vh,560px)] max-md:overflow-y-auto overscroll-y-contain md:col-span-2 md:col-start-1",
+                    isPast ? "order-3 md:row-start-2" : "order-2 md:row-start-1"
+                  )} style={{ boxShadow: 'var(--app-card-shadow)' }}>
+                    <Timeline
+                      events={currentDayEvents}
+                      onAddEvent={() => { setEditingEvent(null); setIsAddModalOpen(true); }}
+                      onEventClick={(e) => {
+                        const baseEvent = events.find(ev => ev.id === (e.baseEventId || e.id));
+                        setEditingEvent(baseEvent || e);
+                        setIsAddModalOpen(true);
+                      }}
+                      onToggleComplete={handleToggleComplete}
+                      language={settings.language}
+                      timeDisplay={settings.timeDisplay}
+                      onGenerateSchedule={isPast ? undefined : handleGenerateSchedule}
+                      generatingMode={generatingMode}
+                      selectedFilterRole={selectedFilterRole}
+                      roleFilterMode={roleFilterMode}
+                      getRoleColor={getRoleColor}
+                    />
                   </div>
                 </div>
               </motion.div>

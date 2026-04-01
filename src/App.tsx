@@ -150,7 +150,9 @@ export default function App() {
           device_id: deviceId,
           device_name: navigator.userAgent,
         });
-        if (error) throw error;
+        if (error?.code === 'device_limit_reached') throw error;
+        // Other register_device errors (network, permissions) are non-fatal;
+        // proceed with data sync regardless.
       }
 
       const [evts, comps, dayMeta, quotes] = await Promise.all([
@@ -1594,10 +1596,10 @@ export default function App() {
                   Current/Future desktop: 日程表（上）| DayVibes（右） / 每日意义（下）
                 */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:items-start">
-                  {/* DayVibes: desktop 右列固定；mobile 顺序随 isPast */}
+                  {/* DayVibes: desktop 右列固定；mobile 顺序随 isPast (row-start 显式定位) */}
                   <div className={cn(
                     "space-y-4 md:col-start-3 md:row-start-1 md:row-span-2 md:sticky md:top-4",
-                    isPast ? "order-2" : "order-1"
+                    isPast ? "row-start-2" : "row-start-3"
                   )}>
                     <DayVibes
                       dateKey={dateKey}
@@ -1623,10 +1625,10 @@ export default function App() {
                     )}
                   </div>
 
-                  {/* 每日意义: past → 第1位/desktop row1；current → 第3位/desktop row2 */}
+                  {/* 每日意义: past → row1；current → row2(mobile)/row2(desktop) */}
                   <div className={cn(
                     "md:col-span-2 md:col-start-1 min-w-0",
-                    isPast ? "order-1 md:row-start-1" : "order-3 md:row-start-2"
+                    isPast ? "row-start-1 md:row-start-1" : "row-start-2 md:row-start-2"
                   )}>
                     <DailyJournal
                       key={dateKey}
@@ -1646,10 +1648,10 @@ export default function App() {
                     />
                   </div>
 
-                  {/* 日程表: past → 第3位/desktop row2；current → 第2位/desktop row1 */}
+                  {/* 日程表: past → row3(mobile)/row2(desktop)；current → row1(mobile)/row1(desktop) */}
                   <div className={cn(
                     "bg-surface/90 backdrop-blur-xl w-full min-w-0 rounded-2xl md:rounded-[2.5rem] px-3 py-4 md:p-10 shadow-xl border border-border min-h-0 md:min-h-[400px] max-md:max-h-[min(70vh,560px)] max-md:overflow-y-auto overscroll-y-contain md:col-span-2 md:col-start-1",
-                    isPast ? "order-3 md:row-start-2" : "order-2 md:row-start-1"
+                    isPast ? "row-start-3 md:row-start-2" : "row-start-1 md:row-start-1"
                   )} style={{ boxShadow: 'var(--app-card-shadow)' }}>
                     <Timeline
                       events={currentDayEvents}

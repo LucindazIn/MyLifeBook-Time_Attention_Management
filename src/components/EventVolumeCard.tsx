@@ -6,6 +6,7 @@ import { getChapterRange, type ChapterPeriodKey } from '@/lib/dateRange';
 import { endOfDay, format, parseISO, startOfDay, startOfMonth } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { computeEventTagSlicesFromExpanded } from '@/lib/chapterPeriodStats';
+import { PIE_CX, PIE_CY, PIE_R_HOLE, PIE_R_OUTER, pieSectorPath } from '@/lib/pieChartSvg';
 
 const RANGE_OPTIONS: ChapterPeriodKey[] = ['this_week', 'this_month', 'custom'];
 
@@ -32,16 +33,6 @@ function getRangeLabel(period: ChapterPeriodKey, isZh: boolean): string {
     custom: isZh ? '自定义' : 'Custom',
   };
   return labels[period];
-}
-
-function pieSectorPath(cx: number, cy: number, r: number, startAngle: number, endAngle: number): string {
-  const x1 = cx + r * Math.cos(startAngle);
-  const y1 = cy + r * Math.sin(startAngle);
-  const x2 = cx + r * Math.cos(endAngle);
-  const y2 = cy + r * Math.sin(endAngle);
-  const sweep = endAngle - startAngle;
-  const largeArc = sweep > Math.PI ? 1 : 0;
-  return `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`;
 }
 
 export interface EventVolumeCardProps {
@@ -101,11 +92,6 @@ export const EventVolumeCard: React.FC<EventVolumeCardProps> = ({
     return { tag: hoveredTag, count, pct };
   }, [hoveredTag, slices, total]);
 
-  const cx = 50;
-  const cy = 50;
-  const rPie = 40;
-  const rHole = 22;
-
   const paths = useMemo(() => {
     if (total === 0) return [];
     let acc = 0;
@@ -113,7 +99,7 @@ export const EventVolumeCard: React.FC<EventVolumeCardProps> = ({
       const startAngle = (acc / total) * 2 * Math.PI - Math.PI / 2;
       acc += count;
       const endAngle = (acc / total) * 2 * Math.PI - Math.PI / 2;
-      const d = pieSectorPath(cx, cy, rPie, startAngle, endAngle);
+      const d = pieSectorPath(PIE_CX, PIE_CY, PIE_R_OUTER, startAngle, endAngle);
       return { tag, count, d, color: getSliceColor(i) };
     });
   }, [slices, total]);
@@ -206,9 +192,9 @@ export const EventVolumeCard: React.FC<EventVolumeCardProps> = ({
                 />
               ))}
               <circle
-                cx={cx}
-                cy={cy}
-                r={rHole}
+                cx={PIE_CX}
+                cy={PIE_CY}
+                r={PIE_R_HOLE}
                 fill="var(--app-surface)"
                 stroke="var(--app-border)"
                 strokeWidth={0.5}

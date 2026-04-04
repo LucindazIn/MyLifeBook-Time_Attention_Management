@@ -5,7 +5,11 @@ import type { AppLanguage, ScheduleEvent } from '@/types';
 import { ChapterPeriodStatusSection } from '@/components/ChapterPeriodStatusSection';
 import type { SavedChapter, ChapterDraft } from '@/lib/chaptersStorage';
 import { updateChapter, MAX_CHAPTER_SUMMARY_CHARS } from '@/lib/chaptersStorage';
-import { parseChapterAiPaste } from '@/lib/parseChapterAiPaste';
+import {
+  parseChapterAiPaste,
+  CHAPTER_TITLE_MAX_CHARS,
+  CHAPTER_TITLE_PREFERRED_MAX_CHARS,
+} from '@/lib/parseChapterAiPaste';
 import { formatChapterModalPeriodBracket } from '@/lib/dateRange';
 import { cn } from '@/lib/utils';
 
@@ -77,7 +81,9 @@ export const ChapterViewModal: React.FC<ChapterViewModalProps> = ({
 
   useEffect(() => {
     if (open && chapter) {
-      const t = chapter.chapterTitles[0] ?? '';
+      const raw = chapter.chapterTitles[0] ?? '';
+      const t =
+        raw.length > CHAPTER_TITLE_MAX_CHARS ? raw.slice(0, CHAPTER_TITLE_MAX_CHARS) : raw;
       const s = chapter.narrativeSummary;
       setEditTitle(t);
       setEditSummary(s);
@@ -223,16 +229,32 @@ export const ChapterViewModal: React.FC<ChapterViewModalProps> = ({
           {/* 1. 章节名 + 章节内容（优先展示；移动端在最上） */}
           <div className="flex-1 min-w-0 flex flex-col p-4 lg:pr-6 gap-6 pb-6 lg:pb-8 order-1 border-b lg:border-b-0 lg:border-r" style={{ borderColor: 'var(--app-border)' }}>
             <div>
-              <p className="text-xs font-bold mb-2" style={{ color: 'var(--app-text)' }}>
+              <p className="text-xs font-bold mb-1" style={{ color: 'var(--app-text)' }}>
                 {isZh ? '章节名' : 'Chapter Name'}
+                <span className="ml-2 font-normal tabular-nums" style={{ color: 'var(--app-muted)' }}>
+                  {editTitle.length} / {CHAPTER_TITLE_MAX_CHARS}
+                </span>
+              </p>
+              <p className="text-[11px] leading-snug mb-2" style={{ color: 'var(--app-muted)' }}>
+                {isZh
+                  ? `建议 ${CHAPTER_TITLE_PREFERRED_MAX_CHARS} 字以内，最长 ${CHAPTER_TITLE_MAX_CHARS} 字；宜具体可感，避免空泛抽象。`
+                  : `Prefer Up To ${CHAPTER_TITLE_PREFERRED_MAX_CHARS} Characters (${CHAPTER_TITLE_MAX_CHARS} Maximum). Keep It Concrete And Grounded—Avoid Vague Abstraction.`}
               </p>
               <input
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
+                maxLength={CHAPTER_TITLE_MAX_CHARS}
                 className="w-full text-sm rounded-lg border px-3 py-2 bg-field border-border"
                 style={{ color: 'var(--app-text)' }}
                 placeholder={isZh ? '输入章节名' : 'Enter Chapter Name'}
               />
+              {editTitle.length > CHAPTER_TITLE_PREFERRED_MAX_CHARS && (
+                <p className="text-[11px] mt-1 text-amber-600 dark:text-amber-400">
+                  {isZh
+                    ? `已超过「佳」长度（${CHAPTER_TITLE_PREFERRED_MAX_CHARS} 字），仍可在 ${CHAPTER_TITLE_MAX_CHARS} 字内保存。`
+                    : `Longer Than The Preferred ${CHAPTER_TITLE_PREFERRED_MAX_CHARS} Characters; You Can Still Save Up To ${CHAPTER_TITLE_MAX_CHARS}.`}
+                </p>
+              )}
             </div>
 
             <div className="flex flex-col flex-1 min-h-0">

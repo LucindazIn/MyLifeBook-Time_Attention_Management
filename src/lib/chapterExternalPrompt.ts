@@ -35,12 +35,16 @@ You are not a taxonomist or a spreadsheet editor: if several roles, tags, or fac
 
   const taskSection = buildTaskSection(langIsZh, periodLabel, blocks.roleBlock);
 
+  const alignBlock = blocks.longTermGoalAlignmentBlock
+    ? `\n\n${blocks.longTermGoalAlignmentBlock}\n`
+    : '';
+
   const periodDataHeader = langIsZh
     ? `=== Period Data ===
 
 事件列表（含意义与高光/星标标注）：
 ${blocks.eventLines}
-
+${alignBlock}
 日记（按日期）：
 ${blocks.journalBlock}
 ${blocks.dailyContextBlock ? `\n\n${blocks.dailyContextBlock}` : ''}
@@ -49,7 +53,7 @@ ${blocks.dailyContextBlock ? `\n\n${blocks.dailyContextBlock}` : ''}
 
 Events (with meaning and highlight/starred when present):
 ${blocks.eventLines}
-
+${alignBlock}
 Journal (by date):
 ${blocks.journalBlock}
 ${blocks.dailyContextBlock ? `\n\n${blocks.dailyContextBlock}` : ''}
@@ -81,9 +85,9 @@ ${roleBlock ? roleBlock + '\n\n' : ''}任务：
 1. 把握本周期里牵动情绪或反复出现的主题，把核心活动织进一段可读的人生叙事；不要逐条罗列事件表，也不要为了「身份/角色」而做机械分块。
 2. 找出转折或高光；不要逐条罗列事件。标有 [高光] 的事件视为里程碑并在叙事中突出。
 3. 若事件含「意义」字段，优先引用或编织进叙事作为锚点，尊重用户原话。
-4. 若事件关联长期目标，可点出这些行动如何推进目标。若有每日上下文（当日名/标签或能量/情绪），可适度引用以增强连贯。
+4. 若事件关联长期目标，可点出这些行动如何推进目标。若 Period Data 中含「长期目标跟进」小节，可将对齐时间、里程碑疏密、本周期是否触碰该方向**自然融入**叙事（勿照搬模板句）；若有每日上下文（当日名/标签或能量/情绪），可适度引用以增强连贯。
 5. 结合日记感知情绪，使叙事有温度。
-6. 拟定**唯一一个**章节名：可文学感、悬念感或总结感（用户可能会改）。
+6. 拟定**唯一一个**章节名：须**落地、可感知**，让读者一眼能联想到本周期里真实发生的事或情绪（可用具体场景、人物、物件、地点等锚点）；**避免**空泛比喻、过度抽象或像书名一样的飘浮感（用户可能会改）。
 7. 章节内容的篇幅、人称与 Markdown 强调，须符合下方「输出结构」中 **章节内容** 一段。
 
 约束：
@@ -96,7 +100,7 @@ ${roleBlock ? roleBlock + '\n\n' : ''}任务：
 输出结构（先理解内容，再按最后一项封装为 JSON）：
 
 **章节名**
-单行；长度不超过 60 个字符（按 JavaScript 字符串 .length 计数）。
+单行；**以 10 个字以内为佳**，**不得超过 15 个字**（均按 JavaScript 字符串 \`.length\` 计数）；宜具体、宜落地，避免空洞抽象。
 
 **章节内容**
 第一人称；长度不少于 500 个字符且不超过 2000 个字符（.length）；正文内可使用 Markdown：**双星号**包裹关键句；可选用 ==双等号== 表示高亮。
@@ -115,9 +119,9 @@ ${roleBlock ? roleBlock + '\n\n' : ''}Tasks:
 1. Find the emotional through-lines and recurring themes of this period, and weave the core activities into one readable story—do not mirror the event list, and do not carve the chapter into rigid blocks by role or identity.
 2. Find turning points or highlights; do not list events one by one. Treat events marked [highlight] as milestones and emphasize them in the narrative.
 3. When an event has a "meaning" field, quote or weave it into the narrative as anchor points—respect the user's words.
-4. When events link to long-term goals, note how they advance those goals. When daily context (day name/tag or energy/mood) exists, you may cite it for coherence.
+4. When events link to long-term goals, note how they advance those goals. If Period Data includes a "Long-Term Goal Alignment" section, weave alignment timing, milestones, and whether this period touched each direction **naturally** into the story (do not copy sample phrasing). When daily context (day name/tag or energy/mood) exists, you may cite it for coherence.
 5. Read emotion from the journal and give the narrative warmth.
-6. Propose exactly one chapter name (title): literary, suspenseful, or summative (the user may edit).
+6. Propose exactly one chapter name (title): it must feel **grounded and concrete**—something that clearly echoes what actually happened or felt during this period (use anchors like scenes, people, objects, or places from the material). **Avoid** vague metaphors, heavy abstraction, or "floaty" book-title vibes (the user may edit).
 7. The chapter content must meet the length, person, and Markdown rules under **Chapter Content** in the output structure below.
 
 Constraints:
@@ -130,7 +134,7 @@ Constraints:
 Output structure (understand the content first, then wrap as JSON in the final step):
 
 **Chapter Name**
-One line; **at most 60 characters** (JavaScript string .length).
+One line; **prefer at most 10 characters**, **never more than 15 characters** (JavaScript string \`.length\`); keep it specific and grounded, not abstract.
 
 **Chapter Content**
 First person; **at least 500 and at most 2000 characters** (.length); you may use **bold** and ==highlight== in the text.

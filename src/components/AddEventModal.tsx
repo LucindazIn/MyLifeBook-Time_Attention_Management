@@ -7,6 +7,16 @@ import { EventType, ScheduleEvent, AppLanguage } from '@/types';
 import { PRESET_ROLES, getPresetRole } from '@/lib/constants/roles';
 import { v4 as uuidv4 } from 'uuid';
 import { cn, getThemeAccentHex } from '@/lib/utils';
+import { loadLongTermGoalMeta } from '@/lib/longTermGoalMetaStorage';
+import {
+  PRESET_EVENT_LABELS_ZH,
+  PRESET_EVENT_LABELS_EN,
+  isPresetEventLabel,
+  touchCustomEventLabel,
+  syncAndPruneCustomEventTags,
+  loadSavedCustomEventTags,
+  CUSTOM_EVENT_TAGS_KEY,
+} from '@/lib/customEventTagsStorage';
 import { format, addHours } from 'date-fns';
 import * as chrono from 'chrono-node';
 
@@ -81,18 +91,9 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
     return [accent, ...rest];
   }, [isOpen]);
 
-  const SUGGESTED_LABELS_ZH = ['深度工作', '阅读', '休息', '兴趣'];
-  const SUGGESTED_LABELS_EN = ['Work', 'Reading', 'Rest', 'Interest'];
-
-  const CUSTOM_TAGS_KEY = 'feather_custom_event_tags';
-  const [savedCustomTags, setSavedCustomTags] = useState<string[]>(() => {
-    if (typeof window === 'undefined') return [];
-    try {
-      return JSON.parse(window.localStorage.getItem(CUSTOM_TAGS_KEY) || '[]');
-    } catch {
-      return [];
-    }
-  });
+  const [savedCustomTags, setSavedCustomTags] = useState<string[]>(() =>
+    typeof window === 'undefined' ? [] : loadSavedCustomEventTags()
+  );
 
   const LONG_TERM_GOALS_KEY = 'feather_long_term_goal_tags';
   const [savedLongTermGoals, setSavedLongTermGoals] = useState<string[]>(() => {
@@ -104,7 +105,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
     }
   });
 
-  const defaultLabels = language === 'zh' ? SUGGESTED_LABELS_ZH : SUGGESTED_LABELS_EN;
+  const defaultLabels = language === 'zh' ? [...PRESET_EVENT_LABELS_ZH] : [...PRESET_EVENT_LABELS_EN];
   const suggestedLabels = [
     ...savedCustomTags,
     ...defaultLabels.filter((l) => !savedCustomTags.includes(l))
@@ -157,8 +158,9 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
     eventsProp.forEach((e) => e.longTermGoals?.forEach((g) => goalsInEvents.add(g)));
     try {
       const saved: string[] = JSON.parse(window.localStorage.getItem(LONG_TERM_GOALS_KEY) || '[]');
-      // Keep only goals that exist in events, then merge in any goals from events not yet saved locally.
-      const keptFromSaved = saved.filter((g) => goalsInEvents.has(g));
+      const metaGoalNames = new Set(Object.keys(loadLongTermGoalMeta()));
+      // Keep goals still used in events, or still present in long-term meta (calendar-free visions).
+      const keptFromSaved = saved.filter((g) => goalsInEvents.has(g) || metaGoalNames.has(g));
       const newFromEvents = Array.from(goalsInEvents).filter((g) => !saved.includes(g));
       const merged = [...keptFromSaved, ...newFromEvents];
       if (merged.length !== saved.length || newFromEvents.length > 0) {
@@ -167,6 +169,18 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
       }
     } catch (_) {}
   }, [isOpen, eventsProp]);
+
+  /** 挂载与每次打开弹窗时：清理超过 2 天未使用的自定义标签（预设不受影响） */
+  useEffect(() => {
+    const { tags } = syncAndPruneCustomEventTags();
+    setSavedCustomTags(tags);
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const { tags } = syncAndPruneCustomEventTags();
+    setSavedCustomTags(tags);
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen) {
@@ -359,11 +373,12 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
     }
 
     const trimmedLabel = labelText.trim();
-    if (trimmedLabel && !(language === 'zh' ? SUGGESTED_LABELS_ZH : SUGGESTED_LABELS_EN).includes(trimmedLabel)) {
+    if (trimmedLabel && !isPresetEventLabel(trimmedLabel)) {
+      touchCustomEventLabel(trimmedLabel);
       const next = [trimmedLabel, ...savedCustomTags.filter((t) => t !== trimmedLabel)];
       setSavedCustomTags(next);
       try {
-        window.localStorage.setItem(CUSTOM_TAGS_KEY, JSON.stringify(next));
+        window.localStorage.setItem(CUSTOM_EVENT_TAGS_KEY, JSON.stringify(next));
       } catch (_) {}
     }
     longTermGoals.forEach((goal) => {
@@ -519,13 +534,13 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                         </div>
                       </div>
 
-                      {/* Section 2: Date & Time */}
+                      {/* Section 2: Date & Time — desktop: date + start + end on one row */}
                       <div>
                         <label className="block text-xs font-medium text-muted-foreground tracking-wider mb-2">
                           {labels.when}
                         </label>
-                        <div className="flex flex-col gap-3">
-                          <div className="min-w-0 w-full">
+                        <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-end md:gap-x-3 md:gap-y-2">
+                          <div className="min-w-0 w-full md:w-auto md:flex-1 md:min-w-[10.5rem] md:max-w-[14rem]">
                             <Input
                               type="date"
                               value={date}
@@ -534,7 +549,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                               className="w-full min-w-0 rounded-md bg-field border-border focus:border-accent text-base"
                             />
                           </div>
-                          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 md:flex-nowrap">
                             <div className="relative w-[min(100%,7.5rem)] shrink-0">
                               <Clock className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
                               <Input

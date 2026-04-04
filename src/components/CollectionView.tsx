@@ -17,7 +17,16 @@ export interface CollectionViewProps {
   language: AppLanguage;
   timeDisplay: TimeDisplayFormat;
   journalEntries: Record<string, string>;
+  onRenameLongTermGoal: (oldName: string, newName: string) => void | Promise<void>;
 }
+
+const cardShell =
+  'rounded-2xl p-6 border bg-surface';
+
+const cardStyle = {
+  borderColor: 'var(--app-border)',
+  boxShadow: 'var(--app-card-shadow)',
+} as const;
 
 export const CollectionView: React.FC<CollectionViewProps> = ({
   events,
@@ -28,16 +37,13 @@ export const CollectionView: React.FC<CollectionViewProps> = ({
   language,
   timeDisplay,
   journalEntries,
+  onRenameLongTermGoal,
 }) => {
-  const isZh = language === 'zh';
   return (
     <div className="grid grid-cols-1 md:grid-cols-5 gap-6 md:gap-8 max-w-6xl mx-auto px-4">
-      {/* Left column: 概览 + 长期目标 + 角色能量 + 事件标签分析 */}
+      {/* Left: 概览 + 章节叙事 */}
       <div className="md:col-span-2 space-y-6">
-        <div
-          className="rounded-2xl p-6 border bg-surface"
-          style={{ borderColor: 'var(--app-border)', boxShadow: 'var(--app-card-shadow)' }}
-        >
+        <div className={cardShell} style={cardStyle}>
           <StatsSummaryView
             events={events}
             dayTags={dayTags}
@@ -45,56 +51,7 @@ export const CollectionView: React.FC<CollectionViewProps> = ({
             language={language}
           />
         </div>
-        <div
-          className="rounded-2xl p-6 border bg-surface"
-          style={{ borderColor: 'var(--app-border)', boxShadow: 'var(--app-card-shadow)' }}
-        >
-          <LongTermGoalsCard
-            events={events}
-            completedInstances={completedInstances}
-            language={language}
-            timeDisplay={timeDisplay}
-          />
-        </div>
-        <div
-          className="rounded-2xl p-6 border bg-surface"
-          style={{ borderColor: 'var(--app-border)', boxShadow: 'var(--app-card-shadow)' }}
-        >
-          <RoleEnergyCard
-            events={events}
-            completedInstances={completedInstances}
-            language={language}
-          />
-        </div>
-        <div
-          className="rounded-2xl p-6 border bg-surface"
-          style={{ borderColor: 'var(--app-border)', boxShadow: 'var(--app-card-shadow)' }}
-        >
-          <EventVolumeCard
-            events={events}
-            completedInstances={completedInstances}
-            language={language}
-          />
-        </div>
-      </div>
-
-      {/* Right column: 人生曲线 + 章节叙事 */}
-      <div className="md:col-span-3 space-y-6">
-        <div
-          className="rounded-2xl p-6 border bg-surface"
-          style={{ borderColor: 'var(--app-border)', boxShadow: 'var(--app-card-shadow)' }}
-        >
-          <RoleBalanceCard
-            events={events}
-            completedInstances={completedInstances}
-            language={language}
-          />
-        </div>
-        <div
-          id={CHAPTER_CARD_ID}
-          className="rounded-2xl p-6 border bg-surface scroll-mt-4"
-          style={{ borderColor: 'var(--app-border)', boxShadow: 'var(--app-card-shadow)' }}
-        >
+        <div id={CHAPTER_CARD_ID} className={`${cardShell} scroll-mt-4`} style={cardStyle}>
           <ChapterNarrativeCard
             events={events}
             journalEntries={journalEntries}
@@ -105,6 +62,42 @@ export const CollectionView: React.FC<CollectionViewProps> = ({
             dayTags={dayTags}
             dayVibes={dayVibes}
           />
+        </div>
+      </div>
+
+      {/* Right: 人生曲线 + 长期目标 + 角色能量 / 事件标签（并排） */}
+      <div className="md:col-span-3 space-y-6">
+        <div className={cardShell} style={cardStyle}>
+          <RoleBalanceCard
+            events={events}
+            completedInstances={completedInstances}
+            language={language}
+          />
+        </div>
+        <div className={cardShell} style={cardStyle}>
+          <LongTermGoalsCard
+            events={events}
+            completedInstances={completedInstances}
+            language={language}
+            timeDisplay={timeDisplay}
+            onRenameLongTermGoal={onRenameLongTermGoal}
+          />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-6">
+          <div className={cardShell} style={cardStyle}>
+            <RoleEnergyCard
+              events={events}
+              completedInstances={completedInstances}
+              language={language}
+            />
+          </div>
+          <div className={cardShell} style={cardStyle}>
+            <EventVolumeCard
+              events={events}
+              completedInstances={completedInstances}
+              language={language}
+            />
+          </div>
         </div>
       </div>
     </div>

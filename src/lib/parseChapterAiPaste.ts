@@ -1,7 +1,10 @@
 import { MAX_CHAPTER_SUMMARY_CHARS } from '@/lib/chaptersStorage';
 
-/** Align with external export prompt. */
-export const CHAPTER_TITLE_MAX_CHARS = 60;
+/** Align with external export prompt（章节名上限；佳为 10 字以内） */
+export const CHAPTER_TITLE_MAX_CHARS = 15;
+
+/** UI 与提示文案：宜短于或等于该长度 */
+export const CHAPTER_TITLE_PREFERRED_MAX_CHARS = 10;
 
 /** Current product tail lines (must match chapterExternalPrompt). */
 const TAIL_ZH = '现在可以将上方内容复制回人生之书中保存本章。';

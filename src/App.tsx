@@ -40,6 +40,7 @@ import { GeminiUserKeyProvider } from '@/contexts/GeminiUserKeyContext';
 import { getLocalScheduleSuggestions } from '@/lib/scheduleLocalSuggestions';
 import { getChapters, type SavedChapter } from '@/lib/chaptersStorage';
 import { PRESET_ROLES, getRoleDisplayName, getRoleColor } from '@/lib/constants/roles';
+import { COLLECTION_SUBTITLES_ZH, COLLECTION_SUBTITLES_EN } from '@/lib/collectionSubtitles';
 
 const AUTH_ERROR_AUTO_DISMISS_MS = 10_000;
 
@@ -583,6 +584,45 @@ export default function App() {
     setIsSuggestionModalOpen(false);
     setSuggestedEvents([]);
   };
+
+  const [collectionSubtitleIndex, setCollectionSubtitleIndex] = useState(0);
+
+  useEffect(() => {
+    if (viewMode !== 'collection') return;
+    const id = window.setInterval(() => {
+      setCollectionSubtitleIndex((i) => (i + 1) % COLLECTION_SUBTITLES_ZH.length);
+    }, 8000);
+    return () => window.clearInterval(id);
+  }, [viewMode]);
+
+  const handleRenameLongTermGoal = React.useCallback(
+    async (oldName: string, newName: string) => {
+      const trimmed = newName.trim();
+      if (!trimmed || oldName === trimmed) return;
+      const affected = events.filter((e) => e.longTermGoals?.includes(oldName));
+      for (const e of affected) {
+        const updated: ScheduleEvent = {
+          ...e,
+          longTermGoals: e.longTermGoals?.map((g) => (g === oldName ? trimmed : g)),
+        };
+        if (user) {
+          try {
+            await upsertEventWithTags(supabase, user.id, updated);
+          } catch (err: unknown) {
+            alert(formatSyncErrorMessage(err, settings.language));
+            throw err;
+          }
+        }
+      }
+      setEvents((prev) =>
+        prev.map((e) => ({
+          ...e,
+          longTermGoals: e.longTermGoals?.map((g) => (g === oldName ? trimmed : g)),
+        }))
+      );
+    },
+    [events, user, settings.language]
+  );
 
   const navigateDate = (direction: 'prev' | 'next') => {
     setCurrentDate(prev => {
@@ -1446,8 +1486,10 @@ export default function App() {
                 </p>
               )}
               {viewMode === 'collection' && (
-                <p className="text-sm tracking-wide" style={{ color: 'var(--app-muted)' }}>
-                  {settings.language === 'zh' ? '编织你的时光，雕琢人生叙事' : 'weaving your timeline, crafting your narrative'}
+                <p className="text-sm tracking-wide transition-opacity duration-500" style={{ color: 'var(--app-muted)' }}>
+                  {settings.language === 'zh'
+                    ? COLLECTION_SUBTITLES_ZH[collectionSubtitleIndex % COLLECTION_SUBTITLES_ZH.length]
+                    : COLLECTION_SUBTITLES_EN[collectionSubtitleIndex % COLLECTION_SUBTITLES_EN.length]}
                 </p>
               )}
               {viewMode === 'year' && yearKpiAvg && (
@@ -1488,6 +1530,7 @@ export default function App() {
                   language={settings.language}
                   timeDisplay={settings.timeDisplay}
                   journalEntries={journalEntries}
+                  onRenameLongTermGoal={handleRenameLongTermGoal}
                 />
               </motion.div>
             )}

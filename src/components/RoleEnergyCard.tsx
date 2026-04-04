@@ -1,24 +1,27 @@
 import React, { useMemo, useState, useCallback } from 'react';
-import {
-  startOfWeek,
-  endOfWeek,
-  startOfMonth,
-  endOfMonth,
-  startOfDay,
-  endOfDay,
-  parseISO,
-  format,
-} from 'date-fns';
-import { Zap } from 'lucide-react';
+import { PieChart } from 'lucide-react';
+import { endOfDay, format, parseISO, startOfDay, startOfMonth } from 'date-fns';
 import type { ScheduleEvent, AppLanguage } from '@/types';
 import { expandRecurringEvents } from '@/lib/events';
-import { aggregateByRole, rolePercentagesByCount } from '@/lib/roleAggregation';
+import { aggregateByRole } from '@/lib/roleAggregation';
 import { getRoleColor, getRoleDisplayName } from '@/lib/constants/roles';
+import { getChapterRange, type ChapterPeriodKey } from '@/lib/dateRange';
 import { cn } from '@/lib/utils';
+import { PIE_CX, PIE_CY, PIE_R_HOLE, PIE_R_OUTER, pieSectorPath } from '@/lib/pieChartSvg';
 
 const ROLE_BALANCE_THRESHOLD_PCT = 78;
 
-type RangeKey = 'week' | 'month' | 'custom';
+const RANGE_OPTIONS: ChapterPeriodKey[] = ['this_week', 'this_month', 'custom'];
+
+function getRangeLabel(period: ChapterPeriodKey, isZh: boolean): string {
+  const labels: Record<ChapterPeriodKey, string> = {
+    this_week: isZh ? '本周' : 'This Week',
+    last_week: isZh ? '上周' : 'Last Week',
+    this_month: isZh ? '本月' : 'This Month',
+    custom: isZh ? '自定义' : 'Custom',
+  };
+  return labels[period];
+}
 
 export interface RoleEnergyCardProps {
   events: ScheduleEvent[];
@@ -32,13 +35,10 @@ export const RoleEnergyCard: React.FC<RoleEnergyCardProps> = ({
   language,
 }) => {
   const isZh = language === 'zh';
-  const [range, setRange] = useState<RangeKey>('week');
+  const [range, setRange] = useState<ChapterPeriodKey>('this_week');
   const [customStart, setCustomStart] = useState(() => format(startOfMonth(new Date()), 'yyyy-MM-dd'));
   const [customEnd, setCustomEnd] = useState(() => format(new Date(), 'yyyy-MM-dd'));
-  const [roleTapId, setRoleTapId] = useState<string | null>(null);
-  const toggleRoleTap = useCallback((roleId: string) => {
-    setRoleTapId((prev) => (prev === roleId ? null : roleId));
-  }, []);
+  const [hoveredRoleId, setHoveredRoleId] = useState<string | null>(null);
 
   const onCustomStartChange = useCallback(
     (value: string) => {
@@ -58,170 +58,216 @@ export const RoleEnergyCard: React.FC<RoleEnergyCardProps> = ({
     [customStart]
   );
 
-  const { currentStart, currentEnd } = useMemo(() => {
-    const now = new Date();
-    if (range === 'week') {
-      return {
-        currentStart: startOfWeek(now, { weekStartsOn: 1 }),
-        currentEnd: endOfWeek(now, { weekStartsOn: 1 }),
-      };
+  const { start, end } = useMemo(() => {
+    if (range === 'custom') {
+      const a = startOfDay(parseISO(customStart));
+      const b = endOfDay(parseISO(customEnd));
+      const s = a.getTime() <= b.getTime() ? a : b;
+      const e = a.getTime() <= b.getTime() ? b : a;
+      return { start: s, end: e };
     }
-    if (range === 'month') {
-      return {
-        currentStart: startOfMonth(now),
-        currentEnd: endOfMonth(now),
-      };
-    }
-    const a = startOfDay(parseISO(customStart));
-    const b = endOfDay(parseISO(customEnd));
-    const s = a.getTime() <= b.getTime() ? a : b;
-    const e = a.getTime() <= b.getTime() ? b : a;
-    return { currentStart: s, currentEnd: e };
+    return getChapterRange(range);
   }, [range, customStart, customEnd]);
 
-  const rangeEvents = useMemo(
-    () => expandRecurringEvents(events, currentStart, currentEnd, completedInstances),
-    [events, currentStart, currentEnd, completedInstances]
+  const expanded = useMemo(
+    () => expandRecurringEvents(events, start, end, completedInstances),
+    [events, start, end, completedInstances]
   );
 
-  const roleSegments = useMemo(() => aggregateByRole(rangeEvents), [rangeEvents]);
-  const rolePercentages = useMemo(
-    () => rolePercentagesByCount(roleSegments, rangeEvents.length),
-    [roleSegments, rangeEvents.length]
-  );
-  const dominantRolePct = rolePercentages.length ? Math.max(...rolePercentages.map(([, p]) => p)) : 0;
+  const roleSegments = useMemo(() => aggregateByRole(expanded), [expanded]);
+  const slices = useMemo(() => roleSegments.map((s) => [s.roleId, s.count] as [string, number]), [roleSegments]);
+  const total = useMemo(() => slices.reduce((acc, [, c]) => acc + c, 0), [slices]);
+
+  const totalAllEvents = expanded.length;
+  const dominantRolePct = useMemo(() => {
+    if (totalAllEvents <= 0 || roleSegments.length === 0) return 0;
+    return Math.max(...roleSegments.map((s) => Math.round((s.count / totalAllEvents) * 100)));
+  }, [roleSegments, totalAllEvents]);
   const showBalanceReminder = dominantRolePct >= ROLE_BALANCE_THRESHOLD_PCT;
 
-  const roleCountById = useMemo(() => {
-    const m = new Map<string, number>();
-    roleSegments.forEach((s) => m.set(s.roleId, s.count));
-    return m;
-  }, [roleSegments]);
-  const totalRangeEvents = rangeEvents.length;
+  const hoveredInfo = useMemo(() => {
+    if (!hoveredRoleId || total === 0) return null;
+    const pair = slices.find(([id]) => id === hoveredRoleId);
+    if (!pair) return null;
+    const [, count] = pair;
+    const pct = (count / total) * 100;
+    const name = getRoleDisplayName(hoveredRoleId, isZh ? 'zh' : 'en');
+    return { roleId: hoveredRoleId, name, count, pct };
+  }, [hoveredRoleId, slices, total, isZh]);
 
-  const rangeLabels: Record<RangeKey, string> = isZh
-    ? { week: '本周', month: '本月', custom: '自定义' }
-    : { week: 'This Week', month: 'This Month', custom: 'Custom' };
+  const paths = useMemo(() => {
+    if (total === 0) return [];
+    let acc = 0;
+    return slices.map(([roleId, count]) => {
+      const startAngle = (acc / total) * 2 * Math.PI - Math.PI / 2;
+      acc += count;
+      const endAngle = (acc / total) * 2 * Math.PI - Math.PI / 2;
+      const d = pieSectorPath(PIE_CX, PIE_CY, PIE_R_OUTER, startAngle, endAngle);
+      return { roleId, count, d, color: getRoleColor(roleId) };
+    });
+  }, [slices, total]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 rounded-xl p-1" style={{ color: 'var(--app-text)', backgroundColor: 'var(--app-surface)' }}>
       <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--app-text)' }}>
-        <Zap className="w-4 h-4" style={{ color: 'var(--app-accent)' }} />
+        <PieChart className="w-4 h-4 shrink-0" style={{ color: 'var(--app-accent)' }} />
         {isZh ? '角色能量' : 'Role Balance'}
       </h3>
 
-      <div className="flex flex-wrap items-center gap-2">
-        {(['week', 'month', 'custom'] as const).map((key) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => setRange(key)}
-            className={cn(
-              'px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors text-foreground',
-              range === key ? 'border-accent bg-accent/15' : 'border-border bg-transparent hover:bg-field'
-            )}
-          >
-            {rangeLabels[key]}
-          </button>
-        ))}
+      <div className="space-y-2">
+        <div className="flex flex-wrap gap-2">
+          {RANGE_OPTIONS.map((r) => (
+            <button
+              key={r}
+              type="button"
+              onClick={() => setRange(r)}
+              className={cn(
+                'text-xs font-medium rounded-lg px-2.5 py-1.5 border transition-colors',
+                range === r
+                  ? 'border-accent bg-accent/15 text-accent'
+                  : 'border-border text-muted-foreground hover:bg-field'
+              )}
+            >
+              {getRangeLabel(r, isZh)}
+            </button>
+          ))}
+        </div>
+        {range === 'custom' && (
+          <div className="flex flex-wrap items-center gap-2 text-xs" style={{ color: 'var(--app-muted)' }}>
+            <label className="flex items-center gap-1.5 shrink-0">
+              <span className="whitespace-nowrap">{isZh ? '起' : 'From'}</span>
+              <input
+                type="date"
+                value={customStart}
+                max={customEnd}
+                onChange={(e) => onCustomStartChange(e.target.value)}
+                className="rounded-lg border bg-field px-2 py-1 text-foreground tabular-nums"
+                style={{ borderColor: 'var(--app-border)' }}
+              />
+            </label>
+            <span aria-hidden className="text-muted-foreground">
+              —
+            </span>
+            <label className="flex items-center gap-1.5 shrink-0">
+              <span className="whitespace-nowrap">{isZh ? '止' : 'To'}</span>
+              <input
+                type="date"
+                value={customEnd}
+                min={customStart}
+                onChange={(e) => onCustomEndChange(e.target.value)}
+                className="rounded-lg border bg-field px-2 py-1 text-foreground tabular-nums"
+                style={{ borderColor: 'var(--app-border)' }}
+              />
+            </label>
+          </div>
+        )}
       </div>
 
-      {range === 'custom' && (
-        <div className="flex flex-wrap items-end gap-2">
-          <div className="min-w-0">
-            <label className="block text-[10px] font-medium mb-0.5" style={{ color: 'var(--app-muted)' }}>
-              {isZh ? '开始' : 'Start'}
-            </label>
-            <input
-              type="date"
-              value={customStart}
-              onChange={(e) => onCustomStartChange(e.target.value)}
-              className="rounded-md border border-border bg-field px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent"
-            />
-          </div>
-          <div className="min-w-0">
-            <label className="block text-[10px] font-medium mb-0.5" style={{ color: 'var(--app-muted)' }}>
-              {isZh ? '结束' : 'End'}
-            </label>
-            <input
-              type="date"
-              value={customEnd}
-              onChange={(e) => onCustomEndChange(e.target.value)}
-              className="rounded-md border border-border bg-field px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent"
-            />
-          </div>
-        </div>
-      )}
-
-      {rolePercentages.length > 0 ? (
+      {total === 0 ? (
+        <p className="text-xs py-4 text-center" style={{ color: 'var(--app-muted)' }}>
+          {isZh ? '该周期内无身份日程，设置身份后将显示角色分布' : 'No Events With Roles In This Period'}
+        </p>
+      ) : (
         <>
-          <div
-            className="h-3 w-full rounded-full overflow-hidden flex"
-            style={{ background: 'var(--app-border)' }}
-          >
-            {rolePercentages.map(([roleId, pct]) => {
-              if (pct <= 0) return null;
-              const n = roleCountById.get(roleId) ?? 0;
-              const name = getRoleDisplayName(roleId, isZh ? 'zh' : 'en');
-              const titleStr = isZh
-                ? `${name}：${pct}%（${n}/${totalRangeEvents}）`
-                : `${name}: ${pct}% (${n}/${totalRangeEvents})`;
-              return (
-                <button
-                  type="button"
+          <div className="relative mx-auto w-full max-w-[220px] aspect-square min-h-[160px]">
+            <svg
+              viewBox="0 0 100 100"
+              className="h-full w-full overflow-visible"
+              role="img"
+              aria-label={isZh ? '角色能量饼图' : 'Role balance pie chart'}
+            >
+              {paths.map(({ roleId, d, color }) => (
+                <path
                   key={roleId}
-                  className="h-full min-w-px shrink-0 transition-all cursor-pointer border-0 p-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--app-accent)]"
-                  style={{ width: `${pct}%`, backgroundColor: getRoleColor(roleId) }}
-                  title={titleStr}
-                  aria-pressed={roleTapId === roleId}
-                  onClick={() => toggleRoleTap(roleId)}
+                  d={d}
+                  fill={color}
+                  stroke="var(--app-surface)"
+                  strokeWidth={0.75}
+                  className="cursor-pointer transition-opacity outline-none"
+                  style={{ opacity: hoveredRoleId && hoveredRoleId !== roleId ? 0.45 : 1 }}
+                  onMouseEnter={() => setHoveredRoleId(roleId)}
+                  onMouseLeave={() => setHoveredRoleId(null)}
+                  onFocus={() => setHoveredRoleId(roleId)}
+                  onBlur={() => setHoveredRoleId(null)}
+                  tabIndex={0}
                 />
+              ))}
+              <circle
+                cx={PIE_CX}
+                cy={PIE_CY}
+                r={PIE_R_HOLE}
+                fill="var(--app-surface)"
+                stroke="var(--app-border)"
+                strokeWidth={0.5}
+                onMouseEnter={() => setHoveredRoleId(null)}
+              />
+            </svg>
+            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-[26%] text-center">
+              <span className="text-2xl font-bold tabular-nums leading-none" style={{ color: 'var(--app-text)' }}>
+                {total}
+              </span>
+              <span className="mt-1 text-[10px] leading-tight" style={{ color: 'var(--app-muted)' }}>
+                {isZh ? '条身份日程' : 'role events'}
+              </span>
+            </div>
+          </div>
+
+          <div
+            className={cn(
+              'flex min-h-[3.25rem] items-center justify-center rounded-xl border px-3 py-2 text-center text-sm transition-[border-color,background-color]',
+              hoveredInfo ? 'border-border bg-field/80' : 'border-transparent bg-transparent'
+            )}
+            aria-live="polite"
+          >
+            {hoveredInfo ? (
+              <>
+                <span className="font-medium" style={{ color: 'var(--app-text)' }}>
+                  {hoveredInfo.name}
+                </span>
+                <span className="text-muted-foreground">
+                  {' '}
+                  · {hoveredInfo.count} {isZh ? '条' : 'events'} · {hoveredInfo.pct.toFixed(1)}%
+                </span>
+              </>
+            ) : (
+              <span className="text-[11px] leading-snug" style={{ color: 'var(--app-muted)' }}>
+                {isZh ? '悬停扇区查看角色与占比' : 'Hover A Slice For Details'}
+              </span>
+            )}
+          </div>
+
+          <ul className="space-y-1.5 text-xs" style={{ color: 'var(--app-muted)' }}>
+            {slices.map(([roleId, count]) => {
+              const pct = (count / total) * 100;
+              const name = getRoleDisplayName(roleId, isZh ? 'zh' : 'en');
+              return (
+                <li key={roleId} className="flex items-center justify-between gap-2">
+                  <span className="flex min-w-0 items-center gap-2">
+                    <span
+                      className="h-2 w-2 shrink-0 rounded-full"
+                      style={{ background: getRoleColor(roleId) }}
+                      aria-hidden
+                    />
+                    <span className="truncate" style={{ color: 'var(--app-text)' }}>
+                      {name}
+                    </span>
+                  </span>
+                  <span className="shrink-0 tabular-nums">
+                    {count} ({pct.toFixed(1)}%)
+                  </span>
+                </li>
               );
             })}
-          </div>
-          {roleTapId != null && (() => {
-            const pct = rolePercentages.find(([id]) => id === roleTapId)?.[1] ?? 0;
-            const n = roleCountById.get(roleTapId) ?? 0;
-            const name = getRoleDisplayName(roleTapId, isZh ? 'zh' : 'en');
-            const line = isZh
-              ? `${name}：${pct}%（${n}/${totalRangeEvents}）`
-              : `${name}: ${pct}% (${n}/${totalRangeEvents})`;
-            return (
-              <p
-                className="text-[11px] font-medium rounded-lg px-2 py-1.5 border mt-1"
-                style={{ color: 'var(--app-text)', borderColor: 'var(--app-border)', backgroundColor: 'var(--app-surface)' }}
-              >
-                {line}
-              </p>
-            );
-          })()}
-          <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-xs">
-            {rolePercentages.map(([roleId]) => (
-              <span
-                key={roleId}
-                className="inline-flex min-w-0 items-center gap-1.5"
-                style={{ color: 'var(--app-text)' }}
-              >
-                <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: getRoleColor(roleId) }} aria-hidden />
-                <span className="truncate">{getRoleDisplayName(roleId, isZh ? 'zh' : 'en')}</span>
-              </span>
-            ))}
-          </div>
-          <p className="text-[10px] leading-snug" style={{ color: 'var(--app-muted)' }}>
-            {isZh ? '点击或悬停色条查看比例与条数' : 'Tap Or Hover The Bar For Proportion And Counts'}
-          </p>
+          </ul>
+
           {showBalanceReminder && (
             <p className="text-xs rounded-lg px-3 py-2" style={{ background: 'var(--app-field)', color: 'var(--app-muted)' }}>
               {isZh
                 ? '当前所选时间范围内某一角色占比偏高，不妨留一点时间给其他身份，例如静修者。'
-                : 'One role dominates this period—consider making room for others, e.g. rest or reflection.'}
+                : 'One Role Dominates This Period—Consider Making Room For Others, E.g. Rest Or Reflection.'}
             </p>
           )}
         </>
-      ) : (
-        <p className="text-xs" style={{ color: 'var(--app-muted)' }}>
-          {isZh ? '为事件设置身份后，将在此显示各角色占比' : 'Set Roles On Events To See Balance Here'}
-        </p>
       )}
     </div>
   );

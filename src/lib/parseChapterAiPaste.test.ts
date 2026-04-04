@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseChapterAiPaste } from '@/lib/parseChapterAiPaste';
+import { parseChapterAiPaste, CHAPTER_TITLE_MAX_CHARS } from '@/lib/parseChapterAiPaste';
 
 describe('parseChapterAiPaste', () => {
   it('parses strict JSON', () => {
@@ -29,5 +29,18 @@ describe('parseChapterAiPaste', () => {
     expect(r.chapterTitle).toBe('在阅读与省思里的一周');
     expect(r.narrativeSummary).toContain('哈哈哈哈');
     expect(r.narrativeSummary).toContain('结尾。');
+  });
+
+  it('truncates chapter title to CHAPTER_TITLE_MAX_CHARS', () => {
+    const long = '一二三四五六七八九十十一十二十三十四十五';
+    expect(long.length).toBeGreaterThan(CHAPTER_TITLE_MAX_CHARS);
+    const raw = JSON.stringify({
+      chapterTitle: long,
+      narrativeSummary: 'x'.repeat(600),
+    });
+    const r = parseChapterAiPaste(raw, true);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.chapterTitle.length).toBe(CHAPTER_TITLE_MAX_CHARS);
   });
 });

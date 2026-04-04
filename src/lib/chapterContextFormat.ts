@@ -8,6 +8,8 @@ export interface ChapterPeriodContextOptions {
   dayNamesInPeriod?: Record<string, { name: string; isManual: boolean }>;
   dayTagsInPeriod?: Record<string, string>;
   dayVibesInPeriod?: Record<string, { energy?: number; mood?: number; focus?: number }>;
+  /** Pre-built long-term goal alignment summary for narrative context */
+  longTermGoalAlignmentBlock?: string;
 }
 
 export function formatEventForChapter(e: ScheduleEvent, langIsZh: boolean): string {
@@ -35,6 +37,7 @@ export interface ChapterPeriodDataBlocks {
   journalBlock: string;
   dailyContextBlock: string;
   roleBlock: string;
+  longTermGoalAlignmentBlock: string;
 }
 
 export function buildChapterPeriodDataBlocks(
@@ -44,7 +47,7 @@ export function buildChapterPeriodDataBlocks(
 ): ChapterPeriodDataBlocks {
   const language = options.language ?? 'en';
   const langIsZh = language === 'zh';
-  const { roleTags, dayNamesInPeriod, dayTagsInPeriod, dayVibesInPeriod } = options;
+  const { roleTags, dayNamesInPeriod, dayTagsInPeriod, dayVibesInPeriod, longTermGoalAlignmentBlock } = options;
 
   const eventLines = events.length
     ? events.map((e) => formatEventForChapter(e, langIsZh)).join('\n')
@@ -112,5 +115,6 @@ export function buildChapterPeriodDataBlocks(
     journalBlock,
     dailyContextBlock,
     roleBlock,
+    longTermGoalAlignmentBlock: longTermGoalAlignmentBlock?.trim() ?? '',
   };
 }

@@ -278,6 +278,17 @@ export const Timeline: React.FC<TimelineProps> = ({
                           <span className="text-xs font-serif font-normal text-muted-foreground shrink-0 tabular-nums md:text-sm">
                             {durationAfterTitle}
                           </span>
+                          {event.meaning?.trim() && (
+                            <span
+                              className="text-xs font-serif font-normal text-muted-foreground shrink min-w-0 max-w-full md:max-w-[min(100%,18rem)] tabular-nums md:text-sm line-clamp-2 md:line-clamp-1"
+                              title={event.meaning.trim()}
+                            >
+                              <span className="opacity-60" aria-hidden>
+                                {' · '}
+                              </span>
+                              {event.meaning.trim()}
+                            </span>
+                          )}
                         </h3>
                         <EventLabelChip
                           label={event.label}

@@ -3,6 +3,7 @@ import { startOfWeek, endOfWeek, subDays } from 'date-fns';
 import { BarChart3 } from 'lucide-react';
 import { ScheduleEvent, AppLanguage } from '@/types';
 import { expandRecurringEvents } from '@/lib/events';
+import { mergeLongTermGoalNames } from '@/lib/longTermGoalMetaStorage';
 
 interface StatsSummaryViewProps {
   events: ScheduleEvent[];
@@ -34,11 +35,7 @@ export const StatsSummaryView: React.FC<StatsSummaryViewProps> = ({
     [expandedRecent, weekStart, weekEnd]
   );
 
-  const uniqueLongTermGoals = useMemo(() => {
-    const set = new Set<string>();
-    events.forEach((e) => e.longTermGoals?.forEach((g) => set.add(g)));
-    return Array.from(set).sort();
-  }, [events]);
+  const longTermGoalCount = useMemo(() => mergeLongTermGoalNames(events).length, [events]);
 
   const daysWithRecords = useMemo(
     () => new Set(Object.keys(dayTags)).size,
@@ -88,7 +85,7 @@ export const StatsSummaryView: React.FC<StatsSummaryViewProps> = ({
           }}
         >
           <span className="text-2xl font-bold tabular-nums" style={{ color: 'var(--app-accent)' }}>
-            {uniqueLongTermGoals.length}
+            {longTermGoalCount}
           </span>
           <span className="text-xs mt-0.5" style={{ color: 'var(--app-muted)' }}>
             {isZh ? '长期目标' : 'Long-Term Goals'}

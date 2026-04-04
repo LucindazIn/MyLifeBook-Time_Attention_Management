@@ -19,6 +19,7 @@ import {
   buildChapterPeriodExportText,
   sanitizeChapterExportFilenameSegment,
 } from '@/lib/chapterExternalPrompt';
+import { buildLongTermGoalAlignmentBlock } from '@/lib/longTermGoalChapterContext';
 
 export interface ChapterNarrativeCardProps {
   events: ScheduleEvent[];
@@ -157,6 +158,13 @@ export const ChapterNarrativeCard: React.FC<ChapterNarrativeCardProps> = ({
       if (dayTags[k]) tags[k] = dayTags[k];
       if (dayVibes[k]) vibes[k] = dayVibes[k];
     });
+    const alignmentBlock = buildLongTermGoalAlignmentBlock(
+      events,
+      completedInstances,
+      rangeStart,
+      rangeEnd,
+      language
+    );
     return buildChapterPeriodExportText(ev, journal, {
       language,
       periodLabel: modalChapter.periodLabel,
@@ -167,6 +175,7 @@ export const ChapterNarrativeCard: React.FC<ChapterNarrativeCardProps> = ({
       dayNamesInPeriod: Object.keys(names).length ? names : undefined,
       dayTagsInPeriod: Object.keys(tags).length ? tags : undefined,
       dayVibesInPeriod: Object.keys(vibes).length ? vibes : undefined,
+      longTermGoalAlignmentBlock: alignmentBlock || undefined,
     });
   }, [modalChapter, events, completedInstances, journalEntries, language, roleTags, dayNames, dayTags, dayVibes]);
 

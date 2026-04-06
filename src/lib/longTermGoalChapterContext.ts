@@ -78,10 +78,17 @@ export function buildLongTermGoalAlignmentBlock(
       lastInPeriod = format(new Date(last.startTime), 'yyyy-MM-dd');
     }
 
-    const mile = rec.milestones
-      .map((m) => `[${m.at}] ${m.text}`)
-      .join(langIsZh ? '；' : '; ');
-
+    const milestoneLines: string[] = [];
+    for (const mt of rec.mediumTermGoals ?? []) {
+      const inner = (mt.milestones ?? [])
+        .map((m) => `[${m.at}] ${m.text}`)
+        .join(langIsZh ? '；' : '; ');
+      if (inner) {
+        milestoneLines.push(
+          langIsZh ? `中短期「${mt.title}」里程碑：${inner}` : `Short-Term "${mt.title}" Milestones: ${inner}`
+        );
+      }
+    }
     const targetSuffixZh = rec.targetAt?.trim() ? `｜目标时间：${rec.targetAt.trim()}` : '';
     const targetSuffixEn = rec.targetAt?.trim() ? ` | Target Date: ${rec.targetAt.trim()}` : '';
     const actionLineZh = lastAction
@@ -100,7 +107,11 @@ export function buildLongTermGoalAlignmentBlock(
       } else {
         lines.push(`  本周期相关日程：无`);
       }
-      if (mile) lines.push(`  里程碑：${mile}`);
+      if (milestoneLines.length > 0) {
+        for (const line of milestoneLines) {
+          lines.push(`  ${line}`);
+        }
+      }
     } else {
       lines.push(
         `- "${name}" | Status: ${statusLabel(rec.status, false)}${targetSuffixEn} | ${actionLineEn}`
@@ -110,7 +121,11 @@ export function buildLongTermGoalAlignmentBlock(
       } else {
         lines.push(`  Events this period: none`);
       }
-      if (mile) lines.push(`  Milestones: ${mile}`);
+      if (milestoneLines.length > 0) {
+        for (const line of milestoneLines) {
+          lines.push(`  ${line}`);
+        }
+      }
     }
   }
 

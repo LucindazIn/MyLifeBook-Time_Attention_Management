@@ -81,22 +81,60 @@ export function formatChapterPeriodLabel(start: Date, end: Date, isZh: boolean):
   return `${format(start, 'MMM d, yyyy')} – ${format(end, 'MMM d, yyyy')}`;
 }
 
+/**
+ * 自然周（周一始）跨月时，以该周「星期四」所在日历年月作为展示月：
+ * 对至多跨两个月的 7 天，星期四必落在天数 ≥4 的那一侧，与「多数天所在月」一致。
+ * 周序号：在该月内按日号分段 ceil(day/7)（与周四在同一段内）。
+ */
+export function weekPeriodLabelAnchorDate(
+  periodKey: ChapterPeriodKey,
+  periodStart: string,
+  periodEnd?: string
+): Date | null {
+  if (periodKey !== 'this_week' && periodKey !== 'last_week') return null;
+  if (!periodEnd?.trim()) return null;
+  const a = new Date(periodStart + 'T12:00:00');
+  if (isNaN(a.getTime())) return null;
+  const weekStart = startOfWeek(a, { weekStartsOn: 1 });
+  return addDays(weekStart, 3);
+}
+
+function periodWeekDisplayFromAnchor(anchor: Date): { zh: string; en: string } {
+  const month = anchor.getMonth() + 1;
+  const day = anchor.getDate();
+  const weekNo = Math.ceil(day / 7);
+  return {
+    zh: `${month}月第${weekNo}周`,
+    en: `Week ${weekNo}, ${format(anchor, 'MMMM')}`,
+  };
+}
+
+function periodWeekDisplayFromStartOnly(d: Date): { zh: string; en: string } {
+  const month = d.getMonth() + 1;
+  const day = d.getDate();
+  const weekNo = Math.ceil(day / 7);
+  return {
+    zh: `${month}月第${weekNo}周`,
+    en: `Week ${weekNo}, ${format(d, 'MMMM')}`,
+  };
+}
+
 /** 周期在弹窗右侧的展示：x月第x周 或 本月时仅 x月；英文 Week x, Month */
 export function formatPeriodWeekLabel(
   periodStart: string | undefined,
   periodKey: ChapterPeriodKey,
-  isZh: boolean
+  isZh: boolean,
+  periodEnd?: string
 ): string {
   if (!periodStart) return '';
   const d = new Date(periodStart + 'T12:00:00');
   if (isNaN(d.getTime())) return '';
-  const month = d.getMonth() + 1;
-  const day = d.getDate();
-  const weekNo = Math.ceil(day / 7);
   if (periodKey === 'this_month') {
-    return isZh ? `${month}月` : format(d, 'MMMM');
+    return isZh ? `${d.getMonth() + 1}月` : format(d, 'MMMM');
   }
-  return isZh ? `${month}月第${weekNo}周` : `Week ${weekNo}, ${format(d, 'MMMM')}`;
+  const anchor = weekPeriodLabelAnchorDate(periodKey, periodStart, periodEnd);
+  const disp = anchor ? periodWeekDisplayFromAnchor(anchor) : periodWeekDisplayFromStartOnly(d);
+  return isZh ? disp.zh : disp.en;
 }
 
 /**
@@ -117,7 +155,7 @@ export function formatChapterModalPeriodBracket(
       ? `（${format(a, 'M月d日')}–${format(b, 'M月d日')}）`
       : `(${format(a, 'MMM d')}–${format(b, 'MMM d')})`;
   }
-  const inner = formatPeriodWeekLabel(periodStart, periodKey, isZh);
+  const inner = formatPeriodWeekLabel(periodStart, periodKey, isZh, periodEnd);
   if (!inner) return '';
   return isZh ? `（${inner}）` : `(${inner})`;
 }
@@ -126,38 +164,46 @@ export function formatChapterModalPeriodBracket(
 export function formatPeriodTOCSuffix(
   periodStart: string | undefined,
   periodKey: ChapterPeriodKey,
-  isZh: boolean
+  isZh: boolean,
+  periodEnd?: string
 ): string {
   if (!periodStart) return '';
   const d = new Date(periodStart + 'T12:00:00');
   if (isNaN(d.getTime())) return '';
-  const year = d.getFullYear();
-  const month = d.getMonth() + 1;
-  const day = d.getDate();
-  const weekNo = Math.ceil(day / 7);
   if (periodKey === 'this_month') {
+    const year = d.getFullYear();
+    const month = d.getMonth() + 1;
     return isZh ? `（${year}年${month}月）` : `(${format(d, 'MMMM yyyy')})`;
   }
-  return isZh ? `（${year}年${month}月第${weekNo}周）` : `(Week ${weekNo}, ${format(d, 'MMMM yyyy')})`;
+  const anchor = weekPeriodLabelAnchorDate(periodKey, periodStart, periodEnd) ?? d;
+  const year = anchor.getFullYear();
+  const month = anchor.getMonth() + 1;
+  const day = anchor.getDate();
+  const weekNo = Math.ceil(day / 7);
+  return isZh ? `（${year}年${month}月第${weekNo}周）` : `(Week ${weekNo}, ${format(anchor, 'MMMM yyyy')})`;
 }
 
 /** 人生之书章节页副标题：x年x月第x周 或 x年x月（无括号） */
 export function formatPeriodSubtitle(
   periodStart: string | undefined,
   periodKey: ChapterPeriodKey,
-  isZh: boolean
+  isZh: boolean,
+  periodEnd?: string
 ): string {
   if (!periodStart) return '';
   const d = new Date(periodStart + 'T12:00:00');
   if (isNaN(d.getTime())) return '';
-  const year = d.getFullYear();
-  const month = d.getMonth() + 1;
-  const day = d.getDate();
-  const weekNo = Math.ceil(day / 7);
   if (periodKey === 'this_month') {
+    const year = d.getFullYear();
+    const month = d.getMonth() + 1;
     return isZh ? `${year}年${month}月` : format(d, 'MMMM yyyy');
   }
-  return isZh ? `${year}年${month}月第${weekNo}周` : `Week ${weekNo}, ${format(d, 'MMMM yyyy')}`;
+  const anchor = weekPeriodLabelAnchorDate(periodKey, periodStart, periodEnd) ?? d;
+  const year = anchor.getFullYear();
+  const month = anchor.getMonth() + 1;
+  const day = anchor.getDate();
+  const weekNo = Math.ceil(day / 7);
+  return isZh ? `${year}年${month}月第${weekNo}周` : `Week ${weekNo}, ${format(anchor, 'MMMM yyyy')}`;
 }
 
 /** 区间内所有 dateKey（yyyy-MM-dd），用于筛 journal */

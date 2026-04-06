@@ -28,7 +28,7 @@ export const LifeBookTOC: React.FC<LifeBookTOCProps> = ({ chapters, language, on
             {chapters.map((ch, i) => {
               const title =
                 (ch.chapterTitles[ch.selectedTitleIndex] ?? ch.chapterTitles[0] ?? '').trim() || ch.periodLabel;
-              const suffix = formatPeriodTOCSuffix(ch.periodStart, ch.periodKey, isZh);
+              const suffix = formatPeriodTOCSuffix(ch.periodStart, ch.periodKey, isZh, ch.periodEnd);
               const label = suffix ? `${title}${suffix}` : title;
               const pageIndex = 2 + i;
               return (

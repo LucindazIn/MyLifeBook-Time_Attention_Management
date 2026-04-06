@@ -114,3 +114,31 @@ export function syncAndPruneCustomEventTags(): { tags: string[]; changed: boolea
 
   return { tags: next, changed };
 }
+
+/** 重命名自定义标签池与 lastUsed 键（跨设备合并时由 payload 应用调用）。 */
+export function renameCustomTagInPool(oldTag: string, newTag: string, opts?: { fromSync?: boolean }): void {
+  const o = oldTag.trim();
+  const n = newTag.trim();
+  if (!o || !n || o === n) return;
+  const tags = loadSavedCustomEventTags();
+  const nextTags = [...new Set(tags.map((t) => (t.trim() === o ? n : t.trim())).filter(Boolean))];
+  const m = loadLastUsed();
+  const nextM: Record<string, number> = { ...m };
+  if (nextM[o] != null) {
+    nextM[n] = Math.max(nextM[n] ?? 0, nextM[o]!);
+    delete nextM[o];
+  }
+  saveLastUsed(nextM, opts);
+  saveTags(nextTags, opts);
+}
+
+export function removeCustomTagFromPool(tag: string, opts?: { fromSync?: boolean }): void {
+  const t = tag.trim();
+  if (!t) return;
+  const tags = loadSavedCustomEventTags().filter((x) => x.trim() !== t);
+  const m = loadLastUsed();
+  const nextM = { ...m };
+  delete nextM[t];
+  saveLastUsed(nextM, opts);
+  saveTags(tags, opts);
+}

@@ -1,4 +1,5 @@
 import type { ScheduleEvent } from '@/types';
+import { getRoleDisplayName } from '@/lib/constants/roles';
 
 /** Same shape as former `GenerateChapterOptions` in gemini (period narrative context). */
 export interface ChapterPeriodContextOptions {
@@ -12,7 +13,8 @@ export interface ChapterPeriodContextOptions {
   longTermGoalAlignmentBlock?: string;
 }
 
-export function formatEventForChapter(e: ScheduleEvent, langIsZh: boolean): string {
+export function formatEventForChapter(e: ScheduleEvent, lang: 'zh' | 'en'): string {
+  const langIsZh = lang === 'zh';
   const tags = e.tags?.length ? ` [${e.tags.join(', ')}]` : '';
   const label = e.label?.text ? ` (${e.label.text})` : '';
   const meaning = e.meaning?.trim()
@@ -23,7 +25,7 @@ export function formatEventForChapter(e: ScheduleEvent, langIsZh: boolean): stri
   if (e.starred) badges.push(langIsZh ? '星标' : 'starred');
   const badge = badges.length ? ` [${badges.join(',')}]` : '';
   const role = e.role?.trim()
-    ? ` | ${langIsZh ? '角色' : 'role'}: ${e.role.trim()}`
+    ? ` | ${langIsZh ? '角色' : 'role'}: ${getRoleDisplayName(e.role.trim(), lang)}`
     : '';
   const goals =
     e.longTermGoals?.length && e.longTermGoals.some((g) => g?.trim())
@@ -47,10 +49,11 @@ export function buildChapterPeriodDataBlocks(
 ): ChapterPeriodDataBlocks {
   const language = options.language ?? 'en';
   const langIsZh = language === 'zh';
+  const lang: 'zh' | 'en' = langIsZh ? 'zh' : 'en';
   const { roleTags, dayNamesInPeriod, dayTagsInPeriod, dayVibesInPeriod, longTermGoalAlignmentBlock } = options;
 
   const eventLines = events.length
-    ? events.map((e) => formatEventForChapter(e, langIsZh)).join('\n')
+    ? events.map((e) => formatEventForChapter(e, lang)).join('\n')
     : langIsZh
       ? '（本周期暂无事件）'
       : '(No events in this period)';
@@ -65,11 +68,14 @@ export function buildChapterPeriodDataBlocks(
       ? '（本周期暂无日记）'
       : '(No journal entries in this period)';
 
+  const roleTagLabels = roleTags?.length
+    ? roleTags.map((id) => getRoleDisplayName(id, lang))
+    : [];
   const roleBlock: string =
-    roleTags?.length
+    roleTagLabels.length
       ? langIsZh
-        ? `用户在应用里为这段时间标记了若干生活面向（角色标签）：${roleTags.join('、')}。它们只是理解用户的线索，不是写作提纲：不必逐条对照、不必平均分配篇幅，更不必按标签分节；只在有助于呈现「这段日子如何展开」时，让这些面向在叙事里自然交织。`
-        : `The user noted these life facets (role tags) in the app: ${roleTags.join(', ')}. Treat them as gentle context—not an outline. Do not mirror each tag with a matching paragraph, split the chapter by tag, or aim for equal coverage; weave facets only when they help the story of this period feel true.`
+        ? `用户在应用里为这段时间标记了若干生活面向（角色标签）：${roleTagLabels.join('、')}。它们只是理解用户的线索，不是写作提纲：不必逐条对照、不必平均分配篇幅，更不必按标签分节；只在有助于呈现「这段日子如何展开」时，让这些面向在叙事里自然交织。`
+        : `The user noted these life facets (role tags) in the app: ${roleTagLabels.join(', ')}. Treat them as gentle context—not an outline. Do not mirror each tag with a matching paragraph, split the chapter by tag, or aim for equal coverage; weave facets only when they help the story of this period feel true.`
       : '';
 
   const allDates = new Set<string>([

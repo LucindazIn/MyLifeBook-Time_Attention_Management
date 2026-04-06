@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { CollectionStatePayloadV1 } from '@/lib/collectionStatePayload';
+import { normalizeCollectionStatePayload, type CollectionStatePayloadV1 } from '@/lib/collectionStatePayload';
 
 export async function fetchUserCollectionState(
   supabase: SupabaseClient,
@@ -13,9 +13,7 @@ export async function fetchUserCollectionState(
   if (error) throw error;
   const p = data?.payload as unknown;
   if (!p || typeof p !== 'object') return null;
-  const payload = p as CollectionStatePayloadV1;
-  if (payload.v !== 1) return null;
-  return payload;
+  return normalizeCollectionStatePayload(p);
 }
 
 export async function upsertUserCollectionState(

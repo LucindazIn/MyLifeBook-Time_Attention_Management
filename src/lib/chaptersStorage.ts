@@ -173,7 +173,7 @@ export function stripSummaryMarkdown(text: string): string {
 }
 
 function chapterSubtitle(ch: SavedChapter, isZh: boolean): string {
-  return formatPeriodSubtitle(ch.periodStart, ch.periodKey, isZh) || ch.periodLabel;
+  return formatPeriodSubtitle(ch.periodStart, ch.periodKey, isZh, ch.periodEnd) || ch.periodLabel;
 }
 
 function chapterPlainBlock(ch: SavedChapter, isZh: boolean, stripMarkdown: boolean): string {

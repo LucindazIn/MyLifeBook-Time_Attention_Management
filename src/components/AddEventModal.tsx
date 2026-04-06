@@ -17,6 +17,7 @@ import {
   loadSavedCustomEventTags,
   CUSTOM_EVENT_TAGS_KEY,
 } from '@/lib/customEventTagsStorage';
+import { loadHiddenPresetRoleIds } from '@/lib/roleManagementStorage';
 import { format, addHours } from 'date-fns';
 import * as chrono from 'chrono-node';
 
@@ -93,6 +94,9 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
 
   const [savedCustomTags, setSavedCustomTags] = useState<string[]>(() =>
     typeof window === 'undefined' ? [] : loadSavedCustomEventTags()
+  );
+  const [hiddenPresetRoleIds, setHiddenPresetRoleIds] = useState<string[]>(() =>
+    typeof window === 'undefined' ? [] : loadHiddenPresetRoleIds()
   );
 
   const LONG_TERM_GOALS_KEY = 'feather_long_term_goal_tags';
@@ -180,6 +184,11 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
     if (!isOpen) return;
     const { tags } = syncAndPruneCustomEventTags();
     setSavedCustomTags(tags);
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen || typeof window === 'undefined') return;
+    setHiddenPresetRoleIds(loadHiddenPresetRoleIds());
   }, [isOpen]);
 
   useEffect(() => {
@@ -784,7 +793,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                                   {roleId.startsWith('custom:') ? roleId.slice(7).trim() : roleId}
                                 </option>
                               ))}
-                              {PRESET_ROLES.map((r) => (
+                              {PRESET_ROLES.filter((r) => !hiddenPresetRoleIds.includes(r.id)).map((r) => (
                                 <option key={r.id} value={r.id}>
                                   {language === 'zh' ? r.nameZh : r.nameEn}
                                 </option>

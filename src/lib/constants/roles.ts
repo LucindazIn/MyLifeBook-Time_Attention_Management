@@ -1,3 +1,5 @@
+import { loadRoleCatalog } from '@/lib/roleManagementStorage';
+
 /**
  * Preset roles for ScheduleEvent.role.
  * Used in AddEventModal and calendar filter/highlight.
@@ -81,6 +83,10 @@ export function getPresetRole(id: string): PresetRole | undefined {
 }
 
 export function getRoleColor(roleId: string): string {
+  if (typeof window !== 'undefined') {
+    const cat = loadRoleCatalog()[roleId];
+    if (cat?.color) return cat.color;
+  }
   const preset = getPresetRole(roleId);
   if (preset) return preset.color;
   if (roleId.startsWith('custom:')) {

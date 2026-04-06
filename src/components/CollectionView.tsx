@@ -5,8 +5,9 @@ import { LongTermGoalsCard } from '@/components/LongTermGoalsCard';
 import { RoleEnergyCard } from '@/components/RoleEnergyCard';
 import { EventVolumeCard } from '@/components/EventVolumeCard';
 import { RoleBalanceCard } from '@/components/RoleBalanceCard';
+import { LongTermMediumTermInvestmentCard } from '@/components/LongTermMediumTermInvestmentCard';
 import { ChapterNarrativeCard } from '@/components/ChapterNarrativeCard';
-import { CHAPTER_CARD_ID } from '@/components/NarrativeClosureCard';
+import { CHAPTER_CARD_ID } from '@/lib/chapterCardIds';
 import { PRESET_ROLES } from '@/lib/constants/roles';
 export interface CollectionViewProps {
   events: ScheduleEvent[];
@@ -19,6 +20,10 @@ export interface CollectionViewProps {
   journalEntries: Record<string, string>;
   onRenameLongTermGoal: (oldName: string, newName: string) => void | Promise<void>;
   onDeleteLongTermGoal: (goalName: string) => void | Promise<void>;
+  onMigrateEventRole: (oldId: string, newId: string) => void | Promise<void>;
+  onClearEventRole: (roleId: string) => void | Promise<void>;
+  onMigrateEventTag: (oldTag: string, newTag: string) => void | Promise<void>;
+  onClearEventTag: (tag: string) => void | Promise<void>;
   /** Logged-in user: chapter list syncs to Supabase for cross-device consistency. */
   userId?: string | null;
   /** Increments when synced local state (长期目标 / 曲线等) updates — refreshes cards that read localStorage. */
@@ -44,13 +49,17 @@ export const CollectionView: React.FC<CollectionViewProps> = ({
   journalEntries,
   onRenameLongTermGoal,
   onDeleteLongTermGoal,
+  onMigrateEventRole,
+  onClearEventRole,
+  onMigrateEventTag,
+  onClearEventTag,
   userId = null,
   collectionStateRevision = 0,
 }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-5 gap-6 md:gap-8 max-w-6xl mx-auto px-4">
-      {/* Left: 概览 + 章节叙事 */}
-      <div className="md:col-span-2 space-y-6">
+      {/* Left: 概览 + 章节叙事 + 角色能量 + 事件标签 */}
+      <div className="md:col-span-2 space-y-6 min-w-0">
         <div className={cardShell} style={cardStyle}>
           <StatsSummaryView
             events={events}
@@ -71,10 +80,29 @@ export const CollectionView: React.FC<CollectionViewProps> = ({
             userId={userId}
           />
         </div>
+        <div className={cardShell} style={cardStyle}>
+          <RoleEnergyCard
+            events={events}
+            completedInstances={completedInstances}
+            language={language}
+            collectionStateRevision={collectionStateRevision}
+            onMigrateEventRole={onMigrateEventRole}
+            onClearEventRole={onClearEventRole}
+          />
+        </div>
+        <div className={cardShell} style={cardStyle}>
+          <EventVolumeCard
+            events={events}
+            completedInstances={completedInstances}
+            language={language}
+            onMigrateEventTag={onMigrateEventTag}
+            onClearEventTag={onClearEventTag}
+          />
+        </div>
       </div>
 
-      {/* Right: 人生曲线 + 长期目标 + 角色能量 / 事件标签（并排） */}
-      <div className="md:col-span-3 space-y-6">
+      {/* Right: 人生曲线 + 长期目标 + 中短期投入 */}
+      <div className="md:col-span-3 space-y-6 min-w-0">
         <div className={cardShell} style={cardStyle}>
           <RoleBalanceCard
             events={events}
@@ -94,21 +122,13 @@ export const CollectionView: React.FC<CollectionViewProps> = ({
             collectionStateRevision={collectionStateRevision}
           />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-6">
-          <div className={cardShell} style={cardStyle}>
-            <RoleEnergyCard
-              events={events}
-              completedInstances={completedInstances}
-              language={language}
-            />
-          </div>
-          <div className={cardShell} style={cardStyle}>
-            <EventVolumeCard
-              events={events}
-              completedInstances={completedInstances}
-              language={language}
-            />
-          </div>
+        <div className={cardShell} style={cardStyle}>
+          <LongTermMediumTermInvestmentCard
+            events={events}
+            completedInstances={completedInstances}
+            language={language}
+            collectionStateRevision={collectionStateRevision}
+          />
         </div>
       </div>
     </div>

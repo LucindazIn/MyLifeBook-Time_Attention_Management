@@ -2,6 +2,8 @@ import type { LongTermGoalMetaMap } from '@/lib/longTermGoalMetaStorage';
 import {
   LONG_TERM_GOALS_TAGS_KEY,
   LONG_TERM_GOAL_META_STORAGE_KEY,
+  loadLongTermGoalOrder,
+  loadLongTermGoalOrderUpdatedAt,
 } from '@/lib/longTermGoalMetaStorage';
 import { getLifeBookCoverLines, getLifeBookCoverUpdatedAt } from '@/lib/lifeBookCoverStorage';
 import {
@@ -11,14 +13,19 @@ import {
 } from '@/lib/customEventTagsStorage';
 import { dumpLifeEnergyStorage } from '@/lib/lifeEnergyStorage';
 import { dumpNextMonthFocusStorage } from '@/lib/nextMonthFocusStorage';
+import { type RoleCatalogMap, loadHiddenPresetRoleIds, loadRoleCatalog } from '@/lib/roleManagementStorage';
 
 /** Synced blob version — bump when shape changes. */
-export const COLLECTION_STATE_VERSION = 1 as const;
+export const COLLECTION_STATE_VERSION = 3 as const;
 
 export type CollectionStatePayloadV1 = {
-  v: typeof COLLECTION_STATE_VERSION;
+  v: typeof COLLECTION_STATE_VERSION | 1 | 2;
   longTermGoalMeta: LongTermGoalMetaMap;
   longTermGoalTagPool: string[];
+  /** Priority list (top = first); merged with union of names; see `longTermGoalOrderUpdatedAt`. */
+  longTermGoalDisplayOrder: string[];
+  /** For merging display order across devices (newer array wins, then append missing names). */
+  longTermGoalOrderUpdatedAt: number;
   lifeBookCover: { line1: string; line2: string; line3: string; updatedAt: number };
   customEventTags: string[];
   customEventTagLastUsed: Record<string, number>;
@@ -26,6 +33,10 @@ export type CollectionStatePayloadV1 = {
   lifeEnergyEntries: Record<string, string>;
   /** feather_next_month_focus_* key → raw value */
   nextMonthFocusEntries: Record<string, string>;
+  /** 用户从选择器中移除的预设角色 id（并集合并） */
+  hiddenPresetRoleIds: string[];
+  /** 自定义角色 id → 继承色（合并取 updatedAt 较新） */
+  roleCatalog: RoleCatalogMap;
 };
 
 export function emptyCollectionStatePayload(): CollectionStatePayloadV1 {
@@ -33,12 +44,33 @@ export function emptyCollectionStatePayload(): CollectionStatePayloadV1 {
     v: COLLECTION_STATE_VERSION,
     longTermGoalMeta: {},
     longTermGoalTagPool: [],
+    longTermGoalDisplayOrder: [],
+    longTermGoalOrderUpdatedAt: 0,
     lifeBookCover: { line1: '', line2: '', line3: '', updatedAt: 0 },
     customEventTags: [],
     customEventTagLastUsed: {},
     lifeEnergyEntries: {},
     nextMonthFocusEntries: {},
+    hiddenPresetRoleIds: [],
+    roleCatalog: {},
   };
+}
+
+/** Normalize remote or legacy payload (v1 → v2 fields). */
+export function normalizeCollectionStatePayload(raw: unknown): CollectionStatePayloadV1 {
+  const empty = emptyCollectionStatePayload();
+  if (!raw || typeof raw !== 'object') return empty;
+  const r = raw as Partial<CollectionStatePayloadV1>;
+  const merged = mergeCollectionStatePayloads(empty, {
+    ...empty,
+    ...r,
+    v:
+      r.v === 1 || r.v === 2 || r.v === 3
+        ? r.v
+        : COLLECTION_STATE_VERSION,
+  });
+  merged.v = COLLECTION_STATE_VERSION;
+  return merged;
 }
 
 function loadCustomEventTagLastUsed(): Record<string, number> {
@@ -81,10 +113,14 @@ export function buildCollectionStatePayloadFromLocal(): CollectionStatePayloadV1
     tagPool = [];
   }
 
+  const hiddenPresetRoleIds = loadHiddenPresetRoleIds();
+
   return {
     v: COLLECTION_STATE_VERSION,
     longTermGoalMeta,
     longTermGoalTagPool: tagPool,
+    longTermGoalDisplayOrder: loadLongTermGoalOrder(),
+    longTermGoalOrderUpdatedAt: loadLongTermGoalOrderUpdatedAt(),
     lifeBookCover: {
       line1: lines.line1,
       line2: lines.line2,
@@ -95,6 +131,8 @@ export function buildCollectionStatePayloadFromLocal(): CollectionStatePayloadV1
     customEventTagLastUsed: loadCustomEventTagLastUsed(),
     lifeEnergyEntries: dumpLifeEnergyStorage(),
     nextMonthFocusEntries: dumpNextMonthFocusStorage(),
+    hiddenPresetRoleIds,
+    roleCatalog: loadRoleCatalog(),
   };
 }
 
@@ -168,6 +206,25 @@ function serializeNextMonthEntry(text: string, updatedAt: number): string {
   return JSON.stringify({ v: 1, text, updatedAt });
 }
 
+function mergeRoleCatalog(local: RoleCatalogMap, remote: RoleCatalogMap): RoleCatalogMap {
+  const keys = new Set([...Object.keys(local), ...Object.keys(remote)]);
+  const out: RoleCatalogMap = {};
+  for (const k of keys) {
+    const a = local[k];
+    const b = remote[k];
+    if (!a) {
+      if (b) out[k] = b;
+      continue;
+    }
+    if (!b) {
+      out[k] = a;
+      continue;
+    }
+    out[k] = a.updatedAt >= b.updatedAt ? a : b;
+  }
+  return out;
+}
+
 function mergeNextMonthFocus(
   local: Record<string, string>,
   remote: Record<string, string>
@@ -196,6 +253,31 @@ function mergeNextMonthFocus(
   return out;
 }
 
+function mergeLongTermGoalDisplayOrderFields(
+  localOrder: string[] | undefined,
+  remoteOrder: string[] | undefined,
+  localAt: number,
+  remoteAt: number,
+  allNames: Set<string>
+): { longTermGoalDisplayOrder: string[]; longTermGoalOrderUpdatedAt: number } {
+  const ta = localAt ?? 0;
+  const tb = remoteAt ?? 0;
+  const win = ta >= tb ? (localOrder ?? []) : (remoteOrder ?? []);
+  const seen = new Set<string>();
+  const ordered: string[] = [];
+  for (const n of win) {
+    const t = n.trim();
+    if (!allNames.has(t) || seen.has(t)) continue;
+    seen.add(t);
+    ordered.push(t);
+  }
+  const rest = [...allNames].filter((n) => !seen.has(n)).sort((a, b) => a.localeCompare(b));
+  return {
+    longTermGoalDisplayOrder: [...ordered, ...rest],
+    longTermGoalOrderUpdatedAt: Math.max(ta, tb),
+  };
+}
+
 export function mergeCollectionStatePayloads(
   local: CollectionStatePayloadV1,
   remote: CollectionStatePayloadV1
@@ -220,14 +302,37 @@ export function mergeCollectionStatePayloads(
       ? { ...coverA }
       : { ...coverB };
 
+  const hiddenPresetRoleIds = [
+    ...new Set([
+      ...(local.hiddenPresetRoleIds ?? []),
+      ...(remote.hiddenPresetRoleIds ?? []),
+    ]),
+  ].sort((a, b) => a.localeCompare(b));
+
+  const roleCatalog = mergeRoleCatalog(local.roleCatalog ?? {}, remote.roleCatalog ?? {});
+
+  const mergedMeta = mergeGoalMeta(local.longTermGoalMeta, remote.longTermGoalMeta);
+  const allGoalNames = new Set<string>([...Object.keys(mergedMeta), ...pool]);
+  const orderMerged = mergeLongTermGoalDisplayOrderFields(
+    local.longTermGoalDisplayOrder,
+    remote.longTermGoalDisplayOrder,
+    local.longTermGoalOrderUpdatedAt ?? 0,
+    remote.longTermGoalOrderUpdatedAt ?? 0,
+    allGoalNames
+  );
+
   return {
     v: COLLECTION_STATE_VERSION,
-    longTermGoalMeta: mergeGoalMeta(local.longTermGoalMeta, remote.longTermGoalMeta),
+    longTermGoalMeta: mergedMeta,
     longTermGoalTagPool: pool,
+    longTermGoalDisplayOrder: orderMerged.longTermGoalDisplayOrder,
+    longTermGoalOrderUpdatedAt: orderMerged.longTermGoalOrderUpdatedAt,
     lifeBookCover,
     customEventTags: tags,
     customEventTagLastUsed: lastUsed,
     lifeEnergyEntries: mergeLifeEnergy(local.lifeEnergyEntries, remote.lifeEnergyEntries),
     nextMonthFocusEntries: mergeNextMonthFocus(local.nextMonthFocusEntries, remote.nextMonthFocusEntries),
+    hiddenPresetRoleIds,
+    roleCatalog,
   };
 }

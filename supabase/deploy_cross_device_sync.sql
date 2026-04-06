@@ -6,6 +6,11 @@
 --   2. user_collection_state  — 时间聚合扩展：长期目标元数据、封面三行、自定义标签、
 --                               人生曲线能量点、下月焦点等（单 JSON payload）
 --
+-- payload.longTermGoalMeta 形态（客户端演进，DB 仅存 jsonb，无列级迁移）：
+--   键为长期目标名称；值为 { status, lastAlignedAt, mediumTermGoals[] }。
+--   每条中短期含 id/title/startAt/endAt，以及嵌套的 milestones[]（id/at/text）。
+--   旧版曾将 milestones 放在长期目标顶层；客户端读入时会合并进中短期并写回。
+--
 -- 前提：已有 auth.users；若你从未跑过主 schema，请先部署项目根目录 supabase/schema.sql，
 --       或至少保证下方 set_updated_at 已存在（本文件已包含 create or replace，可重复执行）。
 -- =============================================================================

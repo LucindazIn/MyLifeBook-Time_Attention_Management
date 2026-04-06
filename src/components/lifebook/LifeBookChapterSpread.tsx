@@ -12,7 +12,8 @@ export interface LifeBookChapterSpreadProps {
 export const LifeBookChapterSpread: React.FC<LifeBookChapterSpreadProps> = ({ chapter, language }) => {
   const title = chapter.chapterTitles[chapter.selectedTitleIndex] ?? chapter.chapterTitles[0] ?? '';
   const subtitle =
-    formatPeriodSubtitle(chapter.periodStart, chapter.periodKey, language === 'zh') || chapter.periodLabel;
+    formatPeriodSubtitle(chapter.periodStart, chapter.periodKey, language === 'zh', chapter.periodEnd) ||
+    chapter.periodLabel;
 
   return (
     <div

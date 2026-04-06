@@ -41,7 +41,19 @@ import { getLocalScheduleSuggestions } from '@/lib/scheduleLocalSuggestions';
 import { getChapters, type SavedChapter } from '@/lib/chaptersStorage';
 import { syncLifeBookChapters } from '@/lib/chapterSync';
 import { syncCollectionClientState, schedulePushCollectionClientState } from '@/lib/collectionStateSync';
-import { PRESET_ROLES, getRoleDisplayName, getRoleColor } from '@/lib/constants/roles';
+import { PRESET_ROLES, getPresetRole, getRoleDisplayName, getRoleColor } from '@/lib/constants/roles';
+import {
+  upsertRoleCatalogColor,
+  addHiddenPresetRoleId,
+  migrateRoleCatalogId,
+  removeRoleCatalogEntry,
+} from '@/lib/roleManagementStorage';
+import {
+  eventTouchesTag,
+  applyTagRenameToEvent,
+  stripTagFromEvent,
+} from '@/lib/eventAnalyticsHelpers';
+import { renameCustomTagInPool, removeCustomTagFromPool, isPresetEventLabel } from '@/lib/customEventTagsStorage';
 import { COLLECTION_SUBTITLES_ZH, COLLECTION_SUBTITLES_EN } from '@/lib/collectionSubtitles';
 
 const AUTH_ERROR_AUTO_DISMISS_MS = 10_000;
@@ -665,6 +677,113 @@ export default function App() {
           longTermGoals: e.longTermGoals?.map((g) => (g === oldName ? trimmed : g)),
         }))
       );
+    },
+    [events, user, settings.language]
+  );
+
+  const handleMigrateEventRole = React.useCallback(
+    async (oldId: string, newId: string) => {
+      if (oldId === newId) return;
+      const preset = getPresetRole(oldId);
+      if (preset && newId.startsWith('custom:')) {
+        upsertRoleCatalogColor(newId, preset.color);
+      } else {
+        migrateRoleCatalogId(oldId, newId);
+      }
+      const affected = events.filter((e) => e.role === oldId);
+      for (const e of affected) {
+        const updated: ScheduleEvent = { ...e, role: newId };
+        if (user) {
+          try {
+            await upsertEventWithTags(supabase, user.id, updated);
+          } catch (err: unknown) {
+            alert(formatSyncErrorMessage(err, settings.language));
+            throw err;
+          }
+        }
+      }
+      setEvents((prev) => prev.map((e) => (e.role === oldId ? { ...e, role: newId } : e)));
+    },
+    [events, user, settings.language]
+  );
+
+  const handleClearEventRole = React.useCallback(
+    async (roleId: string) => {
+      const affected = events.filter((e) => e.role === roleId);
+      for (const e of affected) {
+        const updated: ScheduleEvent = { ...e };
+        delete updated.role;
+        if (user) {
+          try {
+            await upsertEventWithTags(supabase, user.id, updated);
+          } catch (err: unknown) {
+            alert(formatSyncErrorMessage(err, settings.language));
+            throw err;
+          }
+        }
+      }
+      setEvents((prev) =>
+        prev.map((e) => {
+          if (e.role !== roleId) return e;
+          const next: ScheduleEvent = { ...e };
+          delete next.role;
+          return next;
+        })
+      );
+      if (getPresetRole(roleId)) {
+        addHiddenPresetRoleId(roleId);
+      } else if (roleId.startsWith('custom:')) {
+        removeRoleCatalogEntry(roleId);
+      }
+    },
+    [events, user, settings.language]
+  );
+
+  const handleMigrateEventTag = React.useCallback(
+    async (oldTag: string, newTag: string) => {
+      const o = oldTag.trim();
+      const n = newTag.trim();
+      if (!o || !n || o === n) return;
+      const affected = events.filter((e) => eventTouchesTag(e, o));
+      for (const e of affected) {
+        const updated = applyTagRenameToEvent(e, o, n);
+        if (user) {
+          try {
+            await upsertEventWithTags(supabase, user.id, updated);
+          } catch (err: unknown) {
+            alert(formatSyncErrorMessage(err, settings.language));
+            throw err;
+          }
+        }
+      }
+      setEvents((prev) => prev.map((e) => (eventTouchesTag(e, o) ? applyTagRenameToEvent(e, o, n) : e)));
+      if (!isPresetEventLabel(o)) {
+        renameCustomTagInPool(o, n);
+      }
+    },
+    [events, user, settings.language]
+  );
+
+  const handleClearEventTag = React.useCallback(
+    async (tag: string) => {
+      const t = tag.trim();
+      if (!t) return;
+      const affected = events.filter((e) => eventTouchesTag(e, t));
+      for (const e of affected) {
+        const updated = stripTagFromEvent(e, t);
+        if (user) {
+          try {
+            await upsertEventWithTags(supabase, user.id, updated);
+          } catch (err: unknown) {
+            alert(formatSyncErrorMessage(err, settings.language));
+            throw err;
+          }
+        }
+      }
+      setEvents((prev) => prev.map((e) => (eventTouchesTag(e, t) ? stripTagFromEvent(e, t) : e)));
+      if (!isPresetEventLabel(t)) {
+        removeCustomTagFromPool(t);
+      }
     },
     [events, user, settings.language]
   );
@@ -1614,6 +1733,10 @@ export default function App() {
                   journalEntries={journalEntries}
                   onRenameLongTermGoal={handleRenameLongTermGoal}
                   onDeleteLongTermGoal={handleDeleteLongTermGoal}
+                  onMigrateEventRole={handleMigrateEventRole}
+                  onClearEventRole={handleClearEventRole}
+                  onMigrateEventTag={handleMigrateEventTag}
+                  onClearEventTag={handleClearEventTag}
                   userId={user?.id ?? null}
                   collectionStateRevision={collectionStateTick}
                 />

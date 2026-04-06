@@ -1,5 +1,5 @@
-import React, { useMemo, useState, useCallback } from 'react';
-import { PieChart } from 'lucide-react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
+import { ChevronDown, PieChart } from 'lucide-react';
 import { endOfDay, format, parseISO, startOfDay, startOfMonth } from 'date-fns';
 import type { ScheduleEvent, AppLanguage } from '@/types';
 import { expandRecurringEvents } from '@/lib/events';
@@ -8,8 +8,11 @@ import { getRoleColor, getRoleDisplayName } from '@/lib/constants/roles';
 import { getChapterRange, type ChapterPeriodKey } from '@/lib/dateRange';
 import { cn } from '@/lib/utils';
 import { PIE_CX, PIE_CY, PIE_R_HOLE, PIE_R_OUTER, pieSectorPath } from '@/lib/pieChartSvg';
+import { RoleEnergyManageModal } from '@/components/RoleEnergyManageModal';
+import { useMediaQueryMdUp } from '@/lib/useMediaQuery';
 
 const ROLE_BALANCE_THRESHOLD_PCT = 78;
+const LEGEND_PREVIEW_COUNT = 4;
 
 const RANGE_OPTIONS: ChapterPeriodKey[] = ['this_week', 'this_month', 'custom'];
 
@@ -27,18 +30,27 @@ export interface RoleEnergyCardProps {
   events: ScheduleEvent[];
   completedInstances: Record<string, boolean>;
   language: AppLanguage;
+  collectionStateRevision?: number;
+  onMigrateEventRole: (oldId: string, newId: string) => void | Promise<void>;
+  onClearEventRole: (roleId: string) => void | Promise<void>;
 }
 
 export const RoleEnergyCard: React.FC<RoleEnergyCardProps> = ({
   events,
   completedInstances,
   language,
+  collectionStateRevision = 0,
+  onMigrateEventRole,
+  onClearEventRole,
 }) => {
   const isZh = language === 'zh';
+  const [manageOpen, setManageOpen] = useState(false);
   const [range, setRange] = useState<ChapterPeriodKey>('this_week');
   const [customStart, setCustomStart] = useState(() => format(startOfMonth(new Date()), 'yyyy-MM-dd'));
   const [customEnd, setCustomEnd] = useState(() => format(new Date(), 'yyyy-MM-dd'));
   const [hoveredRoleId, setHoveredRoleId] = useState<string | null>(null);
+  const [legendExpanded, setLegendExpanded] = useState(false);
+  const isDesktop = useMediaQueryMdUp();
 
   const onCustomStartChange = useCallback(
     (value: string) => {
@@ -95,6 +107,15 @@ export const RoleEnergyCard: React.FC<RoleEnergyCardProps> = ({
     return { roleId: hoveredRoleId, name, count, pct };
   }, [hoveredRoleId, slices, total, isZh]);
 
+  const legendSlices = useMemo(() => {
+    if (!isDesktop || slices.length <= LEGEND_PREVIEW_COUNT || legendExpanded) return slices;
+    return slices.slice(0, LEGEND_PREVIEW_COUNT);
+  }, [isDesktop, slices, legendExpanded]);
+
+  useEffect(() => {
+    setLegendExpanded(false);
+  }, [range, customStart, customEnd, total]);
+
   const paths = useMemo(() => {
     if (total === 0) return [];
     let acc = 0;
@@ -109,10 +130,29 @@ export const RoleEnergyCard: React.FC<RoleEnergyCardProps> = ({
 
   return (
     <div className="space-y-4 rounded-xl p-1" style={{ color: 'var(--app-text)', backgroundColor: 'var(--app-surface)' }}>
-      <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--app-text)' }}>
-        <PieChart className="w-4 h-4 shrink-0" style={{ color: 'var(--app-accent)' }} />
-        {isZh ? '角色能量' : 'Role Balance'}
-      </h3>
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-sm font-semibold flex items-center gap-2 min-w-0" style={{ color: 'var(--app-text)' }}>
+          <PieChart className="w-4 h-4 shrink-0" style={{ color: 'var(--app-accent)' }} />
+          {isZh ? '角色能量' : 'Role Balance'}
+        </h3>
+        <button
+          type="button"
+          onClick={() => setManageOpen(true)}
+          className="text-[11px] font-medium shrink-0 rounded-lg px-2 py-1 border border-border hover:bg-accent/10 transition-colors"
+          style={{ color: 'var(--app-accent)' }}
+        >
+          {isZh ? '管理' : 'Manage'}
+        </button>
+      </div>
+      <RoleEnergyManageModal
+        isOpen={manageOpen}
+        onClose={() => setManageOpen(false)}
+        events={events}
+        language={language}
+        collectionStateRevision={collectionStateRevision}
+        onMigrateRole={onMigrateEventRole}
+        onClearRole={onClearEventRole}
+      />
 
       <div className="space-y-2">
         <div className="flex flex-wrap gap-2">
@@ -169,96 +209,118 @@ export const RoleEnergyCard: React.FC<RoleEnergyCardProps> = ({
         </p>
       ) : (
         <>
-          <div className="relative mx-auto w-full max-w-[220px] aspect-square min-h-[160px]">
-            <svg
-              viewBox="0 0 100 100"
-              className="h-full w-full overflow-visible"
-              role="img"
-              aria-label={isZh ? '角色能量饼图' : 'Role balance pie chart'}
-            >
-              {paths.map(({ roleId, d, color }) => (
-                <path
-                  key={roleId}
-                  d={d}
-                  fill={color}
-                  stroke="var(--app-surface)"
-                  strokeWidth={0.75}
-                  className="cursor-pointer transition-opacity outline-none"
-                  style={{ opacity: hoveredRoleId && hoveredRoleId !== roleId ? 0.45 : 1 }}
-                  onMouseEnter={() => setHoveredRoleId(roleId)}
-                  onMouseLeave={() => setHoveredRoleId(null)}
-                  onFocus={() => setHoveredRoleId(roleId)}
-                  onBlur={() => setHoveredRoleId(null)}
-                  tabIndex={0}
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:gap-4">
+            <div className="relative mx-auto w-full max-w-[220px] shrink-0 aspect-square min-h-[160px] md:mx-0 md:max-w-[168px] md:min-h-[128px]">
+              <svg
+                viewBox="0 0 100 100"
+                className="h-full w-full overflow-visible"
+                role="img"
+                aria-label={isZh ? '角色能量饼图' : 'Role balance pie chart'}
+              >
+                {paths.map(({ roleId, d, color }) => (
+                  <path
+                    key={roleId}
+                    d={d}
+                    fill={color}
+                    stroke="var(--app-surface)"
+                    strokeWidth={0.75}
+                    className="cursor-pointer transition-opacity outline-none"
+                    style={{ opacity: hoveredRoleId && hoveredRoleId !== roleId ? 0.45 : 1 }}
+                    onMouseEnter={() => setHoveredRoleId(roleId)}
+                    onMouseLeave={() => setHoveredRoleId(null)}
+                    onFocus={() => setHoveredRoleId(roleId)}
+                    onBlur={() => setHoveredRoleId(null)}
+                    tabIndex={0}
+                  />
+                ))}
+                <circle
+                  cx={PIE_CX}
+                  cy={PIE_CY}
+                  r={PIE_R_HOLE}
+                  fill="var(--app-surface)"
+                  stroke="var(--app-border)"
+                  strokeWidth={0.5}
+                  onMouseEnter={() => setHoveredRoleId(null)}
                 />
-              ))}
-              <circle
-                cx={PIE_CX}
-                cy={PIE_CY}
-                r={PIE_R_HOLE}
-                fill="var(--app-surface)"
-                stroke="var(--app-border)"
-                strokeWidth={0.5}
-                onMouseEnter={() => setHoveredRoleId(null)}
-              />
-            </svg>
-            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-[26%] text-center">
-              <span className="text-2xl font-bold tabular-nums leading-none" style={{ color: 'var(--app-text)' }}>
-                {total}
-              </span>
-              <span className="mt-1 text-[10px] leading-tight" style={{ color: 'var(--app-muted)' }}>
-                {isZh ? '条身份日程' : 'role events'}
-              </span>
+              </svg>
+              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-[26%] text-center">
+                <span className="text-2xl font-bold tabular-nums leading-none" style={{ color: 'var(--app-text)' }}>
+                  {total}
+                </span>
+                <span className="mt-1 text-[10px] leading-tight" style={{ color: 'var(--app-muted)' }}>
+                  {isZh ? '条身份日程' : 'role events'}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex min-w-0 flex-1 flex-col gap-3">
+              <div
+                className={cn(
+                  'flex min-h-[3.25rem] items-center justify-center rounded-xl border px-3 py-2 text-center text-sm transition-[border-color,background-color] md:justify-start md:text-left',
+                  hoveredInfo ? 'border-border bg-field/80' : 'border-transparent bg-transparent'
+                )}
+                aria-live="polite"
+              >
+                {hoveredInfo ? (
+                  <>
+                    <span className="font-medium" style={{ color: 'var(--app-text)' }}>
+                      {hoveredInfo.name}
+                    </span>
+                    <span className="text-muted-foreground">
+                      {' '}
+                      · {hoveredInfo.count} {isZh ? '条' : 'events'} · {hoveredInfo.pct.toFixed(1)}%
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-[11px] leading-snug" style={{ color: 'var(--app-muted)' }}>
+                    {isZh ? '悬停扇区查看角色与占比' : 'Hover A Slice For Details'}
+                  </span>
+                )}
+              </div>
+
+              <ul className="space-y-1.5 text-xs" style={{ color: 'var(--app-muted)' }}>
+                {legendSlices.map(([roleId, count]) => {
+                  const pct = (count / total) * 100;
+                  const name = getRoleDisplayName(roleId, isZh ? 'zh' : 'en');
+                  return (
+                    <li key={roleId} className="flex items-center justify-between gap-2">
+                      <span className="flex min-w-0 items-center gap-2">
+                        <span
+                          className="h-2 w-2 shrink-0 rounded-full"
+                          style={{ background: getRoleColor(roleId) }}
+                          aria-hidden
+                        />
+                        <span className="truncate" style={{ color: 'var(--app-text)' }}>
+                          {name}
+                        </span>
+                      </span>
+                      <span className="shrink-0 tabular-nums">
+                        {count} ({pct.toFixed(1)}%)
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+              {isDesktop && slices.length > LEGEND_PREVIEW_COUNT && (
+                <button
+                  type="button"
+                  onClick={() => setLegendExpanded((v) => !v)}
+                  className="flex w-full items-center justify-center gap-1 rounded-lg border border-transparent py-1.5 text-[11px] font-medium transition-colors hover:border-border hover:bg-field/80 md:justify-start"
+                  style={{ color: 'var(--app-accent)' }}
+                  aria-expanded={legendExpanded}
+                >
+                  <ChevronDown className={cn('h-3.5 w-3.5 shrink-0 transition-transform', legendExpanded && 'rotate-180')} aria-hidden />
+                  {legendExpanded
+                    ? isZh
+                      ? '收起图例'
+                      : 'Show Less'
+                    : isZh
+                      ? `查看全部图例（${slices.length}）`
+                      : `Show All Legend Items (${slices.length})`}
+                </button>
+              )}
             </div>
           </div>
-
-          <div
-            className={cn(
-              'flex min-h-[3.25rem] items-center justify-center rounded-xl border px-3 py-2 text-center text-sm transition-[border-color,background-color]',
-              hoveredInfo ? 'border-border bg-field/80' : 'border-transparent bg-transparent'
-            )}
-            aria-live="polite"
-          >
-            {hoveredInfo ? (
-              <>
-                <span className="font-medium" style={{ color: 'var(--app-text)' }}>
-                  {hoveredInfo.name}
-                </span>
-                <span className="text-muted-foreground">
-                  {' '}
-                  · {hoveredInfo.count} {isZh ? '条' : 'events'} · {hoveredInfo.pct.toFixed(1)}%
-                </span>
-              </>
-            ) : (
-              <span className="text-[11px] leading-snug" style={{ color: 'var(--app-muted)' }}>
-                {isZh ? '悬停扇区查看角色与占比' : 'Hover A Slice For Details'}
-              </span>
-            )}
-          </div>
-
-          <ul className="space-y-1.5 text-xs" style={{ color: 'var(--app-muted)' }}>
-            {slices.map(([roleId, count]) => {
-              const pct = (count / total) * 100;
-              const name = getRoleDisplayName(roleId, isZh ? 'zh' : 'en');
-              return (
-                <li key={roleId} className="flex items-center justify-between gap-2">
-                  <span className="flex min-w-0 items-center gap-2">
-                    <span
-                      className="h-2 w-2 shrink-0 rounded-full"
-                      style={{ background: getRoleColor(roleId) }}
-                      aria-hidden
-                    />
-                    <span className="truncate" style={{ color: 'var(--app-text)' }}>
-                      {name}
-                    </span>
-                  </span>
-                  <span className="shrink-0 tabular-nums">
-                    {count} ({pct.toFixed(1)}%)
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
 
           {showBalanceReminder && (
             <p className="text-xs rounded-lg px-3 py-2" style={{ background: 'var(--app-field)', color: 'var(--app-muted)' }}>

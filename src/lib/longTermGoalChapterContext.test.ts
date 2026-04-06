@@ -21,12 +21,21 @@ describe('buildLongTermGoalAlignmentBlock', () => {
       Test: {
         status: 'sprout',
         lastAlignedAt: new Date().toISOString(),
-        milestones: [{ id: 'm1', at: '2026-01-01', text: 'Step' }],
+        mediumTermGoals: [
+          {
+            id: 'mt1',
+            title: 'Phase 1',
+            startAt: '2026-01-01',
+            endAt: '2026-12-31',
+            milestones: [{ id: 'm1', at: '2026-01-01', text: 'Step' }],
+          },
+        ],
       },
     });
     const text = buildLongTermGoalAlignmentBlock([], {}, startOfDay(new Date()), endOfDay(new Date()), 'zh');
     expect(text).toContain('Test');
     expect(text).toContain('里程碑');
+    expect(text).toContain('Phase 1');
     expect(text).toContain('上次行动：暂无');
   });
 });

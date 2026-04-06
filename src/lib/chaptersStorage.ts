@@ -42,54 +42,30 @@ export interface SavedChapter extends WeeklyChapterOutput {
 /** 未保存的章节草稿（无 id），用于「从空白编辑」或生成中/失败时在弹窗内编辑 */
 export type ChapterDraft = Omit<SavedChapter, 'id'>;
 
-function dbgLoadOnce(payload: Record<string, unknown>) {
+function notifyChaptersChanged() {
   if (typeof window === 'undefined') return;
-  const w = window as Window & { __fsChaptersDbgOnce?: boolean };
-  if (w.__fsChaptersDbgOnce) return;
-  w.__fsChaptersDbgOnce = true;
-  // #region agent log
-  fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b400dc'},body:JSON.stringify({sessionId:'b400dc',runId:'pre-fix',...payload,timestamp:Date.now()})}).catch(()=>{});
-  // #endregion
+  window.dispatchEvent(new Event('feather-chapters-updated'));
 }
 
 function loadRaw(): SavedChapter[] {
   try {
     const s = localStorage.getItem(STORAGE_KEY);
-    if (!s) {
-      dbgLoadOnce({
-        hypothesisId: 'H1',
-        location: 'chaptersStorage.ts:loadRaw',
-        message: 'loadRaw empty key',
-        data: { rawLen: 0 },
-      });
-      return [];
-    }
+    if (!s) return [];
     const parsed = JSON.parse(s) as SavedChapter[];
-    const list = Array.isArray(parsed) ? parsed : [];
-    dbgLoadOnce({
-      hypothesisId: 'H1',
-      location: 'chaptersStorage.ts:loadRaw',
-      message: 'loadRaw parsed',
-      data: {
-        count: list.length,
-        jsonChars: s.length,
-        periodKeys: list.slice(0, 8).map((c) => c.periodKey),
-      },
-    });
-    return list;
+    return Array.isArray(parsed) ? parsed : [];
   } catch {
-    dbgLoadOnce({
-      hypothesisId: 'H4',
-      location: 'chaptersStorage.ts:loadRaw',
-      message: 'loadRaw JSON parse failed',
-      data: {},
-    });
     return [];
   }
 }
 
 function saveRaw(list: SavedChapter[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(list.slice(0, MAX_CHAPTERS)));
+  notifyChaptersChanged();
+}
+
+/** Raw list for cross-device merge (unsorted). */
+export function getChaptersSnapshot(): SavedChapter[] {
+  return [...loadRaw()];
 }
 
 export type GetChaptersOptions = { order?: 'asc' | 'desc' };
@@ -119,6 +95,32 @@ function samePeriod(
   return true;
 }
 
+/**
+ * Union local + remote: newer `generatedAt` wins per id; then one chapter per period (newest first); cap MAX_CHAPTERS.
+ */
+export function mergeChapterListsForSync(local: SavedChapter[], remote: SavedChapter[]): SavedChapter[] {
+  const byId = new Map<string, SavedChapter>();
+  for (const c of [...remote, ...local]) {
+    const prev = byId.get(c.id);
+    if (!prev || (c.generatedAt || '').localeCompare(prev.generatedAt || '') > 0) {
+      byId.set(c.id, c);
+    }
+  }
+  const merged = [...byId.values()];
+  merged.sort((a, b) => (b.generatedAt || '').localeCompare(a.generatedAt || ''));
+  const out: SavedChapter[] = [];
+  for (const c of merged) {
+    if (out.some((o) => samePeriod(o, c))) continue;
+    out.push(c);
+  }
+  return out.slice(0, MAX_CHAPTERS);
+}
+
+/** Replace local storage after merge (notifies listeners). */
+export function persistChaptersList(list: SavedChapter[]): void {
+  saveRaw(list);
+}
+
 export function saveChapter(entry: Omit<SavedChapter, 'id'>): SavedChapter {
   const list = loadRaw();
   const id = `ch_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
@@ -127,12 +129,8 @@ export function saveChapter(entry: Omit<SavedChapter, 'id'>): SavedChapter {
     id,
     narrativeSummary: truncateSummary(entry.narrativeSummary),
   };
-  const removedSamePeriod = list.filter((c) => samePeriod(entry, c)).length;
   const withoutSamePeriod = list.filter((c) => !samePeriod(entry, c));
   withoutSamePeriod.unshift(saved);
-  // #region agent log
-  fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b400dc'},body:JSON.stringify({sessionId:'b400dc',runId:'pre-fix',hypothesisId:'H2',location:'chaptersStorage.ts:saveChapter',message:'saveChapter merge',data:{beforeCount:list.length,afterCount:withoutSamePeriod.length,removedSamePeriod,periodKey:entry.periodKey},timestamp:Date.now()})}).catch(()=>{});
-  // #endregion
   saveRaw(withoutSamePeriod);
   return saved;
 }

@@ -27,5 +27,6 @@ describe('buildLongTermGoalAlignmentBlock', () => {
     const text = buildLongTermGoalAlignmentBlock([], {}, startOfDay(new Date()), endOfDay(new Date()), 'zh');
     expect(text).toContain('Test');
     expect(text).toContain('里程碑');
+    expect(text).toContain('上次行动：暂无');
   });
 });

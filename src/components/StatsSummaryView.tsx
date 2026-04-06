@@ -1,40 +1,19 @@
 import React, { useMemo } from 'react';
-import { startOfWeek, endOfWeek, subDays } from 'date-fns';
 import { BarChart3 } from 'lucide-react';
 import { ScheduleEvent, AppLanguage } from '@/types';
-import { expandRecurringEvents } from '@/lib/events';
 import { mergeLongTermGoalNames } from '@/lib/longTermGoalMetaStorage';
 
 interface StatsSummaryViewProps {
   events: ScheduleEvent[];
   dayTags: Record<string, string>;
-  completedInstances: Record<string, boolean>;
   language: AppLanguage;
 }
 
 export const StatsSummaryView: React.FC<StatsSummaryViewProps> = ({
   events,
   dayTags,
-  completedInstances,
   language,
 }) => {
-  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
-  const weekEnd = endOfWeek(new Date(), { weekStartsOn: 1 });
-  const rangeStart = subDays(new Date(), 90);
-
-  const expandedRecent = useMemo(
-    () => expandRecurringEvents(events, rangeStart, new Date(), completedInstances),
-    [events, completedInstances]
-  );
-
-  const weekEvents = useMemo(
-    () => expandedRecent.filter((e) => {
-      const d = new Date(e.startTime);
-      return d >= weekStart && d <= weekEnd;
-    }),
-    [expandedRecent, weekStart, weekEnd]
-  );
-
   const longTermGoalCount = useMemo(() => mergeLongTermGoalNames(events).length, [events]);
 
   const daysWithRecords = useMemo(
@@ -70,10 +49,10 @@ export const StatsSummaryView: React.FC<StatsSummaryViewProps> = ({
           }}
         >
           <span className="text-2xl font-bold tabular-nums" style={{ color: 'var(--app-accent)' }}>
-            {weekEvents.length}
+            {events.length}
           </span>
           <span className="text-xs mt-0.5" style={{ color: 'var(--app-muted)' }}>
-            {isZh ? '本周事件' : 'This Week'}
+            {isZh ? '历史事件' : 'Historical Events'}
           </span>
         </div>
         <div

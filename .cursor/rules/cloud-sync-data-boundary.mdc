@@ -1,0 +1,67 @@
+---
+description: 云端同步与跨设备数据边界 — 上云清单、仅本机清单、新增持久化时的强制对齐流程
+alwaysApply: true
+---
+
+# 云端与跨设备数据边界（强制对齐）
+
+## 核心原则
+
+- **先定性，再落库**：任何会写入 `localStorage` / `IndexedDB` / 服务端的新用户数据，在动手前必须明确归类——**「应跨设备一致」**还是**「仅本机」**，并在方案或 PR 说明中写清；禁止默认「先只做本地」导致多端长期分裂。
+- **用户内容 vs 环境与密钥**：日程、日记、目标、人生之书等业务内容走云端与既定同步路径；**设备标识、跳过登录标记、第三方 API Key、纯 UI 偏好**默认不归入「用户内容同步」。
+- **单一事实来源**：下列「已上云」清单以仓库内实现为准；若代码与本文不一致，**以实现为准并应立刻回写本文**（避免文档与产品脱节）。
+
+## 一、应上云、跨设备通用（当前实现）
+
+入口参考：`src/App.tsx` 中 `syncAllUserData`；章节 `src/lib/chapterSync.ts`；聚合状态 `src/lib/collectionStateSync.ts` 与 `src/lib/collectionStatePayload.ts`。
+
+### 1. Supabase 关系型表（`supabase/schema.sql`）
+
+| 数据 | 表 |
+|------|-----|
+| 日程事件 | `events` |
+| 事件标签 | `event_tags` |
+| 重复实例完成状态 | `event_instance_completions` |
+| 日维元数据（日名、日签、日记、能量/心情/专注等） | `day_meta` |
+| 每日一句 | `daily_quotes` |
+
+`devices` + `register_device` RPC：设备配额与登记，**不属于**用户业务内容同步，但属于登录后云端逻辑。
+
+### 2. JSON 快照表
+
+| 数据 | 表与字段 |
+|------|----------|
+| 人生之书章节列表 | `life_book_snapshot.chapters`（与 `src/lib/chaptersStorage.ts` 对齐） |
+
+### 3. `user_collection_state.payload`（`CollectionStatePayloadV1`）
+
+见 `src/lib/collectionStatePayload.ts` 字段定义；合并策略见同文件 `mergeCollectionStatePayloads`。
+
+| 领域 | 载荷字段 / 本地键前缀 |
+|------|------------------------|
+| 长期目标元数据与标签池 | `longTermGoalMeta`、`longTermGoalTagPool`（`feather_long_term_goal_meta`、`feather_long_term_goal_tags`） |
+| 人生之书封面三行文案 | `lifeBookCover`（`feather_lifebook_line1` 等 + `feather_lifebook_cover_updated_at`） |
+| 自定义事件标签及最近使用 | `customEventTags`、`customEventTagLastUsed` |
+| 人生能量曲线 | `lifeEnergyEntries`（`feather_life_energy_*` 全量 dump） |
+| 下月焦点 | `nextMonthFocusEntries`（`feather_next_month_focus_*`） |
+
+`COLLECTION_STATE_VERSION`（`v`）变更时：必须考虑迁移、兼容与合并规则更新。
+
+## 二、明确仅本机（当前不入用户内容云同步）
+
+| 键或模块 | 用途 |
+|----------|------|
+| `feather_settings` | 应用级设置（如语言） |
+| `feather_device_id` | 本机设备 ID（用于 `register_device`） |
+| `feather_skipped_auth` | 是否跳过登录 |
+| `feather_user_gemini_api_key`（`userGeminiKeyStorage.ts`） | 用户 API Key — **永不上云、不进入 `user_collection_state`** |
+| `feather_custom_roles_usage`（`AddEventModal.tsx`） | 自定义角色使用等辅助数据（当前未纳入 `user_collection_state`） |
+
+若产品要求上述任一项改为跨设备，须：**扩展 `CollectionStatePayload` 或新建表 + RLS**、实现合并与推送、并更新本规则第一节与第二节。
+
+## 三、新增或修改持久化时的检查清单
+
+1. **归类**：该数据是否必须在多设备一致？是 → 必须接入既有同步（表或 `user_collection_state` / `life_book_snapshot`），或新增带 RLS 的表与 repo，禁止长期只写本地。
+2. **安全**：是否含密钥、令牌、或仅适合绑定单设备的敏感标识？是 → 保持本机或受控后端，禁止塞进 `user_collection_state.payload`。
+3. **实现**：更新 `collectionStatePayload.ts` / `collectionStateApply.ts` / 对应 `repositories/*` / Supabase 迁移；确认登录与手动全量同步会拉取并合并。
+4. **留痕**：提交或 PR 中一句话说明数据边界决策（与哪一类对齐），满足工作区「重点变化留痕」约定。

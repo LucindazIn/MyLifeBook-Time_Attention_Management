@@ -28,6 +28,8 @@ export interface LifeBookViewProps {
   language: AppLanguage;
   onClose: () => void;
   userDisplayName?: string;
+  /** Bumps when cover lines sync from server / other device. */
+  storageRevision?: number;
 }
 
 export const LifeBookView: React.FC<LifeBookViewProps> = ({
@@ -37,6 +39,7 @@ export const LifeBookView: React.FC<LifeBookViewProps> = ({
   language,
   onClose: _onClose,
   userDisplayName,
+  storageRevision = 0,
 }) => {
   const swiperRef = useRef<SwiperClass | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -73,9 +76,9 @@ export const LifeBookView: React.FC<LifeBookViewProps> = ({
 
   if (chapters.length === 0) {
     return (
-      <div className="flex h-full min-h-0 w-full items-center justify-center overflow-x-hidden p-4 max-md:min-h-[min(52dvh,420px)] md:p-6">
-        <div className="w-[min(50vw,100%)] max-md:w-[min(18.3vw,100%)] max-w-full min-w-0 aspect-[185/260] max-md:aspect-[111/208] max-h-[min(52dvh,calc(100dvh-10rem))] max-md:max-h-[min(48dvh,calc(100dvh-10rem))]">
-          <LifeBookEmptyCover language={language} />
+      <div className="flex h-full min-h-0 w-full items-center justify-center overflow-x-hidden p-4 max-md:min-h-[calc(60vh*1.2)] md:p-6">
+        <div className="w-[min(50vw,100%)] max-md:w-[min(24.4vw,100%)] max-w-full min-w-0 aspect-[185/260] max-md:aspect-[74/78] max-h-[min(52dvh,calc(100dvh-10rem))]">
+          <LifeBookEmptyCover language={language} storageRevision={storageRevision} />
         </div>
       </div>
     );
@@ -93,6 +96,7 @@ export const LifeBookView: React.FC<LifeBookViewProps> = ({
           chapters={chapters}
           events={events}
           language={language}
+          storageRevision={storageRevision}
         />
       );
     }
@@ -172,10 +176,10 @@ export const LifeBookView: React.FC<LifeBookViewProps> = ({
   );
 
   return (
-    <div className="flex w-full max-w-[100vw] flex-col items-center justify-center gap-4 overflow-x-hidden px-1 md:flex-row md:items-center md:justify-center md:gap-8 md:px-4">
-      {/* Book: mobile — width 0.3× prior 61vw (18.3vw); vertical shortened 60% vs horizontal 30% → aspect 111/208 */}
-      <div className="flex h-[82vh] max-md:h-[min(78dvh,calc(100dvh-9rem))] max-md:min-h-0 min-h-[420px] max-md:min-h-[280px] w-full min-w-0 flex-col items-center justify-center">
-        <div className="relative flex min-h-0 w-[min(50vw,100%)] max-md:w-[min(18.3vw,100%)] max-w-full flex-1 items-center justify-center aspect-[185/260] max-md:aspect-[111/208] max-h-full">
+    <div className="flex w-full max-w-[100vw] flex-col items-center justify-center gap-6 overflow-x-hidden md:flex-row md:items-center md:justify-center md:gap-8 md:px-4">
+      {/* Mobile: 横边缩短 60%（61vw→24.4vw）、竖边 ×30% → aspect 74/78；桌面保持 185/260 */}
+      <div className="flex h-[82vh] max-md:h-[min(78dvh,calc(100dvh-9rem))] min-h-[420px] w-full min-w-0 flex-col items-center justify-center max-md:min-h-[280px]">
+        <div className="relative flex min-h-0 w-[min(50vw,100%)] max-md:w-[min(24.4vw,100%)] max-w-full flex-1 items-center justify-center aspect-[185/260] max-md:aspect-[74/78] max-h-full">
           <Swiper
             modules={[Keyboard]}
             onSwiper={(swiper) => {

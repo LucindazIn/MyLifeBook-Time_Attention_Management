@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { format, addDays, subDays, isSameDay, isBefore, startOfDay, addYears, subYears, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek, startOfYear, endOfYear, eachDayOfInterval } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, List, Grid, ChevronDown, Check, Settings, Search as SearchIcon, FilterX, BookOpen, Layers, Loader2 } from 'lucide-react';
@@ -39,6 +39,8 @@ import { LifeBookView } from '@/components/LifeBookView';
 import { GeminiUserKeyProvider } from '@/contexts/GeminiUserKeyContext';
 import { getLocalScheduleSuggestions } from '@/lib/scheduleLocalSuggestions';
 import { getChapters, type SavedChapter } from '@/lib/chaptersStorage';
+import { syncLifeBookChapters } from '@/lib/chapterSync';
+import { syncCollectionClientState, schedulePushCollectionClientState } from '@/lib/collectionStateSync';
 import { PRESET_ROLES, getRoleDisplayName, getRoleColor } from '@/lib/constants/roles';
 import { COLLECTION_SUBTITLES_ZH, COLLECTION_SUBTITLES_EN } from '@/lib/collectionSubtitles';
 
@@ -74,6 +76,10 @@ export default function App() {
   } = useAuth();
   const [authError, setAuthError] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
+  /** Bumps when chapter storage syncs or mutates so Life Book / 时间聚合 re-read local chapters. */
+  const [chaptersTick, setChaptersTick] = useState(0);
+  /** Bumps when collection-only local state (长期目标、封面、曲线等) syncs or mutates. */
+  const [collectionStateTick, setCollectionStateTick] = useState(0);
   const [dailyQuotes, setDailyQuotes] = useState<Record<string, { text: string; author?: string }>>({});
   const [hasSkippedAuth, setHasSkippedAuth] = useState<boolean>(() => {
     return localStorage.getItem('feather_skipped_auth') === '1';
@@ -170,6 +176,17 @@ export default function App() {
       setJournalEntries(dayMeta.journalEntries);
       setDayVibesData(dayMeta.dayVibes);
       setDailyQuotes(quotes);
+
+      try {
+        await syncLifeBookChapters(supabase, user.id);
+      } catch {
+        // Chapter sync is best-effort; do not block main data sync
+      }
+      try {
+        await syncCollectionClientState(supabase, user.id);
+      } catch {
+        // Collection local extensions sync is best-effort
+      }
     } catch (e: unknown) {
       setAuthError(formatSyncErrorMessage(e, settings.language));
     } finally {
@@ -191,6 +208,16 @@ export default function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewMode]);
 
+  // Pull Life Book chapters + collection-only state when opening 人生之书
+  useEffect(() => {
+    if (viewMode !== 'lifeBook' || !user) return;
+    void Promise.all([
+      syncLifeBookChapters(supabase, user.id),
+      syncCollectionClientState(supabase, user.id),
+    ]).catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewMode, user]);
+
   useEffect(() => {
     if (!authError) return;
     const id = window.setTimeout(() => setAuthError(null), AUTH_ERROR_AUTO_DISMISS_MS);
@@ -203,6 +230,24 @@ export default function App() {
     }
     prevUserForAuthModeRef.current = user;
   }, [user]);
+
+  useEffect(() => {
+    const bump = () => setChaptersTick((t) => t + 1);
+    window.addEventListener('feather-chapters-updated', bump);
+    return () => window.removeEventListener('feather-chapters-updated', bump);
+  }, []);
+
+  useEffect(() => {
+    const onCollectionState = (e: Event) => {
+      setCollectionStateTick((t) => t + 1);
+      const src = (e as CustomEvent<{ source?: string }>).detail?.source;
+      if (user?.id && src === 'user') {
+        schedulePushCollectionClientState(user.id);
+      }
+    };
+    window.addEventListener('feather-collection-state-updated', onCollectionState);
+    return () => window.removeEventListener('feather-collection-state-updated', onCollectionState);
+  }, [user?.id]);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -624,6 +669,40 @@ export default function App() {
     [events, user, settings.language]
   );
 
+  /** Removes the goal from meta/tag pool and strips it from events' longTermGoals only — does not delete events. */
+  const handleDeleteLongTermGoal = React.useCallback(
+    async (goalName: string) => {
+      const trimmed = goalName.trim();
+      if (!trimmed) return;
+      const affected = events.filter((e) => e.longTermGoals?.includes(trimmed));
+      for (const e of affected) {
+        const nextGoals = e.longTermGoals?.filter((g) => g !== trimmed);
+        const updated: ScheduleEvent = {
+          ...e,
+          longTermGoals: nextGoals && nextGoals.length > 0 ? nextGoals : undefined,
+        };
+        if (user) {
+          try {
+            await upsertEventWithTags(supabase, user.id, updated);
+          } catch (err: unknown) {
+            alert(formatSyncErrorMessage(err, settings.language));
+            throw err;
+          }
+        }
+      }
+      setEvents((prev) =>
+        prev.map((e) => {
+          const nextGoals = e.longTermGoals?.filter((g) => g !== trimmed);
+          return {
+            ...e,
+            longTermGoals: nextGoals && nextGoals.length > 0 ? nextGoals : undefined,
+          };
+        })
+      );
+    },
+    [events, user, settings.language]
+  );
+
   const navigateDate = (direction: 'prev' | 'next') => {
     setCurrentDate(prev => {
       if (viewMode === 'year') {
@@ -828,7 +907,10 @@ export default function App() {
     }
   };
 
-  const lifeBookChapters = viewMode === 'lifeBook' ? getChapters({ order: 'asc' }) : [];
+  const lifeBookChapters = useMemo(
+    () => (viewMode === 'lifeBook' ? getChapters({ order: 'asc' }) : []),
+    [viewMode, chaptersTick]
+  );
 
   return (
     <GeminiUserKeyProvider
@@ -1531,6 +1613,9 @@ export default function App() {
                   timeDisplay={settings.timeDisplay}
                   journalEntries={journalEntries}
                   onRenameLongTermGoal={handleRenameLongTermGoal}
+                  onDeleteLongTermGoal={handleDeleteLongTermGoal}
+                  userId={user?.id ?? null}
+                  collectionStateRevision={collectionStateTick}
                 />
               </motion.div>
             )}
@@ -1541,7 +1626,7 @@ export default function App() {
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.98 }}
-                className="flex flex-1 flex-col min-h-[60vh] max-md:min-h-[min(70dvh,calc(100dvh-8rem))] overflow-x-hidden py-4 md:py-8"
+                className="flex flex-1 flex-col min-h-[60vh] max-md:min-h-[calc(60vh*1.2)] py-8"
               >
                 <LifeBookView
                   chapters={lifeBookChapters}
@@ -1550,6 +1635,7 @@ export default function App() {
                   language={settings.language}
                   onClose={() => setViewMode(viewModeBeforeCollection ?? 'day')}
                   userDisplayName={user?.email?.split('@')[0] ?? undefined}
+                  storageRevision={collectionStateTick}
                 />
               </motion.div>
             )}

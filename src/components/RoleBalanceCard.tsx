@@ -27,6 +27,8 @@ export interface RoleBalanceCardProps {
   events: ScheduleEvent[];
   completedInstances: Record<string, boolean>;
   language: AppLanguage;
+  /** When localStorage-backed curve data syncs from another device, force recomputation. */
+  collectionStateRevision?: number;
 }
 
 function getRangeDates(
@@ -74,6 +76,7 @@ export const RoleBalanceCard: React.FC<RoleBalanceCardProps> = ({
   events,
   completedInstances,
   language,
+  collectionStateRevision = 0,
 }) => {
   const [range, setRange] = useState<RangeKey>('month');
   const [customStart, setCustomStart] = useState(() => format(startOfMonth(new Date()), 'yyyy-MM-dd'));
@@ -139,7 +142,7 @@ export const RoleBalanceCard: React.FC<RoleBalanceCardProps> = ({
       dayIndex,
       energy: energyOverrides[dateKey] ?? getLifeEnergyOverrideForDate(dateKey) ?? energy,
     }));
-  }, [dailyEnergyComputed, energyOverrides]);
+  }, [dailyEnergyComputed, energyOverrides, collectionStateRevision]);
 
   const handleEnergyDrag = useCallback((dateKey: string, newEnergy: number) => {
     const clamped = Math.min(100, Math.max(0, Math.round(newEnergy)));

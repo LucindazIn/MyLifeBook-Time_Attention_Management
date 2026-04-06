@@ -18,6 +18,11 @@ export interface CollectionViewProps {
   timeDisplay: TimeDisplayFormat;
   journalEntries: Record<string, string>;
   onRenameLongTermGoal: (oldName: string, newName: string) => void | Promise<void>;
+  onDeleteLongTermGoal: (goalName: string) => void | Promise<void>;
+  /** Logged-in user: chapter list syncs to Supabase for cross-device consistency. */
+  userId?: string | null;
+  /** Increments when synced local state (长期目标 / 曲线等) updates — refreshes cards that read localStorage. */
+  collectionStateRevision?: number;
 }
 
 const cardShell =
@@ -38,6 +43,9 @@ export const CollectionView: React.FC<CollectionViewProps> = ({
   timeDisplay,
   journalEntries,
   onRenameLongTermGoal,
+  onDeleteLongTermGoal,
+  userId = null,
+  collectionStateRevision = 0,
 }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-5 gap-6 md:gap-8 max-w-6xl mx-auto px-4">
@@ -47,7 +55,6 @@ export const CollectionView: React.FC<CollectionViewProps> = ({
           <StatsSummaryView
             events={events}
             dayTags={dayTags}
-            completedInstances={completedInstances}
             language={language}
           />
         </div>
@@ -61,6 +68,7 @@ export const CollectionView: React.FC<CollectionViewProps> = ({
             dayNames={dayNames}
             dayTags={dayTags}
             dayVibes={dayVibes}
+            userId={userId}
           />
         </div>
       </div>
@@ -72,6 +80,7 @@ export const CollectionView: React.FC<CollectionViewProps> = ({
             events={events}
             completedInstances={completedInstances}
             language={language}
+            collectionStateRevision={collectionStateRevision}
           />
         </div>
         <div className={cardShell} style={cardStyle}>
@@ -81,6 +90,8 @@ export const CollectionView: React.FC<CollectionViewProps> = ({
             language={language}
             timeDisplay={timeDisplay}
             onRenameLongTermGoal={onRenameLongTermGoal}
+            onDeleteLongTermGoal={onDeleteLongTermGoal}
+            collectionStateRevision={collectionStateRevision}
           />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-6">

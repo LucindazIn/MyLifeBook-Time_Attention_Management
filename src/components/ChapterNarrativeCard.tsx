@@ -13,6 +13,7 @@ import {
 import { getChapterChangeHint } from '@/lib/chapterChangeHint';
 import { getRoleDisplayName } from '@/lib/constants/roles';
 import { getChapters, saveChapter, exportChapterToTxt, deleteChapter, type SavedChapter, type ChapterDraft } from '@/lib/chaptersStorage';
+import { schedulePushLifeBookSnapshot } from '@/lib/chapterSync';
 import { ChapterViewModal } from '@/components/ChapterViewModal';
 import { cn } from '@/lib/utils';
 import {
@@ -30,6 +31,7 @@ export interface ChapterNarrativeCardProps {
   dayNames?: Record<string, { name: string; isManual: boolean; language?: AppLanguage }>;
   dayTags?: Record<string, string>;
   dayVibes?: Record<string, { energy?: number; mood?: number; focus?: number }>;
+  userId?: string | null;
 }
 
 const PERIOD_OPTIONS: ChapterPeriodKey[] = ['this_week', 'last_week', 'this_month', 'custom'];
@@ -59,6 +61,7 @@ export const ChapterNarrativeCard: React.FC<ChapterNarrativeCardProps> = ({
   dayNames = {},
   dayTags = {},
   dayVibes = {},
+  userId = null,
 }) => {
   const [period, setPeriod] = useState<ChapterPeriodKey>('this_week');
   const [customStart, setCustomStart] = useState<Date>(() =>
@@ -75,7 +78,10 @@ export const ChapterNarrativeCard: React.FC<ChapterNarrativeCardProps> = ({
   const isZh = language === 'zh';
 
   useEffect(() => {
-    setSavedChapters(getChapters());
+    const refresh = () => setSavedChapters(getChapters());
+    refresh();
+    window.addEventListener('feather-chapters-updated', refresh);
+    return () => window.removeEventListener('feather-chapters-updated', refresh);
   }, []);
 
   const { start, end } = useMemo(
@@ -236,6 +242,7 @@ export const ChapterNarrativeCard: React.FC<ChapterNarrativeCardProps> = ({
     const saved = saveChapter(draft);
     setSavedChapters(getChapters());
     setModalChapter(saved);
+    schedulePushLifeBookSnapshot(userId);
   };
 
   const handleOpenSaved = (ch: SavedChapter) => {
@@ -246,6 +253,7 @@ export const ChapterNarrativeCard: React.FC<ChapterNarrativeCardProps> = ({
   const handleModalSave = (updated: SavedChapter) => {
     setSavedChapters(getChapters());
     setModalChapter(updated);
+    schedulePushLifeBookSnapshot(userId);
   };
 
   const handleDeleteChapter = (chapterId: string) => {
@@ -253,6 +261,7 @@ export const ChapterNarrativeCard: React.FC<ChapterNarrativeCardProps> = ({
     setSavedChapters(getChapters());
     setModalOpen(false);
     setModalChapter(null);
+    schedulePushLifeBookSnapshot(userId);
   };
 
   const workflowHint = isZh

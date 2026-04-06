@@ -19,6 +19,7 @@ export interface LifeBookCoverProps {
   chapters: SavedChapter[];
   events: ScheduleEvent[];
   language: AppLanguage;
+  storageRevision?: number;
 }
 
 const inputClass =
@@ -28,6 +29,7 @@ export const LifeBookCover: React.FC<LifeBookCoverProps> = ({
   chapters,
   events,
   language,
+  storageRevision = 0,
 }) => {
   const isZh = language === 'zh';
   const [line1, setLine1] = useState('');
@@ -39,7 +41,7 @@ export const LifeBookCover: React.FC<LifeBookCoverProps> = ({
     setLine1(stored.line1);
     setLine2(stored.line2);
     setLine3(stored.line3);
-  }, []);
+  }, [storageRevision]);
 
   const default1 = isZh ? DEFAULT_LINE1_ZH : DEFAULT_LINE1_EN;
   const default2 = isZh ? DEFAULT_LINE2_ZH : DEFAULT_LINE2_EN;

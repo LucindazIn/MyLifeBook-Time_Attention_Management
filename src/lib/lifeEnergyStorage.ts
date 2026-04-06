@@ -1,6 +1,10 @@
 import { format } from 'date-fns';
+import { notifyCollectionStateChanged } from '@/lib/collectionStateNotify';
 
 const PREFIX = 'feather_life_energy_';
+
+/** Prefix for all life-energy localStorage keys (sync uses this to replace the whole subtree). */
+export const LIFE_ENERGY_STORAGE_PREFIX = PREFIX;
 
 /** 所有时间维度（本月 / 近三月 / 自定义）拖拽均写入该 rangeKey，按自然日唯一，与章节弹窗人生曲线共用 */
 export const LIFE_ENERGY_GLOBAL_RANGE_KEY = 'global';
@@ -86,7 +90,8 @@ export function setLifeEnergy(
   rangeKey: string,
   startDate: Date,
   energy: number,
-  computedEnergy?: number
+  computedEnergy?: number,
+  opts?: { fromSync?: boolean }
 ): void {
   try {
     const entry: LifeEnergyEntry = {
@@ -98,6 +103,7 @@ export function setLifeEnergy(
   } catch {
     // ignore
   }
+  if (!opts?.fromSync) notifyCollectionStateChanged('user');
 }
 
 export function getLifeEnergyForDay(rangeKey: string, dateKey: string): number | null {
@@ -115,7 +121,8 @@ export function setLifeEnergyForDay(
   rangeKey: string,
   dateKey: string,
   energy: number,
-  computedEnergy?: number
+  computedEnergy?: number,
+  opts?: { fromSync?: boolean }
 ): void {
   try {
     const entry: LifeEnergyEntry = {
@@ -126,5 +133,32 @@ export function setLifeEnergyForDay(
     localStorage.setItem(keyForDay(rangeKey, dateKey), JSON.stringify(entry));
   } catch {
     // ignore
+  }
+  if (!opts?.fromSync) notifyCollectionStateChanged('user');
+}
+
+export function dumpLifeEnergyStorage(): Record<string, string> {
+  const out: Record<string, string> = {};
+  if (typeof localStorage === 'undefined') return out;
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k?.startsWith(PREFIX)) {
+      const v = localStorage.getItem(k);
+      if (v != null) out[k] = v;
+    }
+  }
+  return out;
+}
+
+export function applyLifeEnergyStorageDump(entries: Record<string, string>): void {
+  if (typeof localStorage === 'undefined') return;
+  const toRemove: string[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k?.startsWith(PREFIX)) toRemove.push(k);
+  }
+  for (const k of toRemove) localStorage.removeItem(k);
+  for (const [k, v] of Object.entries(entries)) {
+    if (k.startsWith(PREFIX)) localStorage.setItem(k, v);
   }
 }

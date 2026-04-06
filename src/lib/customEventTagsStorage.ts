@@ -3,12 +3,17 @@
  * 预设标签不写入此列表；自定义标签超过 2 天未在保存日程时选用则从列表移除。
  */
 
+import { notifyCollectionStateChanged } from '@/lib/collectionStateNotify';
+
 export const PRESET_EVENT_LABELS_ZH = ['深度工作', '阅读', '休息', '兴趣'] as const;
 export const PRESET_EVENT_LABELS_EN = ['Work', 'Reading', 'Rest', 'Interest'] as const;
 
 export const CUSTOM_EVENT_TAGS_KEY = 'feather_custom_event_tags';
 
 const LAST_USED_KEY = 'feather_custom_event_tag_last_used';
+
+/** Exported for cross-device sync payload. */
+export const CUSTOM_EVENT_TAG_LAST_USED_KEY = LAST_USED_KEY;
 
 const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
 
@@ -31,16 +36,18 @@ function loadLastUsed(): Record<string, number> {
   }
 }
 
-function saveLastUsed(m: Record<string, number>): void {
+function saveLastUsed(m: Record<string, number>, opts?: { fromSync?: boolean }): void {
   try {
     localStorage.setItem(LAST_USED_KEY, JSON.stringify(m));
   } catch (_) {}
+  if (!opts?.fromSync) notifyCollectionStateChanged('user');
 }
 
-function saveTags(tags: string[]): void {
+function saveTags(tags: string[], opts?: { fromSync?: boolean }): void {
   try {
     localStorage.setItem(CUSTOM_EVENT_TAGS_KEY, JSON.stringify(tags));
   } catch (_) {}
+  if (!opts?.fromSync) notifyCollectionStateChanged('user');
 }
 
 export function loadSavedCustomEventTags(): string[] {
@@ -100,8 +107,9 @@ export function syncAndPruneCustomEventTags(): { tags: string[]; changed: boolea
   }
 
   if (changed) {
-    saveLastUsed(lastUsed);
-    saveTags(next);
+    saveLastUsed(lastUsed, { fromSync: true });
+    saveTags(next, { fromSync: true });
+    notifyCollectionStateChanged('user');
   }
 
   return { tags: next, changed };

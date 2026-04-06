@@ -1,4 +1,4 @@
-import { format, differenceInCalendarDays, parseISO } from 'date-fns';
+import { format, differenceInCalendarDays } from 'date-fns';
 import type { ScheduleEvent } from '@/types';
 import { expandRecurringEvents } from '@/lib/events';
 import {
@@ -7,6 +7,7 @@ import {
   mergeLongTermGoalNames,
   type GoalStatus,
 } from '@/lib/longTermGoalMetaStorage';
+import { getLastActionDateForGoal } from '@/lib/longTermGoalLastAction';
 
 function statusLabel(status: GoalStatus, langIsZh: boolean): string {
   if (langIsZh) {
@@ -64,8 +65,10 @@ export function buildLongTermGoalAlignmentBlock(
 
   for (const name of names) {
     const rec = getOrCreateRecord(meta, name);
-    const aligned = parseISO(rec.lastAlignedAt);
-    const daysSince = Math.max(0, differenceInCalendarDays(today, aligned));
+    const lastAction = getLastActionDateForGoal(events, name, completedInstances);
+    const daysSince = lastAction
+      ? Math.max(0, differenceInCalendarDays(today, lastAction))
+      : null;
     const inPeriod = expanded.filter((e) => e.longTermGoals?.includes(name));
     let lastInPeriod = '';
     if (inPeriod.length > 0) {
@@ -79,9 +82,18 @@ export function buildLongTermGoalAlignmentBlock(
       .map((m) => `[${m.at}] ${m.text}`)
       .join(langIsZh ? '；' : '; ');
 
+    const targetSuffixZh = rec.targetAt?.trim() ? `｜目标时间：${rec.targetAt.trim()}` : '';
+    const targetSuffixEn = rec.targetAt?.trim() ? ` | Target Date: ${rec.targetAt.trim()}` : '';
+    const actionLineZh = lastAction
+      ? `上次行动：${format(lastAction, 'yyyy.MM.dd')}（${daysSince} 天前）`
+      : '上次行动：暂无';
+    const actionLineEn = lastAction
+      ? `Last action: ${format(lastAction, 'yyyy.MM.dd')} (${daysSince} day(s) ago)`
+      : 'Last action: None yet';
+
     if (langIsZh) {
       lines.push(
-        `- 「${name}」｜状态：${statusLabel(rec.status, true)}｜上次对齐：${format(aligned, 'yyyy.MM.dd')}（${daysSince} 天前）`
+        `- 「${name}」｜状态：${statusLabel(rec.status, true)}${targetSuffixZh}｜${actionLineZh}`
       );
       if (inPeriod.length > 0) {
         lines.push(`  本周期相关日程：${inPeriod.length} 次；最近一条：${lastInPeriod}`);
@@ -91,7 +103,7 @@ export function buildLongTermGoalAlignmentBlock(
       if (mile) lines.push(`  里程碑：${mile}`);
     } else {
       lines.push(
-        `- "${name}" | Status: ${statusLabel(rec.status, false)} | Last aligned: ${format(aligned, 'yyyy.MM.dd')} (${daysSince} day(s) ago)`
+        `- "${name}" | Status: ${statusLabel(rec.status, false)}${targetSuffixEn} | ${actionLineEn}`
       );
       if (inPeriod.length > 0) {
         lines.push(`  Events this period: ${inPeriod.length}; latest: ${lastInPeriod}`);

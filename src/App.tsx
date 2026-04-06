@@ -1541,7 +1541,7 @@ export default function App() {
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.98 }}
-                className="flex flex-1 flex-col min-h-[60vh] max-md:min-h-[calc(60vh*1.2)] py-8"
+                className="flex flex-1 flex-col min-h-[60vh] max-md:min-h-[min(70dvh,calc(100dvh-8rem))] overflow-x-hidden py-4 md:py-8"
               >
                 <LifeBookView
                   chapters={lifeBookChapters}

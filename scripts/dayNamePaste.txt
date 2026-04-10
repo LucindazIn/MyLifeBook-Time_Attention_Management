@@ -1,0 +1,1520 @@
+day name列表更新，提醒，有一些分类的话语请去掉，只保留实质性内容。另外，day name不应该有句号，需要删掉：
+
+一、 文学 / 人文 (Literature & Humanity) | 30%
+挺住意味着一切。
+To endure is everything.
+
+凡是过去，皆为序曲。
+What's past is prologue.
+
+灵魂在那，诗在那。
+Soul is there, poem is there.
+
+万物皆有裂痕。
+There is a crack in everything.
+
+自由即是孤独。
+Freedom is solitude.
+
+悲剧是生命的底色。
+Tragedy is the base of life.
+
+回忆没有归途。
+Memory has no return.
+
+活在历史中。
+Live in history.
+
+时间吞噬万物。
+Time devours all things.
+
+用笔擦拭灵魂。
+Wipe the soul with a pen.
+
+梦是唯一的现实。
+Dreams are the only reality.
+
+此心安处是吾乡。
+Home is where the heart is.
+
+爱是显现的工作。
+Love is work made visible.
+
+每个人都是孤岛。
+Every man is an island.
+
+沉默最是深邃。
+Silence is the deepest.
+
+文明即是脆弱。
+Civilization is fragile.
+
+世界终告嘘声。
+The world ends in a whimper.
+
+向死而生。
+Living toward death.
+
+美是危险的。
+Beauty is dangerous.
+
+思想不需要护照。
+Ideas need no passports.
+
+寻找失落的时光。
+In search of lost time.
+
+真理往往简洁。
+Truth is often simple.
+
+人是万物的尺度。
+Man is the measure of all.
+
+痛苦是种洗礼。
+Pain is a baptism.
+
+虚无中开出花。
+Flowers bloom in nothingness.
+
+故事永不终结。
+Stories never end.
+
+偏见源于狭隘。
+Prejudice stems from narrowness.
+
+语言是存在的家。
+Language is the home of being.
+
+众神皆在凡间。
+All gods are among us.
+
+诗意地栖居。
+To dwell poetically.
+
+二、 励志 / 成长 (Growth & Action) | 25%
+行动是最好的祈祷。
+Action is the best prayer.
+
+失败只是选项。
+Failure is an option.
+
+磨难可以选择。
+Suffering is optional.
+
+专注是种超能力。
+Focus is a superpower.
+
+成为你自己的水。
+Be water, my friend.
+
+跌倒，然后站起。
+Fall, then stand.
+
+自律即自由。
+Self-discipline is freedom.
+
+向前跌倒。
+Fall forward.
+
+赢在习惯。
+Win by habit.
+
+接受不完美。
+Embrace imperfection.
+
+拒绝平庸。
+Refuse mediocrity.
+
+意志战胜一切。
+Will conquers all.
+
+先做，再完美。
+Do it, then perfect it.
+
+目标要有杠杆。
+Goals need leverage.
+
+恐惧是种幻觉。
+Fear is an illusion.
+
+相信过程。
+Trust the process.
+
+每天进步一点。
+Better every day.
+
+别等明天。
+Don't wait for tomorrow.
+
+勇气并非无惧。
+Courage is not fearlessness.
+
+简单即是力量。
+Simplicity is power.
+
+守住你的本心。
+Keep your true heart.
+
+汗水不骗人。
+Sweat doesn't lie.
+
+投资你自己。
+Invest in yourself.
+
+绝不回头。
+Never look back.
+
+三、 幽默 / 机智 (Wit & Observation) | 15%
+做你自己。
+Be yourself.
+
+别把生活太当真。
+Don't take life too seriously.
+
+常识并不平庸。
+Common sense isn't common.
+
+现实太离奇。
+Reality is too strange.
+
+聪明即是性感。
+Smart is the new sexy.
+
+别解释你的灵魂。
+Don't explain your soul.
+
+逻辑限制想象。
+Logic limits imagination.
+
+笑是穿透力。
+Laughter is penetration.
+
+傻瓜才要共识。
+Fools seek consensus.
+
+沉默也是回答。
+Silence is also an answer.
+
+天才总是孤独。
+Genius is always lonely.
+
+钱买不到品味。
+Money can't buy taste.
+
+讽刺是层铠甲。
+Sarcasm is armor.
+
+专家往往错了。
+Experts are often wrong.
+
+忙碌是种病。
+Busyness is a disease.
+
+四、 科学与理性 (Science & Rationality) | 15%
+证据胜过雄辩。
+Evidence beats eloquence.
+
+无知催生自信。
+Ignorance begets confidence.
+
+怀疑是智力的开始。
+Doubt is the start of wisdom.
+
+消除不确定性。
+Eliminate uncertainty.
+
+数据从不撒谎。
+Data never lies.
+
+范式总在转移。
+Paradigms always shift.
+
+复杂由简单演化。
+Complexity evolves from simplicity.
+
+我们都是星尘。
+We are all starstuff.
+
+宇宙是数学的。
+The universe is mathematical.
+
+实验是唯一标准。
+Experiment is the only judge.
+
+观察改变结果。
+Observation changes results.
+
+熵增是必然。
+Entropy is inevitable.
+
+科学没有边界。
+Science has no borders.
+
+秩序源于混沌。
+Order comes from chaos.
+
+理性是种训练。
+Rationality is training.
+
+五、 生活与日常 (Life & Daily) | 15%
+慢慢走，欣赏。
+Walk slowly, admire.
+
+生活在当下。
+Live in the now.
+
+平凡最为可贵。
+Mediocrity is precious.
+
+睡个好觉。
+Get a good sleep.
+
+晨露中有世界。
+World in a dewdrop.
+
+时间改变一切。
+Time changes things.
+
+旅行即是逃亡。
+Travel is escape.
+
+温柔待世界。
+Be gentle with the world.
+
+活着就是胜利。
+To live is to win.
+
+家是逃避的终点。
+Home is where escape ends.
+
+哪怕只有一顿饭。
+Even just a meal.
+
+玩耍并非浪费。
+Play is not waste.
+
+记得抬头看。
+Remember to look up.
+
+删繁就简。
+Less is more.
+
+接受平凡。
+Accept the ordinary.
+
+别怕坠落。
+Don't fear the fall.
+
+这 200 条短句保持了极致简练（中文 8 字以内），涵盖了全球跨文化的视角。去除了作者，侧重逻辑、留白与骨子里的机智。
+
+一、 文学 / 人文 (Literature & Humanity) | 30%
+语言是灵魂的皮肤。
+Language is the soul's skin.
+
+历史是写好的剧本。
+History is a written script.
+
+自由是沉重的责任。
+Freedom is a heavy burden.
+
+每一刻都是永恒。
+Every moment is eternity.
+
+孤独是座花园。
+Solitude is a garden.
+
+艺术是无用的避难。
+Art is a useless refuge.
+
+记忆是一场谎言。
+Memory is a lie.
+
+时间没有形状。
+Time has no shape.
+
+在文字中永生。
+Immortalized in words.
+
+悲剧是英雄的宿命。
+Tragedy is the hero's fate.
+
+梦境比现实清醒。
+Dreams are more awake.
+
+灵魂不需要地址。
+The soul needs no address.
+
+荒诞是生存的真理。
+Absurdity is the truth.
+
+此刻即是永恒。
+This moment is eternity.
+
+沉默里有惊雷。
+Thunder in silence.
+
+文明是一种克制。
+Civilization is restraint.
+
+世界是一面镜子。
+The world is a mirror.
+
+向着光走。
+Walk toward the light.
+
+美是无声的震撼。
+Beauty is silent shock.
+
+思想没有国界。
+Ideas have no borders.
+
+寻找失落的自我。
+Finding the lost self.
+
+简洁是智慧的灵魂。
+Brevity is the soul of wit.
+
+人是时间的旅者。
+Man is a time traveler.
+
+痛苦是精神的脊梁。
+Pain is the spirit's spine.
+
+虚无中自有深意。
+Meaning in nothingness.
+
+故事是活着的证明。
+Stories prove we lived.
+
+偏见是无知的伪装。
+Prejudice is masked ignorance.
+
+语言定义世界。
+Language defines the world.
+
+神性藏在细节里。
+Divinity hides in details.
+
+诗是生活的呼吸。
+Poetry is life's breath.
+
+命运是随机的编排。
+Fate is random arrangement.
+
+理想是彼岸的灯。
+Ideals are distant lights.
+
+存在即是意义。
+Existence is meaning.
+
+众生皆苦，唯你自渡。
+All suffer; save yourself.
+
+经典是常读常新。
+Classics are always new.
+
+纸上有山河。
+Mountains on paper.
+
+情绪是种天气。
+Emotion is weather.
+
+生命是场即兴。
+Life is an improvisation.
+
+所有的相遇都是重逢。
+All meetings are reunions.
+
+智慧源于内省。
+Wisdom comes from within.
+
+艺术是灵魂的呼吸。
+Art is the soul's breath.
+
+黑暗孕育光明。
+Darkness breeds light.
+
+虚荣是种枷锁。
+Vanity is a shackle.
+
+所有的路都通向自我。
+All roads lead to self.
+
+思考是唯一的逃离。
+Thinking is the only escape.
+
+宽恕是种力量。
+Forgiveness is power.
+
+仁慈是最高的法律。
+Kindness is the highest law.
+
+过去不曾死去。
+The past never dies.
+
+灵魂是自由的飞鸟。
+The soul is a free bird.
+
+万物有灵，静默如初。
+All has spirit; be still.
+
+所有的终点都是起点。
+Every end is a beginning.
+
+美是灵魂的乡愁。
+Beauty is soul's nostalgia.
+
+活着是种修行。
+Living is a practice.
+
+尊严是不容置疑。
+Dignity is unquestionable.
+
+自由是自律的果实。
+Freedom is self-discipline's fruit.
+
+宁静是种奢侈。
+Tranquility is luxury.
+
+欲望是无底的深渊。
+Desire is a bottomless pit.
+
+慈悲没有敌人。
+Compassion has no enemy.
+
+精神是不灭的火。
+Spirit is immortal fire.
+
+人生如寄，多忧何为。
+Life is short; why worry?
+
+二、 励志 / 成长 (Growth & Action) | 25%
+做个行动派。
+Be a man of action.
+
+失败是进化的阶梯。
+Failure is evolution's step.
+
+跨越你的舒适区。
+Cross your comfort zone.
+
+专注决定高度。
+Focus defines height.
+
+像水一样适应。
+Adapt like water.
+
+所有的努力都有痕迹。
+Effort leaves marks.
+
+极致的自律。
+Extreme self-discipline.
+
+永远保持好奇。
+Stay curious forever.
+
+习惯成就伟大。
+Habit builds greatness.
+
+拥抱不确定。
+Embrace uncertainty.
+
+保持饥渴，保持愚蠢。
+Stay hungry, stay foolish.
+
+意志是无形的刀。
+Will is an invisible blade.
+
+执行力就是生命力。
+Execution is vitality.
+
+复利是世界奇迹。
+Compound interest is magic.
+
+恐惧是成长的路标。
+Fear is a growth sign.
+
+相信时间的力量。
+Believe in time's power.
+
+每天都是新赛道。
+Every day is a new track.
+
+现在的你就很好。
+You are enough now.
+
+勇气是压力的优雅。
+Courage is grace under pressure.
+
+极简是种效率。
+Minimalism is efficiency.
+
+守护你的专注力。
+Guard your attention.
+
+汗水会结成果实。
+Sweat will bear fruit.
+
+学习是终身资产。
+Learning is a lifelong asset.
+
+别为打翻的牛奶哭泣。
+Don't cry over spilt milk.
+
+做难而正确的事。
+Do the hard, right thing.
+
+每一个今天都珍贵。
+Every today is precious.
+
+自我迭代，永不停歇。
+Self-iterate, never stop.
+
+专注当下，无畏未来。
+Focus now, fear no future.
+
+弱者等待，强者创造。
+Weak wait, strong create.
+
+别让借口阻碍你。
+Don't let excuses stop you.
+
+韧性比智商重要。
+Resilience beats IQ.
+
+所有的伟大源于开始。
+Greatness starts from beginning.
+
+独立思考，拒绝盲从。
+Think independently, no blind following.
+
+你的边界就是你的眼界。
+Your limit is your vision.
+
+慢即是快。
+Slow is fast.
+
+即使失败也要体面。
+Even failure must be graceful.
+
+成功是坚持的余数。
+Success is the remainder.
+
+永远有 Plan B。
+Always have a Plan B.
+
+把小事做到极致。
+Do small things perfectly.
+
+别在深夜做决定。
+No decisions at midnight.
+
+改变从此刻开始。
+Change starts this second.
+
+用行动打破焦虑。
+Break anxiety with action.
+
+保持专注，保持沉默。
+Stay focused, stay silent.
+
+越努力，越幸运。
+Work harder, get luckier.
+
+成为你想见的改变。
+Be the change you seek.
+
+把阻力变成动力。
+Turn resistance into power.
+
+失败也是一种反馈。
+Failure is also feedback.
+
+目标要清晰如画。
+Goals must be crystal clear.
+
+别在成功时迷失。
+Don't get lost in success.
+
+坚持就是胜利。
+Persistence is victory.
+
+三、 幽默 / 机智 (Wit & Observation) | 15%
+别太把自己当回事。
+Don't take yourself too seriously.
+
+生活就是冷笑话。
+Life is a dry joke.
+
+偏见是思维的捷径。
+Prejudice is a mental shortcut.
+
+每个人都很有趣。
+Everyone is interesting.
+
+无聊是种创造力。
+Boredom is creativity.
+
+解释就是掩饰。
+To explain is to cover.
+
+逻辑是种安慰剂。
+Logic is a placebo.
+
+笑是最好的防弹衣。
+Smile is the best armor.
+
+沉默是最高级的嘲讽。
+Silence is the elite irony.
+
+天才只是运气好。
+Genius is just good luck.
+
+贫穷限制想象力。
+Poverty limits imagination.
+
+社交是种消耗。
+Socializing is consuming.
+
+别和傻瓜争论。
+Never argue with fools.
+
+所谓的专家很可疑。
+So-called experts are suspicious.
+
+计划赶不上变化。
+Plans can't keep up.
+
+现代人都是演员。
+Modern people are actors.
+
+贪婪是种动力。
+Greed is a motivation.
+
+悲观者往往正确。
+Pessimists are often right.
+
+乐观者赢得世界。
+Optimists win the world.
+
+常识其实很罕见。
+Common sense is rare.
+
+别问，问就是缘。
+Don't ask; it's fate.
+
+熬夜是种报复。
+Staying up is revenge.
+
+所谓的成熟是妥协。
+Maturity is compromise.
+
+大家都挺不容易。
+Everyone has it hard.
+
+快乐其实很简单。
+Happiness is simple.
+
+世界就是个草台班子。
+The world is improvised.
+
+保持距离，产生美。
+Distance creates beauty.
+
+钱能解决大部分烦恼。
+Money solves most worries.
+
+顺其自然就好。
+Let it be.
+
+别把偶然当必然。
+Don't mistake luck for skill.
+
+四、 科学与理性 (Science & Rationality) | 15%
+数据是有灵魂的。
+Data has a soul.
+
+怀疑一切。
+Question everything.
+
+简单就是美。
+Simplicity is beauty.
+
+熵增不可逆。
+Entropy is irreversible.
+
+时间是相对的。
+Time is relative.
+
+观察者的干预。
+Observer intervention.
+
+因果只是假设。
+Causality is a hypothesis.
+
+宇宙是精密的机器。
+Universe is a precise machine.
+
+逻辑是思维的阶梯。
+Logic is the mind's ladder.
+
+科学总在自我纠正。
+Science is self-correcting.
+
+偶然中蕴含必然。
+Necessity in chance.
+
+概率决定世界。
+Probability rules the world.
+
+真理是不怕火炼。
+Truth fears no fire.
+
+理性是种修养。
+Rationality is a virtue.
+
+事实胜于雄辩。
+Facts speak for themselves.
+
+盲信是理性的敌人。
+Blind faith is the enemy.
+
+系统胜于个体。
+Systems beat individuals.
+
+好奇心是第一动力。
+Curiosity is the primary drive.
+
+实验是真理的母亲。
+Experiment is truth's mother.
+
+模型只是工具。
+Models are only tools.
+
+寻找共性。
+Seek commonalities.
+
+认知的边界在扩张。
+The cognitive boundary expands.
+
+自然界厌恶真空。
+Nature abhors a vacuum.
+
+质量决定引力。
+Mass defines gravity.
+
+信息就是力量。
+Information is power.
+
+能量守恒定律。
+Conservation of energy.
+
+进化没有终点。
+Evolution has no end.
+
+结构决定功能。
+Structure defines function.
+
+保持怀疑精神。
+Maintain a skeptical spirit.
+
+科学追求普遍性。
+Science seeks universality.
+
+五、 生活与日常 (Life & Daily) | 15%
+慢煮时光。
+Slow-cooked time.
+
+此时此地。
+Here and now.
+
+知足常乐。
+Contentment is joy.
+
+享受独处。
+Enjoy being alone.
+
+一花一世界。
+World in a flower.
+
+简单生活。
+Simple life.
+
+旅行是种修行。
+Travel is a practice.
+
+善待自己。
+Be kind to yourself.
+
+活着就是幸运。
+To be alive is lucky.
+
+这种时刻真好。
+This moment is good.
+
+烟火气最动人。
+Simple life is touching.
+
+珍惜身边人。
+Cherish those nearby.
+
+别急，慢慢来。
+No rush, take it slow.
+
+万物生长。
+All things grow.
+
+随遇而安。
+Peace in any case.
+
+保持微笑。
+Keep smiling.
+
+发现微小的美。
+Find tiny beauty.
+
+规律作息。
+Regular routine.
+
+多喝水。
+Drink more water.
+
+别想太多。
+Don't think too much.
+
+活出你自己。
+Live your own life.
+
+平凡就是福。
+Ordinary is a blessing.
+
+享受当下的饭。
+Enjoy the current meal.
+
+记得晒太阳。
+Remember the sun.
+
+拥抱你的家人。
+Hug your family.
+
+听听风的声音。
+Listen to the wind.
+
+每一天都是礼物。
+Every day is a gift.
+
+别怕麻烦。
+Don't fear trouble.
+
+保持平和。
+Stay peaceful.
+
+世界依然美好。
+The world is still beautiful.
+
+这 200 条语录严格遵循中文 8 字以内的精简原则，且确保与前序内容不重复。涵盖了文学、逻辑、机智与生活，侧重于意象的捕捉与思维的留白。
+
+一、 文学 / 人文 (Literature & Humanity) | 30%
+灵魂在荒野散步。
+Soul wanders the wild.
+
+文字是时间的遗迹。
+Words are relics of time.
+
+自由是未竟的梦。
+Freedom is an unfinished dream.
+
+每一道光都有影子。
+Every light has a shadow.
+
+孤独是高贵的沉默。
+Solitude is noble silence.
+
+艺术是灵魂的避雷针。
+Art is the soul's lightning rod.
+
+回忆是过期的地图。
+Memory is an expired map.
+
+时间是流动的牢笼。
+Time is a moving cage.
+
+在寂静中听见永恒。
+Hear eternity in silence.
+
+命运是种深奥的玩笑。
+Fate is a profound joke.
+
+梦境是现实的侧写。
+Dreams are profiles of reality.
+
+灵魂不需要观众。
+The soul needs no audience.
+
+荒诞是存在的解药。
+Absurdity is the antidote.
+
+此刻即是彼岸。
+Now is the other shore.
+
+沉默里藏着风暴。
+Storms hidden in silence.
+
+文明是一种优雅。
+Civilization is an elegance.
+
+世界是一场幻觉。
+The world is an illusion.
+
+向着深处扎根。
+Take root in the depths.
+
+美是温柔的抵抗。
+Beauty is gentle resistance.
+
+思想是种无声的火。
+Thought is a silent fire.
+
+寻找丢失的诗篇。
+Searching for lost psalms.
+
+简洁是智慧的巅峰。
+Brevity is the peak of wisdom.
+
+人是宇宙的尘埃。
+Man is cosmic dust.
+
+痛苦是精神的刻刀。
+Pain is the spirit's chisel.
+
+虚无中自有雷鸣。
+Thunder within nothingness.
+
+故事是文明的血脉。
+Stories are civilization's blood.
+
+偏见是思维的迷雾。
+Prejudice is the mind's fog.
+
+语言是世界的轮廓。
+Language is the world's outline.
+
+神性藏在寻常中。
+Divinity hides in the ordinary.
+
+诗是生命的余温。
+Poetry is life's lingering warmth.
+
+命运是星辰的轨迹。
+Fate is the path of stars.
+
+理想是海上的帆。
+Ideals are sails on the sea.
+
+存在本身即是神迹。
+Existence itself is a miracle.
+
+万物共生，各得其所。
+All coexist in their places.
+
+经典是时间的过滤。
+Classics are time's filter.
+
+纸上有惊涛。
+Crashing waves on paper.
+
+情绪是心灵的潮汐。
+Emotion is the soul's tide.
+
+生命是场盛大的路过。
+Life is a grand passing.
+
+所有的相遇皆有因。
+All meetings have reasons.
+
+智慧是痛苦的结晶。
+Wisdom is crystallized pain.
+
+艺术是无声的呐喊。
+Art is a silent scream.
+
+黑暗是光的摇篮。
+Darkness is the cradle of light.
+
+虚荣是种昂贵的贫穷。
+Vanity is expensive poverty.
+
+所有的路都回向内心。
+All roads lead back inward.
+
+思考是自由的起点。
+Thinking is the start of freedom.
+
+宽恕是自我的释放。
+Forgiveness is self-release.
+
+仁慈是无声的教化。
+Kindness is silent education.
+
+过去从未真正远去。
+The past never truly left.
+
+灵魂是流动的光。
+The soul is flowing light.
+
+万物静默，自有千秋。
+All is quiet, yet eternal.
+
+所有的终点皆是回归。
+Every end is a return.
+
+美是世界的底色。
+Beauty is the world's base.
+
+活着是灵魂的礼赞。
+Living is the soul's praise.
+
+尊严是最后的一寸。
+Dignity is the final inch.
+
+自由是规则的深意。
+Freedom is the spirit of rules.
+
+宁静是内在的胜利。
+Tranquility is an inner victory.
+
+欲望是永恒的饥渴。
+Desire is eternal hunger.
+
+慈悲是一盏明灯。
+Compassion is a bright lamp.
+
+精神是不熄的火焰。
+Spirit is an unquenchable flame.
+
+人生如梦，亦真亦幻。
+Life is a dream, real and unreal.
+
+二、 励志 / 成长 (Growth & Action) | 25%
+行动胜过雄辩。
+Actions beat eloquence.
+
+失败是认知的升级。
+Failure is a cognitive upgrade.
+
+打破思维的墙。
+Break the walls of thought.
+
+专注是力量的聚焦。
+Focus is power concentrated.
+
+像树一样生长。
+Grow like a tree.
+
+所有的痕迹皆是成就。
+All marks are achievements.
+
+自律是种长期主义。
+Discipline is long-termism.
+
+保持空杯心态。
+Maintain an empty cup mindset.
+
+习惯是命运的引擎。
+Habit is the engine of fate.
+
+拥抱变化的波浪。
+Embrace the waves of change.
+
+进取，亦要守心。
+Strive, yet guard the heart.
+
+意志是灵魂的甲胄。
+Will is the soul's armor.
+
+执行是梦想的桥。
+Execution is the dream's bridge.
+
+积累是奇迹的伏笔。
+Accumulation is a miracle's hint.
+
+恐惧是勇敢的阶梯。
+Fear is the ladder of courage.
+
+相信复利的神奇。
+Believe in the magic of compound.
+
+每一刻皆可重启。
+Every moment can be restarted.
+
+你是自己的光。
+You are your own light.
+
+勇气是内心的笃定。
+Courage is inner certainty.
+
+极简是生命的从容。
+Minimalism is life's composure.
+
+守护你的初心。
+Protect your original intent.
+
+汗水会照亮前路。
+Sweat will light the path.
+
+持续进化，不舍昼夜。
+Evolve constantly, day and night.
+
+别为遗憾停留。
+Don't linger on regrets.
+
+做最有价值的事。
+Do the most valuable thing.
+
+每一个今天皆不可复制。
+Every today is unique.
+
+自我突破，无止无境。
+Breakthrough has no end.
+
+专注当下，无畏险阻。
+Focus now, fear no obstacles.
+
+等待时机，创造时机。
+Wait for time; create time.
+
+别让偏见蒙蔽你。
+Don't let prejudice blind you.
+
+韧性是成长的基石。
+Resilience is the cornerstone.
+
+所有的伟大皆在脚下。
+All greatness is underfoot.
+
+独立，亦要清醒。
+Independent and sober.
+
+眼界决定世界。
+Vision decides the world.
+
+慢条斯理，方显力度。
+Slowness shows true strength.
+
+体面地面对失去。
+Face loss with grace.
+
+成功是耐心的奖赏。
+Success is the prize of patience.
+
+永远备好退路。
+Always have a way back.
+
+将平凡做到不凡。
+Make the ordinary extraordinary.
+
+别在焦虑时权衡。
+Don't weigh things in anxiety.
+
+此时此地，即刻出发。
+Right here, right now, go.
+
+用勇气解构困境。
+Deconstruct plight with courage.
+
+守住孤独，守住卓越。
+Keep solitude; keep excellence.
+
+努力是种生活方式。
+Hard work is a lifestyle.
+
+成为那个更好的你。
+Be that better version of you.
+
+把挑战视为礼物。
+See challenges as gifts.
+
+失败是成功的底稿。
+Failure is success's draft.
+
+目标要坚如磐石。
+Goals must be rock solid.
+
+别在掌声中沉迷。
+Don't drown in applause.
+
+坚持是种习惯。
+Persistence is a habit.
+
+三、 幽默 / 机智 (Wit & Observation) | 15%
+别把自己看得太重。
+Don't take yourself too heavily.
+
+生活是场荒诞剧。
+Life is an absurd play.
+
+捷径往往最远。
+Shortcuts are often farthest.
+
+每个人皆有裂缝。
+Everyone has cracks.
+
+无聊是智慧的温床。
+Boredom is the bed of wisdom.
+
+沉默是种反讽。
+Silence is a form of irony.
+
+逻辑有时是谎言。
+Logic is sometimes a lie.
+
+笑能化解万难。
+Laughter solves everything.
+
+沉默是最高级的回答。
+Silence is the elite answer.
+
+天才是种随机事件。
+Genius is a random event.
+
+贫穷是种视角。
+Poverty is a perspective.
+
+社交是种磨损。
+Socializing is a wear and tear.
+
+别试图说服愚者。
+Don't try to convince fools.
+
+专家也常迷路。
+Experts get lost too.
+
+计划总是落后的。
+Plans are always behind.
+
+现代人皆在表演。
+Modern people are performing.
+
+贪婪是生存的余温。
+Greed is the warmth of survival.
+
+悲观是种远见。
+Pessimism is a foresight.
+
+乐观是种信仰。
+Optimism is a faith.
+
+常识往往最稀缺。
+Common sense is scarest.
+
+一切皆是概率。
+Everything is probability.
+
+熬夜是向时光借贷。
+Staying up is borrowing time.
+
+成熟是种伪装。
+Maturity is a disguise.
+
+众生皆不容易。
+Everyone has it tough.
+
+快乐其实很廉价。
+Happiness is actually cheap.
+
+世界是场拼图游戏。
+The world is a jigsaw puzzle.
+
+距离产生敬畏。
+Distance creates awe.
+
+金钱是种能量。
+Money is a kind of energy.
+
+顺势而为，不争。
+Follow the trend; don't fight.
+
+偶然是必然的一瞬。
+Chance is a moment of necessity.
+
+四、 科学与理性 (Science & Rationality) | 15%
+数据有其呼吸。
+Data has its breath.
+
+保持理性的克制。
+Keep rational restraint.
+
+简单是最高级的复杂。
+Simplicity is the peak complexity.
+
+时间不可倒流。
+Time cannot flow back.
+
+空间是弯曲的。
+Space is curved.
+
+观察影响实在。
+Observation affects reality.
+
+因果是种错觉。
+Causality is an illusion.
+
+宇宙是精密的算法。
+Universe is a precise algorithm.
+
+逻辑是思维的锚点。
+Logic is the mind's anchor.
+
+科学总在证伪。
+Science is always falsifying.
+
+偶然中藏着规律。
+Laws hidden in chance.
+
+概率编织了现实。
+Probability weaves reality.
+
+真理需要被检验。
+Truth needs verification.
+
+理性是种自我教育。
+Rationality is self-education.
+
+事实是唯一的法官。
+Fact is the only judge.
+
+盲信是智力的自杀。
+Blind faith is mental suicide.
+
+系统由于联结产生。
+Systems arise from connection.
+
+好奇心是进化的引擎。
+Curiosity is evolution's engine.
+
+实验是理性的法庭。
+Experiment is reason's court.
+
+模型只是近似。
+Models are only approximations.
+
+寻找背后的逻辑。
+Find the underlying logic.
+
+认知边界即是自由。
+Cognitive limit is freedom.
+
+自然界遵循秩序。
+Nature follows order.
+
+引力是种牵挂。
+Gravity is a kind of connection.
+
+信息即是财富。
+Information is wealth.
+
+能量不会消失。
+Energy does not vanish.
+
+进化是一场接力。
+Evolution is a relay race.
+
+功能决定形式。
+Function dictates form.
+
+拥护证伪精神。
+Embrace the spirit of falsity.
+
+科学是普世的语言。
+Science is a universal language.
+
+五、 生活与日常 (Life & Daily) | 15%
+细嗅蔷薇。
+Smell the roses.
+
+此时此地。
+Right here, right now.
+
+知足便是富有。
+Contentment is wealth.
+
+悦纳孤独。
+Embrace solitude.
+
+一念一世界。
+A world in a thought.
+
+素简生活。
+Simple, plain life.
+
+旅行是种探索。
+Travel is an exploration.
+
+与自己和解。
+Reconcile with yourself.
+
+活着便有希望。
+Where there's life, there's hope.
+
+这种瞬间即永恒。
+This moment is eternal.
+
+烟火气抚人心。
+Daily life soothes the soul.
+
+善待眼前人。
+Be kind to those before you.
+
+慢一点，会更稳。
+Slow down; stay steady.
+
+万物有其节奏。
+All things have their rhythm.
+
+随心而动。
+Move with your heart.
+
+保持从容。
+Stay composed.
+
+发现微光。
+Find the glimmer.
+
+作息有时。
+Everything in its season.
+
+多看绿意。
+See more greenery.
+
+别想复杂。
+Don't overthink.
+
+活出真我。
+Live your true self.
+
+平凡是种修养。
+Mediocrity is a virtue.
+
+享用美味。
+Enjoy the flavor.
+
+感受阳光。
+Feel the sunshine.
+
+陪伴亲友。
+Accompany friends and family.
+
+聆听雨声。
+Listen to the rain.
+
+每日皆是奇迹。
+Every day is a miracle.
+
+别怕麻烦。
+Don't fear the trouble.
+
+心平气和。
+Peaceful and calm.
+
+万物依然可爱。
+All things are still lovely.

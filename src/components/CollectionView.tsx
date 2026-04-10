@@ -5,7 +5,6 @@ import { LongTermGoalsCard } from '@/components/LongTermGoalsCard';
 import { RoleEnergyCard } from '@/components/RoleEnergyCard';
 import { EventVolumeCard } from '@/components/EventVolumeCard';
 import { RoleBalanceCard } from '@/components/RoleBalanceCard';
-import { LongTermMediumTermInvestmentCard } from '@/components/LongTermMediumTermInvestmentCard';
 import { ChapterNarrativeCard } from '@/components/ChapterNarrativeCard';
 import { CHAPTER_CARD_ID } from '@/lib/chapterCardIds';
 import { PRESET_ROLES } from '@/lib/constants/roles';
@@ -101,7 +100,7 @@ export const CollectionView: React.FC<CollectionViewProps> = ({
         </div>
       </div>
 
-      {/* Right: 人生曲线 + 长期目标 + 中短期投入 */}
+      {/* Right: 人生曲线 + 长期目标（中短期投入见长期目标内「投入分析」） */}
       <div className="md:col-span-3 space-y-6 min-w-0">
         <div className={cardShell} style={cardStyle}>
           <RoleBalanceCard
@@ -119,14 +118,6 @@ export const CollectionView: React.FC<CollectionViewProps> = ({
             timeDisplay={timeDisplay}
             onRenameLongTermGoal={onRenameLongTermGoal}
             onDeleteLongTermGoal={onDeleteLongTermGoal}
-            collectionStateRevision={collectionStateRevision}
-          />
-        </div>
-        <div className={cardShell} style={cardStyle}>
-          <LongTermMediumTermInvestmentCard
-            events={events}
-            completedInstances={completedInstances}
-            language={language}
             collectionStateRevision={collectionStateRevision}
           />
         </div>

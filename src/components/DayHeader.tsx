@@ -10,7 +10,7 @@ import { DayTagSelector } from './DayTagSelector';
 interface DayHeaderProps {
   date: Date;
   dayName?: string;
-  onGenerateName?: () => void;
+  onRandomDayName?: () => void;
   onNameChange?: (newName: string) => void;
   language?: AppLanguage;
   currentTag?: string;
@@ -23,7 +23,7 @@ interface DayHeaderProps {
 export const DayHeader: React.FC<DayHeaderProps> = ({ 
   date, 
   dayName, 
-  onGenerateName, 
+  onRandomDayName, 
   onNameChange, 
   language = 'en',
   currentTag,
@@ -140,7 +140,7 @@ export const DayHeader: React.FC<DayHeaderProps> = ({
             </h1>
           )}
 
-          {onGenerateName && (
+          {onRandomDayName && (
             <div
               className={cn(
                 'flex shrink-0 items-center',
@@ -154,10 +154,10 @@ export const DayHeader: React.FC<DayHeaderProps> = ({
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onGenerateName();
+                  onRandomDayName();
                 }}
                 className="inline-flex w-8 h-8 items-center justify-center rounded-full hover:bg-accent/20 active:bg-accent/30 text-accent hover:opacity-90"
-                title={language === 'zh' ? '为今天生成名称' : 'Generate a name for this day'}
+                title={language === 'zh' ? '从名称库随机换一个' : 'Pick A Random Name From The Pool'}
               >
                 <Sparkles className="w-4 h-4" />
               </button>

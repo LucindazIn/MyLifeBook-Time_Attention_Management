@@ -17,6 +17,7 @@ import {
   getOrCreateRecord,
   addMilestone,
   removeMilestone,
+  updateMilestone,
   setGoalStatus,
   migrateGoalRename,
   cycleGoalStatus,
@@ -28,7 +29,7 @@ import {
   type LongTermGoalMetaMap,
   type MediumTermGoal,
 } from '@/lib/longTermGoalMetaStorage';
-import { GripVertical } from 'lucide-react';
+import { GripVertical, Pencil } from 'lucide-react';
 import { AnalyticsManageModalShell } from '@/components/AnalyticsManageModalShell';
 
 const STATUS_EMOJI = {
@@ -115,6 +116,12 @@ export const LongTermGoalsManageModal: React.FC<LongTermGoalsManageModalProps> =
   const isZh = language === 'zh';
   const reduceMotion = useReducedMotion();
   const [milestoneDraft, setMilestoneDraft] = useState<Record<string, { at: string; text: string }>>({});
+  /** `${goal}::${mediumId}::${milestoneId}` while editing an existing milestone */
+  const [milestoneEditKey, setMilestoneEditKey] = useState<string | null>(null);
+  const [milestoneEditDraft, setMilestoneEditDraft] = useState<{ at: string; text: string }>({
+    at: '',
+    text: '',
+  });
   const [rippleId, setRippleId] = useState<string | null>(null);
   const [confirmDeleteGoal, setConfirmDeleteGoal] = useState<string | null>(null);
   const [deleteBusy, setDeleteBusy] = useState(false);
@@ -168,6 +175,8 @@ export const LongTermGoalsManageModal: React.FC<LongTermGoalsManageModalProps> =
   };
 
   const milestoneKey = (goalName: string, mediumId: string) => `${goalName}::${mediumId}`;
+  const milestoneRowKey = (goalName: string, mediumId: string, milestoneId: string) =>
+    `${goalName}::${mediumId}::${milestoneId}`;
 
   const handleAddMilestone = (goalName: string, mediumId: string) => {
     const key = milestoneKey(goalName, mediumId);
@@ -194,6 +203,7 @@ export const LongTermGoalsManageModal: React.FC<LongTermGoalsManageModalProps> =
   useEffect(() => {
     if (!isOpen) {
       scrolledForRef.current = null;
+      setMilestoneEditKey(null);
       return;
     }
     if (!scrollToGoalName) return;
@@ -528,41 +538,109 @@ export const LongTermGoalsManageModal: React.FC<LongTermGoalsManageModalProps> =
                         <p className="text-[10px] font-medium pl-0.5" style={{ color: 'var(--app-muted)' }}>
                           {isZh ? '里程碑' : 'Milestones'}
                         </p>
-                        {(m.milestones ?? []).map((ms) => (
-                          <div
-                            key={ms.id}
-                            className="relative flex items-start justify-between gap-2 text-[11px] leading-snug pl-1"
-                            style={{ color: 'var(--app-muted)' }}
-                          >
-                            {rippleId === ms.id && !reduceMotion && (
-                              <motion.span
-                                className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 -translate-x-0.5 rounded-full"
-                                style={{
-                                  width: 8,
-                                  height: 8,
-                                  background: 'color-mix(in srgb, var(--app-accent) 45%, transparent)',
-                                }}
-                                initial={{ scale: 1, opacity: 0.9 }}
-                                animate={{ scale: 4, opacity: 0 }}
-                                transition={{ duration: 0.75, ease: 'easeOut' }}
-                              />
-                            )}
-                            <span className="relative z-[1] min-w-0">
-                              [{ms.at}] — {ms.text}
-                            </span>
-                            <button
-                              type="button"
-                              className="shrink-0 text-[10px] px-1 rounded opacity-70 hover:opacity-100"
+                        {(m.milestones ?? []).map((ms) => {
+                          const rowK = milestoneRowKey(goal, m.id, ms.id);
+                          const isEditing = milestoneEditKey === rowK;
+                          return (
+                            <div
+                              key={ms.id}
+                              className="relative flex flex-wrap items-start gap-2 text-[11px] leading-snug pl-1"
                               style={{ color: 'var(--app-muted)' }}
-                              onClick={() =>
-                                setMetaMap((prev) => removeMilestone(prev, goal, m.id, ms.id))
-                              }
-                              aria-label={isZh ? '删除里程碑' : 'Remove Milestone'}
                             >
-                              ×
-                            </button>
-                          </div>
-                        ))}
+                              {rippleId === ms.id && !reduceMotion && (
+                                <motion.span
+                                  className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 -translate-x-0.5 rounded-full"
+                                  style={{
+                                    width: 8,
+                                    height: 8,
+                                    background: 'color-mix(in srgb, var(--app-accent) 45%, transparent)',
+                                  }}
+                                  initial={{ scale: 1, opacity: 0.9 }}
+                                  animate={{ scale: 4, opacity: 0 }}
+                                  transition={{ duration: 0.75, ease: 'easeOut' }}
+                                />
+                              )}
+                              {isEditing ? (
+                                <>
+                                  <input
+                                    type="date"
+                                    className="text-[10px] rounded border bg-transparent px-1 py-0.5 max-w-[9rem] shrink-0"
+                                    style={{ borderColor: 'var(--app-border)', color: 'var(--app-muted)' }}
+                                    value={milestoneEditDraft.at}
+                                    onChange={(e) =>
+                                      setMilestoneEditDraft((d) => ({ ...d, at: e.target.value }))
+                                    }
+                                    aria-label={isZh ? '里程碑日期' : 'Milestone Date'}
+                                  />
+                                  <input
+                                    type="text"
+                                    className="text-[11px] flex-1 min-w-[6rem] rounded border bg-transparent px-2 py-0.5"
+                                    style={{ borderColor: 'var(--app-border)', color: 'var(--app-text)' }}
+                                    value={milestoneEditDraft.text}
+                                    onChange={(e) =>
+                                      setMilestoneEditDraft((d) => ({ ...d, text: e.target.value }))
+                                    }
+                                    placeholder={isZh ? '里程碑描述' : 'Milestone Note'}
+                                  />
+                                  <button
+                                    type="button"
+                                    className="shrink-0 text-[11px] font-medium px-2 py-0.5 rounded border hover:bg-accent/10"
+                                    style={{ borderColor: 'var(--app-border)', color: 'var(--app-accent)' }}
+                                    onClick={() => {
+                                      if (!milestoneEditDraft.at.trim() || !milestoneEditDraft.text.trim()) return;
+                                      setMetaMap((prev) =>
+                                        updateMilestone(prev, goal, m.id, ms.id, milestoneEditDraft)
+                                      );
+                                      setMilestoneEditKey(null);
+                                    }}
+                                  >
+                                    {isZh ? '保存' : 'Save'}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="shrink-0 text-[11px] px-2 py-0.5 rounded opacity-80 hover:opacity-100"
+                                    style={{ color: 'var(--app-muted)' }}
+                                    onClick={() => setMilestoneEditKey(null)}
+                                  >
+                                    {isZh ? '取消' : 'Cancel'}
+                                  </button>
+                                </>
+                              ) : (
+                                <span className="relative z-[1] min-w-0 flex-1">
+                                  [{ms.at}] — {ms.text}
+                                </span>
+                              )}
+                              <div className="flex items-center gap-0.5 shrink-0 ml-auto">
+                                {!isEditing && (
+                                  <button
+                                    type="button"
+                                    className="shrink-0 p-0.5 rounded opacity-70 hover:opacity-100"
+                                    style={{ color: 'var(--app-muted)' }}
+                                    onClick={() => {
+                                      setMilestoneEditKey(rowK);
+                                      setMilestoneEditDraft({ at: ms.at, text: ms.text });
+                                    }}
+                                    aria-label={isZh ? '编辑里程碑' : 'Edit Milestone'}
+                                  >
+                                    <Pencil className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                                <button
+                                  type="button"
+                                  className="shrink-0 text-[10px] px-1 rounded opacity-70 hover:opacity-100"
+                                  style={{ color: 'var(--app-muted)' }}
+                                  onClick={() => {
+                                    if (milestoneEditKey === rowK) setMilestoneEditKey(null);
+                                    setMetaMap((prev) => removeMilestone(prev, goal, m.id, ms.id));
+                                  }}
+                                  aria-label={isZh ? '删除里程碑' : 'Remove Milestone'}
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
                         <div className="flex flex-wrap items-end gap-2 pt-0.5">
                           <input
                             type="date"

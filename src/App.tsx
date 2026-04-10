@@ -21,7 +21,6 @@ import { PasswordRecoveryModal } from '@/components/PasswordRecoveryModal';
 import { Button } from '@/components/ui/button';
 import { ScheduleEvent, AppSettings, AppTheme, AppLanguage, CustomTag } from '@/types';
 import { normalizeAppSettings } from '@/lib/appSettings';
-import { generateDayName } from '@/lib/gemini';
 import { cn, getRandomDayName } from '@/lib/utils';
 import { expandRecurringEvents } from '@/lib/events';
 import { useAuth } from '@/lib/auth/useAuth';
@@ -36,7 +35,6 @@ import { ScheduleSuggestionModal } from '@/components/ScheduleSuggestionModal';
 import { DayVibes } from '@/components/DayVibes';
 import { CollectionView } from '@/components/CollectionView';
 import { LifeBookView } from '@/components/LifeBookView';
-import { GeminiUserKeyProvider } from '@/contexts/GeminiUserKeyContext';
 import { getLocalScheduleSuggestions } from '@/lib/scheduleLocalSuggestions';
 import { getChapters, type SavedChapter } from '@/lib/chaptersStorage';
 import { syncLifeBookChapters } from '@/lib/chapterSync';
@@ -330,9 +328,9 @@ export default function App() {
     dayNamesRef.current = dayNames;
   }, [dayNames]);
 
-  // Generate day name when events change
+  // Default day name: random from dayNameRandomPools.json (same with or without events)
   useEffect(() => {
-    const generateName = async () => {
+    const generateName = () => {
       const currentDayData = dayNamesRef.current[dateKey];
       
       // Don't overwrite if manual
@@ -341,41 +339,22 @@ export default function App() {
       // If name exists and language matches, don't touch it
       if (currentDayData?.name && currentDayData?.language === settings.language) return;
 
-      if (currentDayEvents.length > 0) {
-        const { name } = await generateDayName(currentDayEvents, settings.language);
-        setDayNames(prev => ({
-          ...prev,
-          [dateKey]: { name, isManual: false, language: settings.language }
-        }));
-        if (user) {
-          upsertDayMeta(supabase, user.id, dateKey, {
-            day_name: name,
-            day_name_is_manual: false,
-            day_name_language: settings.language,
-            day_tag: dayTags[dateKey] || null,
-            journal: journalEntries[dateKey] || null,
-          }).catch(() => {});
-        }
-      } else {
-         // Always regenerate random name if language/theme changed
-         const name = getRandomDayName(settings.theme, settings.language);
-         setDayNames(prev => ({
-          ...prev,
-          [dateKey]: { name, isManual: false, language: settings.language }
-        }));
-        if (user) {
-          upsertDayMeta(supabase, user.id, dateKey, {
-            day_name: name,
-            day_name_is_manual: false,
-            day_name_language: settings.language,
-            day_tag: dayTags[dateKey] || null,
-            journal: journalEntries[dateKey] || null,
-          }).catch(() => {});
-        }
+      const name = getRandomDayName(settings.theme, settings.language);
+      setDayNames(prev => ({
+        ...prev,
+        [dateKey]: { name, isManual: false, language: settings.language }
+      }));
+      if (user) {
+        upsertDayMeta(supabase, user.id, dateKey, {
+          day_name: name,
+          day_name_is_manual: false,
+          day_name_language: settings.language,
+          day_tag: dayTags[dateKey] || null,
+          journal: journalEntries[dateKey] || null,
+        }).catch(() => {});
       }
     };
     
-    // Debounce generation
     const timer = setTimeout(generateName, 1000);
     return () => clearTimeout(timer);
   }, [currentDayEvents, dateKey, settings.theme, settings.language]);
@@ -426,45 +405,21 @@ export default function App() {
     }));
   };
 
-  const handleGenerateName = async () => {
-    if (currentDayEvents.length > 0) {
-      const { name, usedFallback } = await generateDayName(currentDayEvents, settings.language);
-      setDayNames(prev => ({
-        ...prev,
-        [dateKey]: { name, isManual: true, language: settings.language } // Treat explicit regeneration as manual/locked
-      }));
-      if (user) {
-        upsertDayMeta(supabase, user.id, dateKey, {
-          day_name: name,
-          day_name_is_manual: true,
-          day_name_language: settings.language,
-          day_tag: dayTags[dateKey] || null,
-          journal: journalEntries[dateKey] || null,
-        }).catch(() => {});
-      }
-      if (usedFallback) {
-        alert(
-          settings.language === 'zh'
-            ? '无法通过 AI 生成日名（未配置或不可用），已使用默认名称。可在设置中配置 Gemini API。'
-            : 'Could Not Generate A Day Name With AI (Not Configured Or Unavailable). A Default Name Was Used. Configure Gemini In Settings If Needed.'
-        );
-      }
-    } else {
-      // If no events, just get a new random one based on theme
-      const name = getRandomDayName(settings.theme, settings.language);
-      setDayNames(prev => ({
-        ...prev,
-        [dateKey]: { name, isManual: false, language: settings.language }
-      }));
-      if (user) {
-        upsertDayMeta(supabase, user.id, dateKey, {
-          day_name: name,
-          day_name_is_manual: false,
-          day_name_language: settings.language,
-          day_tag: dayTags[dateKey] || null,
-          journal: journalEntries[dateKey] || null,
-        }).catch(() => {});
-      }
+  const handleRandomDayName = () => {
+    const name = getRandomDayName(settings.theme, settings.language);
+    const hasEvents = currentDayEvents.length > 0;
+    setDayNames(prev => ({
+      ...prev,
+      [dateKey]: { name, isManual: hasEvents, language: settings.language },
+    }));
+    if (user) {
+      upsertDayMeta(supabase, user.id, dateKey, {
+        day_name: name,
+        day_name_is_manual: hasEvents,
+        day_name_language: settings.language,
+        day_tag: dayTags[dateKey] || null,
+        journal: journalEntries[dateKey] || null,
+      }).catch(() => {});
     }
   };
 
@@ -1032,15 +987,6 @@ export default function App() {
   );
 
   return (
-    <GeminiUserKeyProvider
-      language={settings.language}
-      openSettingsForUserGeminiKey={() => {
-        if (typeof window !== 'undefined') {
-          window.location.hash = 'gemini';
-        }
-        setIsSettingsModalOpen(true);
-      }}
-    >
     <div className="min-h-screen font-sans" style={{ background: 'var(--app-bg)', color: 'var(--app-text)' }}>
       {!settings.hasCompletedOnboarding && !passwordRecoveryPending && (
         <OnboardingModal onComplete={handleOnboardingComplete} />
@@ -1830,7 +1776,7 @@ export default function App() {
                 <DayHeader 
                   date={currentDate} 
                   dayName={currentDayName}
-                  onGenerateName={handleGenerateName}
+                  onRandomDayName={handleRandomDayName}
                   onNameChange={handleManualNameChange}
                   language={settings.language}
                   currentTag={dayTags[dateKey]}
@@ -1956,6 +1902,7 @@ export default function App() {
         initialEvent={editingEvent}
         events={events}
         goalsUsedInLast28Days={goalsUsedInLast28Days}
+        collectionStateRevision={collectionStateTick}
       />
 
       <ScheduleSuggestionModal
@@ -1992,6 +1939,5 @@ export default function App() {
         getRoleDisplayName={getRoleDisplayName}
       />
     </div>
-    </GeminiUserKeyProvider>
   );
 }

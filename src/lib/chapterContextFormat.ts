@@ -1,7 +1,7 @@
 import type { ScheduleEvent } from '@/types';
 import { getRoleDisplayName } from '@/lib/constants/roles';
 
-/** Same shape as former `GenerateChapterOptions` in gemini (period narrative context). */
+/** Period narrative context for chapter export / external workflows. */
 export interface ChapterPeriodContextOptions {
   language?: string;
   roleTags?: string[];

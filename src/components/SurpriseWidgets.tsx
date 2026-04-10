@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { Quote, Music, Image as ImageIcon, Play, Pause, RefreshCw } from 'lucide-react';
 import { AppTheme, AppLanguage } from '@/types';
 import { getQuote as getLocalQuote, setQuote as setLocalQuote } from '@/lib/repositories/quoteRepo';
+import { pickRandomDailyQuote } from '@/lib/dailyQuotePools';
 
 interface SurpriseWidgetsProps {
   theme?: AppTheme;
@@ -13,94 +14,6 @@ interface SurpriseWidgetsProps {
     set: (dateKey: string, quote: { text: string; author?: string }) => Promise<void>;
   };
 }
-
-// Mock data for quotes
-const QUOTES: Record<AppTheme, Record<AppLanguage, { text: string; author: string }[]>> = {
-  tech: {
-    en: [
-      { text: "The best way to predict the future is to invent it.", author: "Alan Kay" },
-      { text: "Talk is cheap. Show me the code.", author: "Linus Torvalds" },
-      { text: "Software is eating the world.", author: "Marc Andreessen" },
-      { text: "Any sufficiently advanced technology is indistinguishable from magic.", author: "Arthur C. Clarke" }
-    ],
-    zh: [
-      { text: "预测未来的最好方法就是去创造它。", author: "艾伦·凯" },
-      { text: "空谈误国，实干兴邦 (Talk is cheap. Show me the code).", author: "莱纳斯·托瓦兹" },
-      { text: "软件正在吞噬世界。", author: "马克·安德森" },
-      { text: "任何足够先进的技术都与魔法无异。", author: "亚瑟·C·克拉克" }
-    ]
-  },
-  artsy: {
-    en: [
-      { text: "In the middle of difficulty lies opportunity.", author: "Albert Einstein" },
-      { text: "Life is what happens when you're busy making other plans.", author: "John Lennon" },
-      { text: "The purpose of our lives is to be happy.", author: "Dalai Lama" },
-      { text: "Everything you can imagine is real.", author: "Pablo Picasso" }
-    ],
-    zh: [
-      { text: "困难之中蕴藏着机会。", author: "爱因斯坦" },
-      { text: "生活就是当你忙着制定其他计划时发生的事情。", author: "约翰·列侬" },
-      { text: "我们生活的目的是快乐。", author: "达赖喇嘛" },
-      { text: "你能想象的一切都是真实的。", author: "毕加索" }
-    ]
-  },
-  anime: {
-    en: [
-      { text: "Whatever you lose, you'll find it again. But what you throw away you'll never get back.", author: "Kenshin Himura" },
-      { text: "If you don't take risks, you can't create a future.", author: "Monkey D. Luffy" },
-      { text: "Hard work betrays none, but dreams betray many.", author: "Hachiman Hikigaya" },
-      { text: "A dropout will beat a genius through hard work.", author: "Rock Lee" }
-    ],
-    zh: [
-      { text: "失去的东西总会找回来，但抛弃的东西永远回不来了。", author: "绯村剑心" },
-      { text: "如果不去冒险，就无法创造未来。", author: "蒙奇·D·路飞" },
-      { text: "努力不会背叛人，但梦想会背叛许多人。", author: "比企谷八幡" },
-      { text: "吊车尾通过努力也能击败天才。", author: "洛克·李" }
-    ]
-  },
-  minimalist: {
-    en: [
-      { text: "Less is more.", author: "Mies van der Rohe" },
-      { text: "Simplicity is the ultimate sophistication.", author: "Leonardo da Vinci" },
-      { text: "The ability to simplify means to eliminate the unnecessary so that the necessary may speak.", author: "Hans Hofmann" },
-      { text: "Perfection is achieved, not when there is nothing more to add, but when there is nothing left to take away.", author: "Antoine de Saint-Exupéry" }
-    ],
-    zh: [
-      { text: "少即是多。", author: "密斯·凡·德·罗" },
-      { text: "简约是极致的复杂。", author: "达芬奇" },
-      { text: "简化的能力意味着消除不必要的东西，以便让必要的东西说话。", author: "汉斯·霍夫曼" },
-      { text: "完美的达成，不是当没有什么可以添加时，而是当没有什么可以去掉时。", author: "安托万·德·圣埃克苏佩里" }
-    ]
-  },
-  nature: {
-    en: [
-      { text: "Look deep into nature, and then you will understand everything better.", author: "Albert Einstein" },
-      { text: "Nature does not hurry, yet everything is accomplished.", author: "Lao Tzu" },
-      { text: "In every walk with nature one receives far more than he seeks.", author: "John Muir" },
-      { text: "The earth has music for those who listen.", author: "Shakespeare" }
-    ],
-    zh: [
-      { text: "深入观察自然，你就会更好地理解一切。", author: "爱因斯坦" },
-      { text: "大自然不匆忙，但一切都完成了。", author: "老子" },
-      { text: "在与自然的每一次散步中，人得到的远比寻找的多。", author: "约翰·缪尔" },
-      { text: "地球为那些倾听的人演奏音乐。", author: "莎士比亚" }
-    ]
-  },
-  retro: {
-    en: [
-      { text: "Life moves pretty fast. If you don't stop and look around once in a while, you could miss it.", author: "Ferris Bueller" },
-      { text: "May the Force be with you.", author: "Star Wars" },
-      { text: "Nobody puts Baby in a corner.", author: "Dirty Dancing" },
-      { text: "I feel the need... the need for speed!", author: "Top Gun" }
-    ],
-    zh: [
-      { text: "生活过得很快。如果你不偶尔停下来看看周围，你可能会错过它。", author: "费里斯·布勒" },
-      { text: "愿原力与你同在。", author: "星球大战" },
-      { text: "没人能把Baby放在角落里。", author: "辣身舞" },
-      { text: "我感到需要……对速度的渴望！", author: "壮志凌云" }
-    ]
-  }
-};
 
 // Mock data for songs (using YouTube IDs for safe embedding or just simulation)
 const SONGS: Record<AppTheme, { title: string; artist: string; url: string }[]> = {
@@ -139,16 +52,20 @@ const VISUAL_SEEDS: Record<AppTheme, string> = {
   retro: "vintage"
 };
 
-export const SurpriseWidgets: React.FC<SurpriseWidgetsProps> = ({ theme = 'artsy', language = 'en', dateKey, quoteStore }) => {
-  const [quote, setQuote] = useState(QUOTES[theme][language][0]);
+export const SurpriseWidgets: React.FC<SurpriseWidgetsProps> = ({
+  theme = 'artsy',
+  language: languageProp,
+  dateKey,
+  quoteStore,
+}) => {
+  const language: AppLanguage = languageProp ?? 'en';
+  const [quote, setQuote] = useState<{ text: string; author: string }>(() => pickRandomDailyQuote(language));
   const [hasSavedDailyQuote, setHasSavedDailyQuote] = useState(false);
   const [visualSeed, setVisualSeed] = useState(Date.now());
   const [song, setSong] = useState(SONGS[theme][0]);
   const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
-    // Randomize on mount or theme change
-    const themeQuotes = QUOTES[theme][language];
     const themeSongs = SONGS[theme];
 
     let cancelled = false;
@@ -163,7 +80,7 @@ export const SurpriseWidgets: React.FC<SurpriseWidgetsProps> = ({ theme = 'artsy
         setQuote({ text, author: author || (language === 'zh' ? '佚名' : 'Anonymous') });
         setHasSavedDailyQuote(true);
       } else {
-        setQuote(themeQuotes[Math.floor(Math.random() * themeQuotes.length)]);
+        setQuote(pickRandomDailyQuote(language));
         setHasSavedDailyQuote(false);
       }
     })();
@@ -176,8 +93,7 @@ export const SurpriseWidgets: React.FC<SurpriseWidgetsProps> = ({ theme = 'artsy
   }, [theme, language, dateKey, quoteStore]);
 
   const refreshQuote = () => {
-    const themeQuotes = QUOTES[theme][language];
-    const next = themeQuotes[Math.floor(Math.random() * themeQuotes.length)];
+    const next = pickRandomDailyQuote(language);
     if (hasSavedDailyQuote) {
       const ok = window.confirm(language === 'zh' ? '这会替换你今天保存的 Quote。确定吗？' : "This will replace today's saved quote. Continue?");
       if (!ok) return;

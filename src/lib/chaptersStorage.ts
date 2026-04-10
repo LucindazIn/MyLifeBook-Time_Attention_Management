@@ -1,6 +1,5 @@
 import type { ChapterPeriodKey } from '@/lib/dateRange';
 import { formatPeriodSubtitle } from '@/lib/dateRange';
-import type { WeeklyChapterOutput } from '@/lib/gemini';
 import {
   getLifeBookCoverLines,
   DEFAULT_LINE1_EN,
@@ -10,6 +9,13 @@ import {
   DEFAULT_LINE3_EN,
   DEFAULT_LINE3_ZH,
 } from '@/lib/lifeBookCoverStorage';
+
+/** 人生之书章节正文结构（与用户编辑、外部粘贴导入同源）。 */
+export interface WeeklyChapterOutput {
+  chapterTitles: [string, string, string];
+  narrativeSummary: string;
+  reflectionQuestions: [string, string];
+}
 
 export type LifeBookExportLanguage = 'zh' | 'en';
 

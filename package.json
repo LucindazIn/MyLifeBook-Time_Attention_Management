@@ -10,6 +10,8 @@
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
+    "merge-day-names": "node scripts/merge-day-name-pools.mjs",
+    "parse-daily-quotes": "node scripts/parse-daily-quotes.mjs",
     "test": "vitest run",
     "test:watch": "vitest"
   },

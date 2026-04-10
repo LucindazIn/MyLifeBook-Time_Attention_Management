@@ -1,15 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Globe, Palette, Check, UserCircle2, LogIn, LogOut, KeyRound, Clock } from 'lucide-react';
+import { X, Globe, Palette, Check, UserCircle2, LogIn, LogOut, Clock } from 'lucide-react';
 import { AppSettings, AppTheme, AppLanguage, TimeDisplayFormat } from '@/types';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { setUserGeminiKey, clearUserGeminiKey, hasUserGeminiKey } from '@/lib/userGeminiKeyStorage';
-
-/** Set to `true` to show the user Gemini API Key block in Settings again. */
-const SHOW_USER_GEMINI_KEY_SECTION = false;
-
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -65,42 +60,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   const handleTimeDisplaySelect = (timeDisplay: TimeDisplayFormat) => {
     onUpdateSettings({ ...settings, timeDisplay });
-  };
-
-  const [geminiKeyInput, setGeminiKeyInput] = useState('');
-  const [geminiKeySaved, setGeminiKeySaved] = useState(false);
-
-  useEffect(() => {
-    if (isOpen) {
-      setGeminiKeyInput('');
-      setGeminiKeySaved(hasUserGeminiKey());
-      if (
-        SHOW_USER_GEMINI_KEY_SECTION &&
-        typeof window !== 'undefined' &&
-        window.location.hash === '#gemini'
-      ) {
-        requestAnimationFrame(() => {
-          document.getElementById('settings-gemini')?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start',
-          });
-        });
-      }
-    }
-  }, [isOpen]);
-
-  const handleSaveGeminiKey = () => {
-    const v = geminiKeyInput.trim();
-    if (!v) return;
-    setUserGeminiKey(v);
-    setGeminiKeyInput('');
-    setGeminiKeySaved(true);
-  };
-
-  const handleClearGeminiKey = () => {
-    clearUserGeminiKey();
-    setGeminiKeyInput('');
-    setGeminiKeySaved(false);
   };
 
   return (
@@ -175,72 +134,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </div>
                   )}
                 </section>
-
-                {/* Gemini API Key (user-owned) — hidden from UI; set SHOW_USER_GEMINI_KEY_SECTION to restore */}
-                {SHOW_USER_GEMINI_KEY_SECTION && (
-                  <section id="settings-gemini">
-                    <div className="flex items-center gap-2 mb-4 font-medium text-foreground">
-                      <KeyRound className="w-4 h-4 text-accent" />
-                      {settings.language === 'zh' ? 'Gemini API Key（你的密钥）' : 'Your Gemini API Key'}
-                    </div>
-                    <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
-                      {settings.language === 'zh'
-                        ? '密钥仅保存在本机浏览器，不会上传到开发者服务器。用于聊天、随机日程、AI 总结与人生章节；填写后也会优先用于当日名称与日记意义总结。'
-                        : 'Stored only in this browser—not sent to our servers. Required for chat, random schedule, AI summaries, and Life Book; when set, it is also preferred for day names and journal summaries.'}
-                    </p>
-                    {geminiKeySaved && (
-                      <p className="text-xs font-medium mb-2" style={{ color: 'var(--app-accent)' }}>
-                        {settings.language === 'zh' ? '已在本机保存密钥' : 'A key is saved on this device'}
-                      </p>
-                    )}
-                    <Input
-                      type="password"
-                      autoComplete="off"
-                      value={geminiKeyInput}
-                      onChange={(e) => setGeminiKeyInput(e.target.value)}
-                      placeholder={
-                        settings.language === 'zh'
-                          ? '粘贴新的 API Key 后点保存'
-                          : 'Paste API key, then Save'
-                      }
-                      className="rounded-xl mb-2"
-                    />
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        variant="default"
-                        className="flex-1 rounded-xl"
-                        onClick={handleSaveGeminiKey}
-                        disabled={!geminiKeyInput.trim()}
-                      >
-                        {settings.language === 'zh' ? '保存' : 'Save'}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="flex-1 rounded-xl"
-                        onClick={handleClearGeminiKey}
-                        disabled={!geminiKeySaved}
-                      >
-                        {settings.language === 'zh' ? '清除' : 'Clear'}
-                      </Button>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      <a
-                        href="https://aistudio.google.com/apikey"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="underline"
-                        style={{ color: 'var(--app-accent)' }}
-                      >
-                        {settings.language === 'zh' ? '在 Google AI Studio 获取 Key' : 'Get A Key In Google AI Studio'}
-                      </a>
-                      {settings.language === 'zh'
-                        ? '。建议为 Key 设置 API 限制以降低泄露风险。'
-                        : '. Restrict your key in Google Cloud to reduce abuse if exposed.'}
-                    </p>
-                  </section>
-                )}
 
                 {/* Language Section */}
                 <section>

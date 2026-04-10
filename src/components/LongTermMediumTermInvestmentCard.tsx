@@ -39,6 +39,8 @@ export interface LongTermMediumTermInvestmentCardProps {
   completedInstances: Record<string, boolean>;
   language: AppLanguage;
   collectionStateRevision?: number;
+  /** When true, hide the card title (e.g. embedded in「投入分析」modal). */
+  omitHeader?: boolean;
 }
 
 export const LongTermMediumTermInvestmentCard: React.FC<LongTermMediumTermInvestmentCardProps> = ({
@@ -46,6 +48,7 @@ export const LongTermMediumTermInvestmentCard: React.FC<LongTermMediumTermInvest
   completedInstances,
   language,
   collectionStateRevision = 0,
+  omitHeader = false,
 }) => {
   const isZh = language === 'zh';
   const [range, setRange] = useState<ChapterPeriodKey>('this_week');
@@ -110,10 +113,12 @@ export const LongTermMediumTermInvestmentCard: React.FC<LongTermMediumTermInvest
 
   return (
     <div className="space-y-4 min-w-0" style={{ color: 'var(--app-text)' }}>
-      <h3 className="text-sm font-semibold flex items-center gap-2">
-        <Layers className="w-4 h-4 shrink-0" style={{ color: 'var(--app-accent)' }} />
-        {isZh ? '中短期投入' : 'Short-Term Goal Effort'}
-      </h3>
+      {!omitHeader && (
+        <h3 className="text-sm font-semibold flex items-center gap-2">
+          <Layers className="w-4 h-4 shrink-0" style={{ color: 'var(--app-accent)' }} />
+          {isZh ? '中短期投入' : 'Short-Term Goal Effort'}
+        </h3>
+      )}
 
       <div className="space-y-2">
         <div className="flex flex-wrap gap-2">
@@ -164,11 +169,13 @@ export const LongTermMediumTermInvestmentCard: React.FC<LongTermMediumTermInvest
         )}
       </div>
 
-      <p className="text-[10px] leading-snug" style={{ color: 'var(--app-muted)' }}>
-        {isZh
-          ? '按日程开始日是否落在中短期区间内统计；区间重叠时以列表顺序优先匹配。'
-          : 'Counts By Event Start Date In Each Window; First Matching Row Wins If Intervals Overlap.'}
-      </p>
+      {!omitHeader && (
+        <p className="text-[10px] leading-snug" style={{ color: 'var(--app-muted)' }}>
+          {isZh
+            ? '按日程开始日是否落在中短期区间内统计；区间重叠时以列表顺序优先匹配。'
+            : 'Counts By Event Start Date In Each Window; First Matching Row Wins If Intervals Overlap.'}
+        </p>
+      )}
 
       {!hasAnyMedium ? (
         <p className="text-xs py-2" style={{ color: 'var(--app-muted)' }}>

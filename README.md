@@ -84,7 +84,7 @@ npm run dev
 |------|------|
 | 前端 | React 19、Vite 6、TypeScript、Tailwind CSS 4、Motion、Swiper 等 |
 | 数据与账号 | Supabase（PostgreSQL + Row Level Security；邮箱 OTP 登录等） |
-| AI | `@google/genai`；可选本地代理 [server/gemini-proxy.mjs](server/gemini-proxy.mjs)，避免把宿主 Key 打进前端 |
+| 可选开发脚本 | 仓库内含 [server/gemini-proxy.mjs](server/gemini-proxy.mjs)（`@google/genai`），仅供本地实验或非前端场景；**产品前端当前不内嵌 Gemini 调用、不提供 API Key 配置** |
 
 ### 2.4 核心功能模块
 - **日历与事件**：多视图浏览、创建/编辑事件、重复规则、按日完成状态（含重复事件的实例级完成记录）。
@@ -105,7 +105,7 @@ npm run dev
 
 ### 2.6 系统架构
 
-产品在浏览器中运行；登录后数据与云端同步。可选的 AI 能力基于 Google Gemini，密钥可仅存于你的设备或由部署方配置，避免写入公开仓库或泄露给他人。
+产品在浏览器中运行；登录后数据与云端同步。人生之书章节等叙事内容支持用户编辑与从外部工具粘贴导入，**应用内不发起大模型请求**。
 
 ### 2.7 数据如何组织
 
@@ -114,7 +114,7 @@ npm run dev
 
 ### 2.8 体验与性能
 
-常见网络下轻快；AI 相关耗时受模型与网络影响。登录后数据默认在云端持久化，降低单设备丢失风险。以上为工程目标，**不等同于对外 SLA 承诺**。
+常见网络下轻快。登录后数据默认在云端持久化，降低单设备丢失风险。以上为工程目标，**不等同于对外 SLA 承诺**。
 
 针对 iOS 和 Android 系统，提供将网页端添加桌面的教程：
 

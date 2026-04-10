@@ -21,6 +21,8 @@ import { getLastActionDateForGoal } from '@/lib/longTermGoalLastAction';
 import { formatTargetDateCountdown } from '@/lib/targetDateCountdown';
 import { cn } from '@/lib/utils';
 import { LongTermGoalsManageModal } from '@/components/LongTermGoalsManageModal';
+import { AnalyticsManageModalShell } from '@/components/AnalyticsManageModalShell';
+import { LongTermMediumTermInvestmentCard } from '@/components/LongTermMediumTermInvestmentCard';
 
 export interface LongTermGoalsCardProps {
   events: ScheduleEvent[];
@@ -73,6 +75,7 @@ export const LongTermGoalsCard: React.FC<LongTermGoalsCardProps> = ({
   const [newGlowIds, setNewGlowIds] = useState<Set<string>>(() => new Set());
   const [staleOpen, setStaleOpen] = useState(false);
   const [manageOpen, setManageOpen] = useState(false);
+  const [investmentOpen, setInvestmentOpen] = useState(false);
   const [scrollToGoalName, setScrollToGoalName] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [orderTick, setOrderTick] = useState(0);
@@ -182,15 +185,46 @@ export const LongTermGoalsCard: React.FC<LongTermGoalsCardProps> = ({
           <Target className="w-4 h-4 shrink-0" style={{ color: 'var(--app-accent)' }} />
           {isZh ? '长期目标' : 'Long-Term Goals'}
         </h3>
-        <button
-          type="button"
-          onClick={() => openManage(null)}
-          className="text-[11px] font-medium shrink-0 rounded-lg px-2 py-1 border border-border hover:bg-accent/10 transition-colors"
-          style={{ color: 'var(--app-accent)' }}
-        >
-          {isZh ? '管理' : 'Manage'}
-        </button>
+        <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+          <button
+            type="button"
+            onClick={() => setInvestmentOpen(true)}
+            className="text-[11px] font-medium rounded-lg px-2 py-1 border border-border hover:bg-accent/10 transition-colors"
+            style={{ color: 'var(--app-accent)' }}
+          >
+            {isZh ? '投入分析' : 'Investment Analysis'}
+          </button>
+          <button
+            type="button"
+            onClick={() => openManage(null)}
+            className="text-[11px] font-medium rounded-lg px-2 py-1 border border-border hover:bg-accent/10 transition-colors"
+            style={{ color: 'var(--app-accent)' }}
+          >
+            {isZh ? '管理' : 'Manage'}
+          </button>
+        </div>
       </div>
+
+      <AnalyticsManageModalShell
+        isOpen={investmentOpen}
+        onClose={() => setInvestmentOpen(false)}
+        title={isZh ? '投入分析' : 'Investment Analysis'}
+        scopeLine={
+          isZh
+            ? '按日程开始日是否落在中短期区间内统计；区间重叠时以列表顺序优先匹配。'
+            : 'Counts By Event Start Date In Each Window; First Matching Row Wins If Intervals Overlap.'
+        }
+        language={language}
+        panelMaxWidthClass="max-w-2xl"
+      >
+        <LongTermMediumTermInvestmentCard
+          events={events}
+          completedInstances={completedInstances}
+          language={language}
+          collectionStateRevision={collectionStateRevision}
+          omitHeader
+        />
+      </AnalyticsManageModalShell>
 
       <LongTermGoalsManageModal
         isOpen={manageOpen}

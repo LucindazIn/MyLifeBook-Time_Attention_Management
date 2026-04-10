@@ -1,6 +1,7 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { AppTheme, AppLanguage } from "@/types";
+import dayNameRandomPools from "@/lib/dayNameRandomPools.json";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -88,6 +89,11 @@ const THEMED_NAMES: Record<AppTheme, Record<AppLanguage, string[]>> = {
 };
 
 export function getRandomDayName(theme: AppTheme = 'artsy', language: AppLanguage = 'en'): string {
+  const pool =
+    language === 'zh' ? dayNameRandomPools.zh : dayNameRandomPools.en;
+  if (Array.isArray(pool) && pool.length > 0) {
+    return pool[Math.floor(Math.random() * pool.length)] as string;
+  }
   const names = THEMED_NAMES[theme][language];
   return names[Math.floor(Math.random() * names.length)];
 }

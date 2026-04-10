@@ -30,9 +30,11 @@ interface AddEventModalProps {
   selectedDate: Date;
   language: AppLanguage;
   initialEvent?: ScheduleEvent | null;
-  /** Used to prune saved goals with 0 events and to filter suggestions to last 28 days */
+  /** Used to prune saved goals with 0 events and to prioritize suggestions by last 28 days */
   events?: ScheduleEvent[];
   goalsUsedInLast28Days?: string[];
+  /** Bumps when long-term goal meta / tag pool changes outside this modal (e.g. 时间聚合). */
+  collectionStateRevision?: number;
 }
 
 export const AddEventModal: React.FC<AddEventModalProps> = ({
@@ -45,13 +47,14 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
   initialEvent,
   events: eventsProp,
   goalsUsedInLast28Days,
+  collectionStateRevision = 0,
 }) => {
   // Form State
   const [title, setTitle] = useState('');
   const [type, setType] = useState<EventType>('todo');
   const [date, setDate] = useState(format(selectedDate, 'yyyy-MM-dd'));
-  const [startTime, setStartTime] = useState('09:00');
-  const [endTime, setEndTime] = useState('10:00');
+  const [startTime, setStartTime] = useState(() => format(new Date(), 'HH:mm'));
+  const [endTime, setEndTime] = useState(() => format(addHours(new Date(), 1), 'HH:mm'));
   const [description, setDescription] = useState('');
   const [isTimeDetected, setIsTimeDetected] = useState(false);
   const [recurrenceFreq, setRecurrenceFreq] = useState<'none' | 'daily' | 'weekly' | 'monthly'>('none');
@@ -114,10 +117,17 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
     ...savedCustomTags,
     ...defaultLabels.filter((l) => !savedCustomTags.includes(l))
   ];
-  const suggestedLongTermGoals =
-    goalsUsedInLast28Days != null && goalsUsedInLast28Days.length >= 0
-      ? savedLongTermGoals.filter((g) => goalsUsedInLast28Days.includes(g))
-      : savedLongTermGoals;
+  /** 全部来自标签池（含仅在时间聚合/管理里新建的愿景）；近 28 天用过的排在前面，其余按字母序，避免「未挂日程」的新目标被隐藏。 */
+  const suggestedLongTermGoals = React.useMemo(() => {
+    const pool = savedLongTermGoals;
+    if (goalsUsedInLast28Days == null || goalsUsedInLast28Days.length === 0) {
+      return [...pool];
+    }
+    const recentSet = new Set(goalsUsedInLast28Days);
+    const recent = goalsUsedInLast28Days.filter((g) => pool.includes(g));
+    const rest = pool.filter((g) => !recentSet.has(g)).sort((a, b) => a.localeCompare(b));
+    return [...recent, ...rest];
+  }, [savedLongTermGoals, goalsUsedInLast28Days]);
 
   const CUSTOM_ROLES_USAGE_KEY = 'feather_custom_roles_usage';
   type RoleUsageItem = { id: string; count: number; lastUsed: number };
@@ -155,6 +165,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
   // Sync saved goal pool with goals already attached to events.
   // - Removes local-only goals that no longer exist in any event (stale suggestions).
   // - Adds goals found in events but not yet in local storage (cross-device sync).
+  // - Keeps names that exist only in long-term meta (e.g. added on 时间聚合); always refresh React state when modal opens or collection state bumps.
   useEffect(() => {
     if (!isOpen || eventsProp == null) return;
     if (typeof window === 'undefined') return;
@@ -167,12 +178,10 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
       const keptFromSaved = saved.filter((g) => goalsInEvents.has(g) || metaGoalNames.has(g));
       const newFromEvents = Array.from(goalsInEvents).filter((g) => !saved.includes(g));
       const merged = [...keptFromSaved, ...newFromEvents];
-      if (merged.length !== saved.length || newFromEvents.length > 0) {
-        window.localStorage.setItem(LONG_TERM_GOALS_KEY, JSON.stringify(merged));
-        setSavedLongTermGoals(merged);
-      }
+      window.localStorage.setItem(LONG_TERM_GOALS_KEY, JSON.stringify(merged));
+      setSavedLongTermGoals(merged);
     } catch (_) {}
-  }, [isOpen, eventsProp]);
+  }, [isOpen, eventsProp, collectionStateRevision]);
 
   /** 挂载与每次打开弹窗时：清理超过 2 天未使用的自定义标签（预设不受影响） */
   useEffect(() => {
@@ -237,11 +246,12 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
         setHighlight(initialEvent.highlight ?? false);
         setLongTermGoals(initialEvent.longTermGoals ?? []);
       } else {
+        const now = new Date();
         setTitle('');
         setType('todo');
         setDate(format(selectedDate, 'yyyy-MM-dd'));
-        setStartTime('09:00');
-        setEndTime('10:00');
+        setStartTime(format(now, 'HH:mm'));
+        setEndTime(format(addHours(now, 1), 'HH:mm'));
         setDescription('');
         setRecurrenceFreq('none');
         setRecurrenceInterval(1);

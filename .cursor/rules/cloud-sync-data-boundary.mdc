@@ -55,7 +55,7 @@ alwaysApply: true
 | `feather_settings` | 应用级设置（如语言） |
 | `feather_device_id` | 本机设备 ID（用于 `register_device`） |
 | `feather_skipped_auth` | 是否跳过登录 |
-| `feather_user_gemini_api_key`（`userGeminiKeyStorage.ts`） | 用户 API Key — **永不上云、不进入 `user_collection_state`** |
+| `feather_user_gemini_api_key`（历史键名） | 旧版本可能写入；**当前产品内已不再提供 Gemini Key 配置**，永不上云、不进入 `user_collection_state`。可手动清理浏览器 `localStorage`。 |
 | `feather_custom_roles_usage`（`AddEventModal.tsx`） | 自定义角色使用等辅助数据（当前未纳入 `user_collection_state`） |
 
 若产品要求上述任一项改为跨设备，须：**扩展 `CollectionStatePayload` 或新建表 + RLS**、实现合并与推送、并更新本规则第一节与第二节。

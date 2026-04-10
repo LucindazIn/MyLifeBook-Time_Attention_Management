@@ -398,6 +398,37 @@ export function removeMilestone(
   return next;
 }
 
+export function updateMilestone(
+  map: LongTermGoalMetaMap,
+  goalName: string,
+  mediumTermGoalId: string,
+  milestoneId: string,
+  patch: { at: string; text: string }
+): LongTermGoalMetaMap {
+  const rec = getOrCreateRecord(map, goalName);
+  const at = patch.at.trim();
+  const text = patch.text.trim();
+  if (!at || !text) return map;
+  const medium = (rec.mediumTermGoals ?? []).map((m) =>
+    m.id === mediumTermGoalId
+      ? {
+          ...m,
+          milestones: sortMilestones(
+            m.milestones.map((x) =>
+              x.id === milestoneId ? { ...x, at, text } : x
+            )
+          ),
+        }
+      : m
+  );
+  const next = {
+    ...map,
+    [goalName]: { ...rec, mediumTermGoals: medium, lastAlignedAt: new Date().toISOString() },
+  };
+  saveLongTermGoalMeta(next);
+  return next;
+}
+
 /** Rename meta key + update tags pool (caller updates events). */
 export function migrateGoalRename(
   map: LongTermGoalMetaMap,

@@ -29,7 +29,7 @@ import {
   type LongTermGoalMetaMap,
   type MediumTermGoal,
 } from '@/lib/longTermGoalMetaStorage';
-import { GripVertical, Pencil } from 'lucide-react';
+import { GripVertical } from 'lucide-react';
 import { AnalyticsManageModalShell } from '@/components/AnalyticsManageModalShell';
 
 const STATUS_EMOJI = {
@@ -84,6 +84,124 @@ function GoalTitleEditor({
   );
 }
 
+const MILESTONE_AUTOSAVE_MS = 400;
+
+function MilestoneInlineFields({
+  goalName,
+  mediumTermId,
+  ms,
+  setMetaMap,
+  isZh,
+  reduceMotion,
+  showRipple,
+}: {
+  goalName: string;
+  mediumTermId: string;
+  ms: { id: string; at: string; text: string };
+  setMetaMap: React.Dispatch<React.SetStateAction<LongTermGoalMetaMap>>;
+  isZh: boolean;
+  reduceMotion: boolean | null;
+  showRipple: boolean;
+}) {
+  const [at, setAt] = useState(ms.at);
+  const [text, setText] = useState(ms.text);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const atRef = useRef(at);
+  const textRef = useRef(text);
+  atRef.current = at;
+  textRef.current = text;
+
+  useEffect(() => {
+    setAt(ms.at);
+    setText(ms.text);
+  }, [ms.id, ms.at, ms.text]);
+
+  useEffect(
+    () => () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    },
+    []
+  );
+
+  const persistIfValid = useCallback(() => {
+    const a = atRef.current.trim();
+    const t = textRef.current.trim();
+    if (!a || !t) return;
+    setMetaMap((prev) => {
+      const r = getOrCreateRecord(prev, goalName);
+      const medium = r.mediumTermGoals?.find((x) => x.id === mediumTermId);
+      const cur = medium?.milestones?.find((x) => x.id === ms.id);
+      if (cur && cur.at === a && cur.text === t) return prev;
+      return updateMilestone(prev, goalName, mediumTermId, ms.id, { at: a, text: t });
+    });
+  }, [goalName, mediumTermId, ms.id, setMetaMap]);
+
+  const scheduleSave = useCallback(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      timerRef.current = null;
+      persistIfValid();
+    }, MILESTONE_AUTOSAVE_MS);
+  }, [persistIfValid]);
+
+  const handleBlur = useCallback(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    const a = atRef.current.trim();
+    const t = textRef.current.trim();
+    if (!a || !t) {
+      setAt(ms.at);
+      setText(ms.text);
+      return;
+    }
+    persistIfValid();
+  }, [ms.at, ms.text, persistIfValid]);
+
+  return (
+    <div className="relative flex flex-wrap items-start gap-2 flex-1 min-w-0">
+      {showRipple && !reduceMotion && (
+        <motion.span
+          className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 -translate-x-0.5 rounded-full z-[1]"
+          style={{
+            width: 8,
+            height: 8,
+            background: 'color-mix(in srgb, var(--app-accent) 45%, transparent)',
+          }}
+          initial={{ scale: 1, opacity: 0.9 }}
+          animate={{ scale: 4, opacity: 0 }}
+          transition={{ duration: 0.75, ease: 'easeOut' }}
+        />
+      )}
+      <input
+        type="date"
+        className="text-[10px] rounded border bg-transparent px-1 py-0.5 max-w-[9rem] shrink-0 relative z-[1]"
+        style={{ borderColor: 'var(--app-border)', color: 'var(--app-muted)' }}
+        value={at}
+        onChange={(e) => {
+          setAt(e.target.value);
+          scheduleSave();
+        }}
+        onBlur={handleBlur}
+        aria-label={isZh ? '里程碑日期' : 'Milestone Date'}
+      />
+      <input
+        type="text"
+        className="text-[11px] flex-1 min-w-[6rem] rounded border bg-transparent px-2 py-0.5 relative z-[1]"
+        style={{ borderColor: 'var(--app-border)', color: 'var(--app-text)' }}
+        value={text}
+        onChange={(e) => {
+          setText(e.target.value);
+          scheduleSave();
+        }}
+        onBlur={handleBlur}
+        placeholder={isZh ? '里程碑描述' : 'Milestone Note'}
+      />
+    </div>
+  );
+}
+
 export interface LongTermGoalsManageModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -116,12 +234,6 @@ export const LongTermGoalsManageModal: React.FC<LongTermGoalsManageModalProps> =
   const isZh = language === 'zh';
   const reduceMotion = useReducedMotion();
   const [milestoneDraft, setMilestoneDraft] = useState<Record<string, { at: string; text: string }>>({});
-  /** `${goal}::${mediumId}::${milestoneId}` while editing an existing milestone */
-  const [milestoneEditKey, setMilestoneEditKey] = useState<string | null>(null);
-  const [milestoneEditDraft, setMilestoneEditDraft] = useState<{ at: string; text: string }>({
-    at: '',
-    text: '',
-  });
   const [rippleId, setRippleId] = useState<string | null>(null);
   const [confirmDeleteGoal, setConfirmDeleteGoal] = useState<string | null>(null);
   const [deleteBusy, setDeleteBusy] = useState(false);
@@ -175,8 +287,6 @@ export const LongTermGoalsManageModal: React.FC<LongTermGoalsManageModalProps> =
   };
 
   const milestoneKey = (goalName: string, mediumId: string) => `${goalName}::${mediumId}`;
-  const milestoneRowKey = (goalName: string, mediumId: string, milestoneId: string) =>
-    `${goalName}::${mediumId}::${milestoneId}`;
 
   const handleAddMilestone = (goalName: string, mediumId: string) => {
     const key = milestoneKey(goalName, mediumId);
@@ -203,7 +313,6 @@ export const LongTermGoalsManageModal: React.FC<LongTermGoalsManageModalProps> =
   useEffect(() => {
     if (!isOpen) {
       scrolledForRef.current = null;
-      setMilestoneEditKey(null);
       return;
     }
     if (!scrollToGoalName) return;
@@ -538,109 +647,34 @@ export const LongTermGoalsManageModal: React.FC<LongTermGoalsManageModalProps> =
                         <p className="text-[10px] font-medium pl-0.5" style={{ color: 'var(--app-muted)' }}>
                           {isZh ? '里程碑' : 'Milestones'}
                         </p>
-                        {(m.milestones ?? []).map((ms) => {
-                          const rowK = milestoneRowKey(goal, m.id, ms.id);
-                          const isEditing = milestoneEditKey === rowK;
-                          return (
-                            <div
-                              key={ms.id}
-                              className="relative flex flex-wrap items-start gap-2 text-[11px] leading-snug pl-1"
+                        {(m.milestones ?? []).map((ms) => (
+                          <div
+                            key={ms.id}
+                            className="relative flex flex-wrap items-start gap-2 text-[11px] leading-snug pl-1"
+                            style={{ color: 'var(--app-muted)' }}
+                          >
+                            <MilestoneInlineFields
+                              goalName={goal}
+                              mediumTermId={m.id}
+                              ms={ms}
+                              setMetaMap={setMetaMap}
+                              isZh={isZh}
+                              reduceMotion={reduceMotion}
+                              showRipple={rippleId === ms.id}
+                            />
+                            <button
+                              type="button"
+                              className="shrink-0 ml-auto text-[10px] px-1 rounded opacity-70 hover:opacity-100 self-start"
                               style={{ color: 'var(--app-muted)' }}
+                              onClick={() =>
+                                setMetaMap((prev) => removeMilestone(prev, goal, m.id, ms.id))
+                              }
+                              aria-label={isZh ? '删除里程碑' : 'Remove Milestone'}
                             >
-                              {rippleId === ms.id && !reduceMotion && (
-                                <motion.span
-                                  className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 -translate-x-0.5 rounded-full"
-                                  style={{
-                                    width: 8,
-                                    height: 8,
-                                    background: 'color-mix(in srgb, var(--app-accent) 45%, transparent)',
-                                  }}
-                                  initial={{ scale: 1, opacity: 0.9 }}
-                                  animate={{ scale: 4, opacity: 0 }}
-                                  transition={{ duration: 0.75, ease: 'easeOut' }}
-                                />
-                              )}
-                              {isEditing ? (
-                                <>
-                                  <input
-                                    type="date"
-                                    className="text-[10px] rounded border bg-transparent px-1 py-0.5 max-w-[9rem] shrink-0"
-                                    style={{ borderColor: 'var(--app-border)', color: 'var(--app-muted)' }}
-                                    value={milestoneEditDraft.at}
-                                    onChange={(e) =>
-                                      setMilestoneEditDraft((d) => ({ ...d, at: e.target.value }))
-                                    }
-                                    aria-label={isZh ? '里程碑日期' : 'Milestone Date'}
-                                  />
-                                  <input
-                                    type="text"
-                                    className="text-[11px] flex-1 min-w-[6rem] rounded border bg-transparent px-2 py-0.5"
-                                    style={{ borderColor: 'var(--app-border)', color: 'var(--app-text)' }}
-                                    value={milestoneEditDraft.text}
-                                    onChange={(e) =>
-                                      setMilestoneEditDraft((d) => ({ ...d, text: e.target.value }))
-                                    }
-                                    placeholder={isZh ? '里程碑描述' : 'Milestone Note'}
-                                  />
-                                  <button
-                                    type="button"
-                                    className="shrink-0 text-[11px] font-medium px-2 py-0.5 rounded border hover:bg-accent/10"
-                                    style={{ borderColor: 'var(--app-border)', color: 'var(--app-accent)' }}
-                                    onClick={() => {
-                                      if (!milestoneEditDraft.at.trim() || !milestoneEditDraft.text.trim()) return;
-                                      setMetaMap((prev) =>
-                                        updateMilestone(prev, goal, m.id, ms.id, milestoneEditDraft)
-                                      );
-                                      setMilestoneEditKey(null);
-                                    }}
-                                  >
-                                    {isZh ? '保存' : 'Save'}
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className="shrink-0 text-[11px] px-2 py-0.5 rounded opacity-80 hover:opacity-100"
-                                    style={{ color: 'var(--app-muted)' }}
-                                    onClick={() => setMilestoneEditKey(null)}
-                                  >
-                                    {isZh ? '取消' : 'Cancel'}
-                                  </button>
-                                </>
-                              ) : (
-                                <span className="relative z-[1] min-w-0 flex-1">
-                                  [{ms.at}] — {ms.text}
-                                </span>
-                              )}
-                              <div className="flex items-center gap-0.5 shrink-0 ml-auto">
-                                {!isEditing && (
-                                  <button
-                                    type="button"
-                                    className="shrink-0 p-0.5 rounded opacity-70 hover:opacity-100"
-                                    style={{ color: 'var(--app-muted)' }}
-                                    onClick={() => {
-                                      setMilestoneEditKey(rowK);
-                                      setMilestoneEditDraft({ at: ms.at, text: ms.text });
-                                    }}
-                                    aria-label={isZh ? '编辑里程碑' : 'Edit Milestone'}
-                                  >
-                                    <Pencil className="w-3.5 h-3.5" />
-                                  </button>
-                                )}
-                                <button
-                                  type="button"
-                                  className="shrink-0 text-[10px] px-1 rounded opacity-70 hover:opacity-100"
-                                  style={{ color: 'var(--app-muted)' }}
-                                  onClick={() => {
-                                    if (milestoneEditKey === rowK) setMilestoneEditKey(null);
-                                    setMetaMap((prev) => removeMilestone(prev, goal, m.id, ms.id));
-                                  }}
-                                  aria-label={isZh ? '删除里程碑' : 'Remove Milestone'}
-                                >
-                                  ×
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        })}
+                              ×
+                            </button>
+                          </div>
+                        ))}
                         <div className="flex flex-wrap items-end gap-2 pt-0.5">
                           <input
                             type="date"

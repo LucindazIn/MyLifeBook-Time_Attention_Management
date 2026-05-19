@@ -23,6 +23,7 @@ import { cn } from '@/lib/utils';
 import { LongTermGoalsManageModal } from '@/components/LongTermGoalsManageModal';
 import { AnalyticsManageModalShell } from '@/components/AnalyticsManageModalShell';
 import { LongTermMediumTermInvestmentCard } from '@/components/LongTermMediumTermInvestmentCard';
+import { LongTermGoalsGanttContent } from '@/components/LongTermGoalsGanttContent';
 
 export interface LongTermGoalsCardProps {
   events: ScheduleEvent[];
@@ -76,6 +77,7 @@ export const LongTermGoalsCard: React.FC<LongTermGoalsCardProps> = ({
   const [staleOpen, setStaleOpen] = useState(false);
   const [manageOpen, setManageOpen] = useState(false);
   const [investmentOpen, setInvestmentOpen] = useState(false);
+  const [ganttOpen, setGanttOpen] = useState(false);
   const [scrollToGoalName, setScrollToGoalName] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [orderTick, setOrderTick] = useState(0);
@@ -188,6 +190,14 @@ export const LongTermGoalsCard: React.FC<LongTermGoalsCardProps> = ({
         <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
           <button
             type="button"
+            onClick={() => setGanttOpen(true)}
+            className="text-[11px] font-medium rounded-lg px-2 py-1 border border-border hover:bg-accent/10 transition-colors"
+            style={{ color: 'var(--app-accent)' }}
+          >
+            {isZh ? '甘特图' : 'Gantt Chart'}
+          </button>
+          <button
+            type="button"
             onClick={() => setInvestmentOpen(true)}
             className="text-[11px] font-medium rounded-lg px-2 py-1 border border-border hover:bg-accent/10 transition-colors"
             style={{ color: 'var(--app-accent)' }}
@@ -223,6 +233,25 @@ export const LongTermGoalsCard: React.FC<LongTermGoalsCardProps> = ({
           language={language}
           collectionStateRevision={collectionStateRevision}
           omitHeader
+        />
+      </AnalyticsManageModalShell>
+
+      <AnalyticsManageModalShell
+        isOpen={ganttOpen}
+        onClose={() => setGanttOpen(false)}
+        title={isZh ? '甘特图' : 'Gantt Chart'}
+        scopeLine={
+          isZh
+            ? '横条为中短期区间，菱形为里程碑；悬停或聚焦可查看所属母目标。'
+            : 'Bars Are Short-Term Windows; Diamonds Are Milestones. Hover Or Focus To See The Vision.'
+        }
+        language={language}
+        panelMaxWidthClass="max-w-2xl"
+      >
+        <LongTermGoalsGanttContent
+          events={events}
+          language={language}
+          collectionStateRevision={collectionStateRevision}
         />
       </AnalyticsManageModalShell>
 

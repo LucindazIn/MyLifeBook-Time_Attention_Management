@@ -195,7 +195,7 @@ export const LongTermMediumTermInvestmentCard: React.FC<LongTermMediumTermInvest
                   「{name}」
                 </p>
                 <p className="text-[10px] mb-2" style={{ color: 'var(--app-muted)' }}>
-                  {isZh ? '本周期父目标合计：' : 'Parent In Period: '}
+                  {isZh ? '本周期母目标合计：' : 'Vision In Period: '}
                   <span className="tabular-nums">{parentTotalCount}</span>
                   {isZh ? ' 条 · ' : ' events · '}
                   {formatDurationMs(parentTotalDurationMs, isZh)}

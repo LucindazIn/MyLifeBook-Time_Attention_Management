@@ -17,7 +17,7 @@ import { cn } from '@/lib/utils';
 import { ScheduleEvent, AppLanguage } from '@/types';
 import { DayVibes } from '@/lib/repositories/dayMetaRepo';
 import { expandRecurringEvents } from '@/lib/events';
-import { VIBE_ICON_URL } from '@/lib/vibeIcons';
+import { VIBE_METRICS } from '@/lib/vibeMetrics';
 
 interface CalendarViewProps {
   currentDate: Date;
@@ -33,16 +33,6 @@ interface CalendarViewProps {
   highlightDates?: Set<string>;
   language: AppLanguage;
   dayVibes?: Record<string, DayVibes>;
-}
-
-const METRICS = [
-  { key: 'energy' as const, labelZh: '能量', labelEn: 'Energy', iconSrc: VIBE_ICON_URL.energy, colorHigh: 'bg-emerald-400', colorMid: 'bg-amber-400', colorLow: 'bg-slate-300' },
-  { key: 'mood'   as const, labelZh: '心情', labelEn: 'Mood',   iconSrc: VIBE_ICON_URL.mood, colorHigh: 'bg-rose-400',   colorMid: 'bg-rose-300',   colorLow: 'bg-slate-300' },
-  { key: 'focus'  as const, labelZh: '专注', labelEn: 'Focus',  iconSrc: VIBE_ICON_URL.focus, colorHigh: 'bg-indigo-400', colorMid: 'bg-indigo-300', colorLow: 'bg-slate-300' },
-];
-
-function metricColor(m: typeof METRICS[0], avg: number) {
-  return avg >= 70 ? m.colorHigh : avg >= 40 ? m.colorMid : m.colorLow;
 }
 
 export const CalendarView: React.FC<CalendarViewProps> = ({
@@ -61,26 +51,6 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   const weekDays = language === 'zh'
     ? ['日', '一', '二', '三', '四', '五', '六']
     : ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-
-  // Monthly averages (all 3 metrics)
-  const monthlyAvgs = React.useMemo(() => {
-    const sums = { energy: 0, mood: 0, focus: 0 };
-    const counts = { energy: 0, mood: 0, focus: 0 };
-    for (const day of eachDayOfInterval({ start: monthStart, end: monthEnd })) {
-      const dk = format(day, 'yyyy-MM-dd');
-      const v = dayVibes[dk];
-      if (!v) continue;
-      for (const m of METRICS) {
-        const val = v[m.key];
-        if (val != null) { sums[m.key] += val; counts[m.key]++; }
-      }
-    }
-    return {
-      energy: counts.energy > 0 ? Math.round(sums.energy / counts.energy) : null,
-      mood:   counts.mood   > 0 ? Math.round(sums.mood   / counts.mood)   : null,
-      focus:  counts.focus  > 0 ? Math.round(sums.focus  / counts.focus)  : null,
-    };
-  }, [currentDate, dayVibes]);
 
   // Weekly averages (all 3 metrics), one entry per ISO week
   const weeklyAvgs = React.useMemo(() => {
@@ -101,7 +71,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
       const dk = format(day, 'yyyy-MM-dd');
       const v = dayVibes[dk];
       if (!v) continue;
-      for (const m of METRICS) {
+      for (const m of VIBE_METRICS) {
         const val = v[m.key];
         if (val != null) { entry.sums[m.key] += val; entry.counts[m.key]++; }
       }
@@ -220,7 +190,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                 const weekNum = getISOWeek(saturday);
                 const weekData = hasAnyWeeklyData ? weeklyAvgs.find(w => w.wk === weekNum) : null;
                 return weekData ? (
-                  METRICS.map(m => {
+                  VIBE_METRICS.map(m => {
                     const avg = weekData[m.key];
                     return (
                       <span key={m.key} className="flex items-center gap-0.5 text-[10px] text-foreground" title={`${language === 'zh' ? m.labelZh : m.labelEn}: ${avg ?? '—'}/100`}>
@@ -230,7 +200,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                     );
                   })
                 ) : (
-                  METRICS.map(m => (
+                  VIBE_METRICS.map(m => (
                     <span key={m.key} className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
                       <img src={m.iconSrc} alt="" className="vibe-kpi-icon w-4 h-4 flex-shrink-0" />
                       <span className="tabular-nums">—</span>

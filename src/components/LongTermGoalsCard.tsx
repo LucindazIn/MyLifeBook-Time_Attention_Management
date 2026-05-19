@@ -242,8 +242,8 @@ export const LongTermGoalsCard: React.FC<LongTermGoalsCardProps> = ({
         title={isZh ? '甘特图' : 'Gantt Chart'}
         scopeLine={
           isZh
-            ? '横条为中短期区间，菱形为里程碑；悬停或聚焦可查看所属母目标。'
-            : 'Bars Are Short-Term Windows; Diamonds Are Milestones. Hover Or Focus To See The Vision.'
+            ? '横条为中短期区间，菱形为里程碑；悬停或聚焦可查看母目标。拖动缩放、左右滑动或按钮切换时间段，可点「当前周」回到本周。'
+            : 'Bars Are Short-Term Windows; Diamonds Are Milestones. Hover Or Focus For The Vision. Drag To Zoom, Swipe Or Use Arrows To Change Period; Tap This Week To Return.'
         }
         language={language}
         panelMaxWidthClass="max-w-2xl"

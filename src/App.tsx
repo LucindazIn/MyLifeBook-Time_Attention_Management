@@ -53,6 +53,7 @@ import {
 } from '@/lib/eventAnalyticsHelpers';
 import { renameCustomTagInPool, removeCustomTagFromPool, isPresetEventLabel } from '@/lib/customEventTagsStorage';
 import { COLLECTION_SUBTITLES_ZH, COLLECTION_SUBTITLES_EN } from '@/lib/collectionSubtitles';
+import { createSyncGenerationGuard } from '@/lib/syncGeneration';
 
 const AUTH_ERROR_AUTO_DISMISS_MS = 10_000;
 
@@ -138,6 +139,7 @@ export default function App() {
   const yearListScrollRef = useRef<HTMLDivElement>(null);
 
   const deviceIdRef = useRef<string>('');
+  const syncGuardRef = useRef(createSyncGenerationGuard());
   useEffect(() => {
     const existing = localStorage.getItem('feather_device_id');
     if (existing) {
@@ -157,6 +159,8 @@ export default function App() {
   // Reusable full-data sync — called on login and on manual refresh
   const syncAllUserData = React.useCallback(async () => {
     if (!user) return;
+    const generation = syncGuardRef.current.begin();
+    const isStale = () => !syncGuardRef.current.isCurrent(generation);
     setIsSyncing(true);
     setAuthError(null);
     try {
@@ -179,6 +183,8 @@ export default function App() {
         listAllDailyQuotes(supabase, user.id),
       ]);
 
+      if (isStale()) return;
+
       setEvents(evts);
       setCompletedInstances(comps);
       setDayNames(dayMeta.dayNames);
@@ -188,19 +194,24 @@ export default function App() {
       setDailyQuotes(quotes);
 
       try {
-        await syncLifeBookChapters(supabase, user.id);
+        await syncLifeBookChapters(supabase, user.id, { isStale });
       } catch {
         // Chapter sync is best-effort; do not block main data sync
       }
+      if (isStale()) return;
       try {
-        await syncCollectionClientState(supabase, user.id);
+        await syncCollectionClientState(supabase, user.id, { isStale });
       } catch {
         // Collection local extensions sync is best-effort
       }
     } catch (e: unknown) {
-      setAuthError(formatSyncErrorMessage(e, settings.language));
+      if (syncGuardRef.current.shouldFinalize(generation)) {
+        setAuthError(formatSyncErrorMessage(e, settings.language));
+      }
     } finally {
-      setIsSyncing(false);
+      if (syncGuardRef.current.shouldFinalize(generation)) {
+        setIsSyncing(false);
+      }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
@@ -221,10 +232,14 @@ export default function App() {
   // Pull Life Book chapters + collection-only state when opening 人生之书
   useEffect(() => {
     if (viewMode !== 'lifeBook' || !user) return;
+    let cancelled = false;
     void Promise.all([
-      syncLifeBookChapters(supabase, user.id),
-      syncCollectionClientState(supabase, user.id),
+      syncLifeBookChapters(supabase, user.id, { isStale: () => cancelled }),
+      syncCollectionClientState(supabase, user.id, { isStale: () => cancelled }),
     ]).catch(() => {});
+    return () => {
+      cancelled = true;
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewMode, user]);
 
@@ -322,11 +337,23 @@ export default function App() {
   const today = startOfDay(new Date());
   const isPast = isBefore(startOfDay(currentDate), today);
 
-  // Keep ref for dayNames to avoid dependency loop
+  // Keep refs for day meta fields to avoid stale closures in async effects
   const dayNamesRef = useRef(dayNames);
+  const dayTagsRef = useRef(dayTags);
+  const journalEntriesRef = useRef(journalEntries);
+  const userRef = useRef(user);
   useEffect(() => {
     dayNamesRef.current = dayNames;
   }, [dayNames]);
+  useEffect(() => {
+    dayTagsRef.current = dayTags;
+  }, [dayTags]);
+  useEffect(() => {
+    journalEntriesRef.current = journalEntries;
+  }, [journalEntries]);
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
 
   // Default day name: random from dayNameRandomPools.json (same with or without events)
   useEffect(() => {
@@ -344,13 +371,14 @@ export default function App() {
         ...prev,
         [dateKey]: { name, isManual: false, language: settings.language }
       }));
-      if (user) {
-        upsertDayMeta(supabase, user.id, dateKey, {
+      const currentUser = userRef.current;
+      if (currentUser) {
+        upsertDayMeta(supabase, currentUser.id, dateKey, {
           day_name: name,
           day_name_is_manual: false,
           day_name_language: settings.language,
-          day_tag: dayTags[dateKey] || null,
-          journal: journalEntries[dateKey] || null,
+          day_tag: dayTagsRef.current[dateKey] || null,
+          journal: journalEntriesRef.current[dateKey] || null,
         }).catch(() => {});
       }
     };
@@ -426,21 +454,9 @@ export default function App() {
   const handleAddEvent = async (newEvent: ScheduleEvent) => {
     const isNewEvent = !events.some((e) => e.id === newEvent.id);
     if (user) {
-      const t0 = typeof performance !== 'undefined' ? performance.now() : 0;
       try {
-        // #region agent log
-        fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f6ac8d'},body:JSON.stringify({sessionId:'f6ac8d',runId:'perf',hypothesisId:'S1',location:'App.tsx:handleAddEvent:beforeUpsert',message:'upsert event',data:{eventId:newEvent.id,isNewEvent,hasLabel:!!newEvent.label,tagCount:(newEvent.tags?.length ?? 0),ltGoalCount:(newEvent.longTermGoals?.length ?? 0)},timestamp:Date.now()})}).catch(()=>{});
-        // #endregion
         await upsertEventWithTags(supabase, user.id, newEvent, { isNewEvent });
-        const ms = typeof performance !== 'undefined' ? Math.round(performance.now() - t0) : -1;
-        // #region agent log
-        fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f6ac8d'},body:JSON.stringify({sessionId:'f6ac8d',runId:'perf',hypothesisId:'S2',location:'App.tsx:handleAddEvent:afterUpsert',message:'upsert event finished',data:{eventId:newEvent.id,isNewEvent,durationMs:ms},timestamp:Date.now()})}).catch(()=>{});
-        // #endregion
       } catch (e: unknown) {
-        const pg = e && typeof e === 'object' ? (e as Record<string, unknown>) : null;
-        // #region agent log
-        fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f6ac8d'},body:JSON.stringify({sessionId:'f6ac8d',runId:'pre-fix',hypothesisId:'E2',location:'App.tsx:handleAddEvent:catch',message:'upsert event failed',data:{msg:String(pg?.message ?? e),code:pg?.code != null ? String(pg.code) : null,details:pg?.details != null ? String(pg.details) : null},timestamp:Date.now()})}).catch(()=>{});
-        // #endregion
         alert(formatSyncErrorMessage(e, settings.language));
         throw e;
       }
@@ -514,9 +530,6 @@ export default function App() {
       ...prev,
       [forDateKey]: summary
     }));
-    // #region agent log
-    fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f6ac8d'},body:JSON.stringify({sessionId:'f6ac8d',runId:'pre-fix',hypothesisId:'J2',location:'App.tsx:handleSaveJournal',message:'save journal invoked',data:{forDateKey,hasUser:!!user,summaryLen:summary.length},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     if (user) {
       void upsertDayMeta(supabase, user.id, forDateKey, {
         day_name: dayNames[forDateKey]?.name || null,
@@ -525,15 +538,7 @@ export default function App() {
         day_tag: dayTags[forDateKey] || null,
         journal: summary || null,
       })
-        .then(() => {
-          // #region agent log
-          fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f6ac8d'},body:JSON.stringify({sessionId:'f6ac8d',runId:'pre-fix',hypothesisId:'J3',location:'App.tsx:handleSaveJournal:then',message:'day_meta journal upsert ok',data:{forDateKey},timestamp:Date.now()})}).catch(()=>{});
-          // #endregion
-        })
         .catch((e: unknown) => {
-          // #region agent log
-          fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f6ac8d'},body:JSON.stringify({sessionId:'f6ac8d',runId:'pre-fix',hypothesisId:'J4',location:'App.tsx:handleSaveJournal:catch',message:'day_meta journal upsert failed',data:{msg:formatSyncErrorMessage(e, settings.language)},timestamp:Date.now()})}).catch(()=>{});
-          // #endregion
           setAuthError(formatSyncErrorMessage(e, settings.language));
         });
     }

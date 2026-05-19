@@ -337,9 +337,6 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
-    // #region agent log
-    fetch('http://127.0.0.1:7302/ingest/e34e5bd5-4320-4413-b8df-01e810a352dc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f6ac8d'},body:JSON.stringify({sessionId:'f6ac8d',runId:'pre-fix',hypothesisId:'T1',location:'AddEventModal.tsx:handleSubmit',message:'submit add/edit event',data:{innerW:typeof window!=='undefined'?window.innerWidth:null,hasLabel:!!labelText.trim(),labelColor},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
 
     // Construct full ISO strings using the selected date
     const startDateTime = new Date(date);

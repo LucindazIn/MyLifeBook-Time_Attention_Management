@@ -1,4 +1,4 @@
-import { getJSON, remove, setJSON, keys } from '@/lib/storage/localStorage';
+import { getJSON, setJSON } from '@/lib/storage/localStorage';
 
 export interface DailyQuote {
   text: string;
@@ -24,20 +24,5 @@ export function setQuote(dateKey: string, quote: Omit<DailyQuote, 'updatedAt'> &
   };
   setJSON(keyFor(dateKey), normalized);
   return normalized;
-}
-
-export function clearQuote(dateKey: string): void {
-  remove(keyFor(dateKey));
-}
-
-export function listAllQuotes(): Record<string, DailyQuote> {
-  const out: Record<string, DailyQuote> = {};
-  for (const k of keys()) {
-    if (!k.startsWith(PREFIX)) continue;
-    const dateKey = k.slice(PREFIX.length);
-    const q = getJSON<DailyQuote>(k);
-    if (q?.text) out[dateKey] = q;
-  }
-  return out;
 }
 

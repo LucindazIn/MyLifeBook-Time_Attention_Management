@@ -6,6 +6,7 @@ import { formatEventClockLine } from '@/lib/formatEventClock';
 import { expandRecurringEvents } from '@/lib/events';
 import { getChapterRange, type ChapterPeriodKey } from '@/lib/dateRange';
 import { cn } from '@/lib/utils';
+import { getAnalyticsRangeLabel } from '@/lib/analyticsRangeLabel';
 
 const THEME_RANGE_OPTIONS: ChapterPeriodKey[] = ['this_week', 'this_month'];
 
@@ -14,16 +15,6 @@ export interface ThemeTimelineCardProps {
   completedInstances: Record<string, boolean>;
   language: AppLanguage;
   timeDisplay: TimeDisplayFormat;
-}
-
-function getRangeLabel(period: ChapterPeriodKey, isZh: boolean): string {
-  const labels: Record<ChapterPeriodKey, { zh: string; en: string }> = {
-    this_week: { zh: '本周', en: 'This week' },
-    last_week: { zh: '上周', en: 'Last week' },
-    this_month: { zh: '本月', en: 'This month' },
-    custom: { zh: '自定义', en: 'Custom' },
-  };
-  return isZh ? labels[period].zh : labels[period].en;
 }
 
 export const ThemeTimelineCard: React.FC<ThemeTimelineCardProps> = ({
@@ -106,7 +97,7 @@ export const ThemeTimelineCard: React.FC<ThemeTimelineCardProps> = ({
                 : 'border-border text-muted-foreground hover:bg-field'
             )}
           >
-            {getRangeLabel(r, isZh)}
+            {getAnalyticsRangeLabel(r, isZh)}
           </button>
         ))}
       </div>

@@ -39,14 +39,6 @@ export function rolePercentagesByCount(segments: RoleSegment[], totalCount: numb
 }
 
 /**
- * 计算各 role 占比（按时长）。
- */
-export function rolePercentagesByDuration(segments: RoleSegment[], totalDurationMs: number): [string, number][] {
-  if (totalDurationMs <= 0) return [];
-  return segments.map((s) => [s.roleId, Math.round((s.durationMs / totalDurationMs) * 100)] as [string, number]);
-}
-
-/**
  * 对比当前周期与上一周期各 role 占比变化（按事件数）。
  * 返回 Map<roleId, deltaPercentage>，如 +10、-5。
  */

@@ -40,13 +40,6 @@ export interface DaySchedule {
   events: ScheduleEvent[];
 }
 
-export interface ChatMessage {
-  id: string;
-  role: 'user' | 'model';
-  text: string;
-  timestamp: number;
-}
-
 export type AppTheme = 'tech' | 'artsy' | 'anime' | 'minimalist' | 'nature' | 'retro';
 export type AppLanguage = 'en' | 'zh';
 export type TimeDisplayFormat = '12h' | '24h';

@@ -9,6 +9,7 @@ import { computeEventTagSlicesFromExpanded } from '@/lib/chapterPeriodStats';
 import { PIE_CX, PIE_CY, PIE_R_HOLE, PIE_R_OUTER, pieSectorPath } from '@/lib/pieChartSvg';
 import { EventTagManageModal } from '@/components/EventTagManageModal';
 import { useMediaQueryMdUp } from '@/lib/useMediaQuery';
+import { getAnalyticsRangeLabel } from '@/lib/analyticsRangeLabel';
 
 const RANGE_OPTIONS: ChapterPeriodKey[] = ['this_week', 'this_month', 'custom'];
 const LEGEND_PREVIEW_COUNT = 4;
@@ -26,16 +27,6 @@ const SLICE_COLORS = [
 
 function getSliceColor(i: number): string {
   return SLICE_COLORS[i % SLICE_COLORS.length];
-}
-
-function getRangeLabel(period: ChapterPeriodKey, isZh: boolean): string {
-  const labels: Record<ChapterPeriodKey, string> = {
-    this_week: isZh ? '本周' : 'This Week',
-    last_week: isZh ? '上周' : 'Last Week',
-    this_month: isZh ? '本月' : 'This Month',
-    custom: isZh ? '自定义' : 'Custom',
-  };
-  return labels[period];
 }
 
 export interface EventVolumeCardProps {
@@ -164,7 +155,7 @@ export const EventVolumeCard: React.FC<EventVolumeCardProps> = ({
                   : 'border-border text-muted-foreground hover:bg-field'
               )}
             >
-              {getRangeLabel(r, isZh)}
+              {getAnalyticsRangeLabel(r, isZh)}
             </button>
           ))}
         </div>

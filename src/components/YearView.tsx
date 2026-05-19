@@ -7,7 +7,7 @@ import { ScheduleEvent } from '@/types';
 import { expandRecurringEvents } from '@/lib/events';
 import { AppLanguage } from '@/types';
 import { DayVibes } from '@/lib/repositories/dayMetaRepo';
-import { VIBE_ICON_URL } from '@/lib/vibeIcons';
+import { computeDayVibeAvgs, VIBE_METRICS } from '@/lib/vibeMetrics';
 
 interface YearViewProps {
   currentDate: Date;
@@ -22,35 +22,6 @@ interface YearViewProps {
   highlightDates?: Set<string>;
   language: AppLanguage;
   dayVibes?: Record<string, DayVibes>;
-}
-
-const METRICS = [
-  { key: 'energy' as const, labelZh: '能量', labelEn: 'Energy', iconSrc: VIBE_ICON_URL.energy, colorHigh: 'bg-emerald-400', colorMid: 'bg-amber-400', colorLow: 'bg-slate-300' },
-  { key: 'mood'   as const, labelZh: '心情', labelEn: 'Mood',   iconSrc: VIBE_ICON_URL.mood, colorHigh: 'bg-rose-400',   colorMid: 'bg-rose-300',   colorLow: 'bg-slate-300' },
-  { key: 'focus'  as const, labelZh: '专注', labelEn: 'Focus',  iconSrc: VIBE_ICON_URL.focus, colorHigh: 'bg-indigo-400', colorMid: 'bg-indigo-300', colorLow: 'bg-slate-300' },
-];
-
-function metricColor(m: typeof METRICS[0], avg: number) {
-  return avg >= 70 ? m.colorHigh : avg >= 40 ? m.colorMid : m.colorLow;
-}
-
-function computeAvgsForRange(days: Date[], dayVibes: Record<string, DayVibes>) {
-  const sums = { energy: 0, mood: 0, focus: 0 };
-  const counts = { energy: 0, mood: 0, focus: 0 };
-  for (const day of days) {
-    const dk = format(day, 'yyyy-MM-dd');
-    const v = dayVibes[dk];
-    if (!v) continue;
-    for (const m of METRICS) {
-      const val = v[m.key];
-      if (val != null) { sums[m.key] += val; counts[m.key]++; }
-    }
-  }
-  return {
-    energy: counts.energy > 0 ? Math.round(sums.energy / counts.energy) : null,
-    mood:   counts.mood   > 0 ? Math.round(sums.mood   / counts.mood)   : null,
-    focus:  counts.focus  > 0 ? Math.round(sums.focus  / counts.focus)  : null,
-  };
 }
 
 export const YearView: React.FC<YearViewProps> = ({
@@ -105,7 +76,7 @@ export const YearView: React.FC<YearViewProps> = ({
           const roleColor = selectedFilterRole ? getRoleColor(selectedFilterRole) : undefined;
           const hasEvents = monthEvents.length > 0;
           const isCurrentMonth = isSameMonth(new Date(), monthDate);
-          const monthAvgs = computeAvgsForRange(monthDays, dayVibes);
+          const monthAvgs = computeDayVibeAvgs(monthDays, dayVibes);
           const hasMonthAvg = monthAvgs.energy != null || monthAvgs.mood != null || monthAvgs.focus != null;
 
           return (
@@ -137,7 +108,7 @@ export const YearView: React.FC<YearViewProps> = ({
                   )}
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  {METRICS.map(m => {
+                  {VIBE_METRICS.map(m => {
                     const avg = monthAvgs[m.key];
                     return (
                       <span key={m.key} className="flex items-center gap-0.5 text-[10px] text-foreground" title={`${language === 'zh' ? m.labelZh : m.labelEn}: ${avg ?? '—'}/100`}>

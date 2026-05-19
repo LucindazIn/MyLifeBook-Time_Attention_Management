@@ -1,6 +1,7 @@
-import React, { useMemo, useState, useCallback, useRef } from 'react';
+import React, { useMemo, useState, useCallback, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { endOfDay, format, parseISO, startOfDay, startOfMonth } from 'date-fns';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { AppLanguage, ScheduleEvent } from '@/types';
 import { getChapterRange, type ChapterPeriodKey } from '@/lib/dateRange';
 import { cn } from '@/lib/utils';
@@ -16,10 +17,24 @@ import {
   todayPctInWindow,
   rowOverlapsWindow,
   formatMilestonePreview,
+  buildGanttAxisTicks,
+  computePanBounds,
+  computeDefaultPpd,
+  computeVisibleDayCount,
+  resolveViewWindow,
+  shiftViewWindow,
+  panOffsetForViewStart,
+  getCurrentWeekAnchor,
+  clampPpd,
+  PPD_MIN,
+  PPD_MAX,
+  countCalendarDays,
   type GanttRow,
 } from '@/lib/longTermGoalGantt';
 
 const RANGE_OPTIONS: ChapterPeriodKey[] = ['this_week', 'this_month', 'custom'];
+const SWIPE_THRESHOLD_PX = 48;
+const LABEL_COL_CLASS = 'w-[7rem] sm:w-[8rem]';
 
 function getRangeLabel(period: ChapterPeriodKey, isZh: boolean): string {
   const labels: Record<ChapterPeriodKey, string> = {
@@ -42,10 +57,11 @@ interface TooltipState {
   anchorRect: DOMRect;
 }
 
-interface GanttRowViewProps {
+interface GanttBarTrackProps {
   row: GanttRow;
-  windowStart: Date;
-  windowEnd: Date;
+  viewStart: Date;
+  viewEnd: Date;
+  trackWidthPx: number;
   todayPct: number | null;
   isZh: boolean;
   tooltipId: string;
@@ -54,10 +70,11 @@ interface GanttRowViewProps {
   onCancelHide: () => void;
 }
 
-const GanttRowView: React.FC<GanttRowViewProps> = ({
+const GanttBarTrack: React.FC<GanttBarTrackProps> = ({
   row,
-  windowStart,
-  windowEnd,
+  viewStart,
+  viewEnd,
+  trackWidthPx,
   todayPct,
   isZh,
   tooltipId,
@@ -66,24 +83,22 @@ const GanttRowView: React.FC<GanttRowViewProps> = ({
   onCancelHide,
 }) => {
   const { medium } = row;
-  const bar = layoutBarInWindow(windowStart, windowEnd, medium.startAt, medium.endAt);
+  const bar = layoutBarInWindow(viewStart, viewEnd, medium.startAt, medium.endAt);
   const ariaLabel = isZh
     ? `${medium.title}，母目标 ${row.visionName}，${medium.startAt} 至 ${medium.endAt}`
     : `${medium.title}, Vision ${row.visionName}, ${medium.startAt} to ${medium.endAt}`;
 
   return (
-    <li className="flex gap-2 items-stretch min-h-[2.25rem]">
+    <div
+      className="relative h-9 shrink-0"
+      style={{ width: trackWidthPx, minWidth: trackWidthPx }}
+    >
       <div
-        className="w-[7rem] sm:w-[8rem] shrink-0 text-[10px] leading-tight pr-1 flex items-center"
-        style={{ color: 'var(--app-text)' }}
-      >
-        <span className="line-clamp-2 font-medium" title={medium.title}>
-          {medium.title}
-        </span>
-      </div>
-      <div
-        className="relative flex-1 min-w-0 h-9 rounded-lg border"
-        style={{ borderColor: 'var(--app-border)', background: 'color-mix(in srgb, var(--app-field) 35%, transparent)' }}
+        className="absolute inset-0 rounded-lg border"
+        style={{
+          borderColor: 'var(--app-border)',
+          background: 'color-mix(in srgb, var(--app-field) 35%, transparent)',
+        }}
       >
         {todayPct != null && (
           <div
@@ -145,7 +160,7 @@ const GanttRowView: React.FC<GanttRowViewProps> = ({
           </div>
         )}
       </div>
-    </li>
+    </div>
   );
 };
 
@@ -156,12 +171,115 @@ export const LongTermGoalsGanttContent: React.FC<LongTermGoalsGanttContentProps>
 }) => {
   const isZh = language === 'zh';
   const tooltipId = React.useId();
+  const trackScrollRef = useRef<HTMLDivElement>(null);
+  const touchStartX = useRef<number | null>(null);
+
   const [range, setRange] = useState<ChapterPeriodKey>('this_month');
   const [customStart, setCustomStart] = useState(() => format(startOfMonth(new Date()), 'yyyy-MM-dd'));
   const [customEnd, setCustomEnd] = useState(() => format(new Date(), 'yyyy-MM-dd'));
   const [inProgressOnly, setInProgressOnly] = useState(false);
+  const [ppd, setPpd] = useState(16);
+  const [panOffsetDays, setPanOffsetDays] = useState(0);
+  const [trackClientWidth, setTrackClientWidth] = useState(320);
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const { anchorStart, anchorEnd } = useMemo(() => {
+    if (range === 'custom') {
+      const a = startOfDay(parseISO(customStart));
+      const b = endOfDay(parseISO(customEnd));
+      const s = a.getTime() <= b.getTime() ? a : b;
+      const e = a.getTime() <= b.getTime() ? b : a;
+      return { anchorStart: s, anchorEnd: e };
+    }
+    const { start, end } = getChapterRange(range);
+    return { anchorStart: start, anchorEnd: end };
+  }, [range, customStart, customEnd]);
+
+  const allRows = useMemo(() => {
+    const goalNames = mergeLongTermGoalNames(events);
+    const meta = loadLongTermGoalMeta();
+    const map: Record<string, ReturnType<typeof getOrCreateRecord>> = {};
+    goalNames.forEach((n) => {
+      map[n] = getOrCreateRecord(meta, n);
+    });
+    return flattenMediumTermRows(goalNames, map);
+  }, [events, collectionStateRevision]);
+
+  const panBounds = useMemo(() => computePanBounds(allRows), [allRows]);
+
+  const visibleDayCount = useMemo(
+    () => computeVisibleDayCount(trackClientWidth, ppd),
+    [trackClientWidth, ppd]
+  );
+
+  const { viewStart, viewEnd } = useMemo(
+    () => resolveViewWindow(anchorStart, panOffsetDays, visibleDayCount, panBounds),
+    [anchorStart, panOffsetDays, visibleDayCount, panBounds]
+  );
+
+  const trackWidthPx = visibleDayCount * ppd;
+
+  const axisTicks = useMemo(
+    () => buildGanttAxisTicks(viewStart, viewEnd, ppd, isZh),
+    [viewStart, viewEnd, ppd, isZh]
+  );
+
+  const visibleRows = useMemo(() => {
+    let rows = allRows.filter((r) =>
+      rowOverlapsWindow(viewStart, viewEnd, r.medium.startAt, r.medium.endAt)
+    );
+    if (inProgressOnly) rows = rows.filter((r) => r.inProgress);
+    return rows;
+  }, [allRows, viewStart, viewEnd, inProgressOnly]);
+
+  const todayPct = useMemo(() => todayPctInWindow(viewStart, viewEnd), [viewStart, viewEnd]);
+
+  const viewRangeLabel = `${format(viewStart, 'yyyy-MM-dd')} — ${format(viewEnd, 'yyyy-MM-dd')}`;
+
+  useEffect(() => {
+    const el = trackScrollRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver((entries) => {
+      const w = entries[0]?.contentRect.width;
+      if (w && w > 0) setTrackClientWidth(w);
+    });
+    ro.observe(el);
+    setTrackClientWidth(el.clientWidth || 320);
+    return () => ro.disconnect();
+  }, []);
+
+  const resetViewport = useCallback(
+    (nextAnchorStart: Date, nextAnchorEnd: Date) => {
+      const w = trackScrollRef.current?.clientWidth ?? trackClientWidth;
+      const days = countCalendarDays(nextAnchorStart, nextAnchorEnd);
+      setPpd(computeDefaultPpd(w, days));
+      setPanOffsetDays(0);
+    },
+    [trackClientWidth]
+  );
+
+  useEffect(() => {
+    resetViewport(anchorStart, anchorEnd);
+  }, [range, customStart, customEnd]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const panBy = useCallback(
+    (deltaDays: number) => {
+      const next = shiftViewWindow(viewStart, viewEnd, deltaDays, panBounds);
+      setPanOffsetDays(panOffsetForViewStart(anchorStart, next.viewStart));
+    },
+    [viewStart, viewEnd, panBounds, anchorStart]
+  );
+
+  const panStep = Math.max(1, Math.floor(visibleDayCount / 2));
+
+  const handleGoToCurrentWeek = useCallback(() => {
+    setRange('this_week');
+    const { anchorStart, anchorEnd } = getCurrentWeekAnchor();
+    const w = trackScrollRef.current?.clientWidth ?? trackClientWidth;
+    setPpd(computeDefaultPpd(w, countCalendarDays(anchorStart, anchorEnd)));
+    setPanOffsetDays(0);
+  }, [trackClientWidth]);
 
   const onCustomStartChange = useCallback(
     (value: string) => {
@@ -181,49 +299,6 @@ export const LongTermGoalsGanttContent: React.FC<LongTermGoalsGanttContentProps>
     [customStart]
   );
 
-  const { windowStart, windowEnd } = useMemo(() => {
-    if (range === 'custom') {
-      const a = startOfDay(parseISO(customStart));
-      const b = endOfDay(parseISO(customEnd));
-      const s = a.getTime() <= b.getTime() ? a : b;
-      const e = a.getTime() <= b.getTime() ? b : a;
-      return { windowStart: s, windowEnd: e };
-    }
-    const { start, end } = getChapterRange(range);
-    return { windowStart: start, windowEnd: end };
-  }, [range, customStart, customEnd]);
-
-  const allRows = useMemo(() => {
-    const goalNames = mergeLongTermGoalNames(events);
-    const meta = loadLongTermGoalMeta();
-    const map: Record<string, ReturnType<typeof getOrCreateRecord>> = {};
-    goalNames.forEach((n) => {
-      map[n] = getOrCreateRecord(meta, n);
-    });
-    return flattenMediumTermRows(goalNames, map);
-  }, [events, collectionStateRevision]);
-
-  const visibleRows = useMemo(() => {
-    let rows = allRows.filter((r) =>
-      rowOverlapsWindow(windowStart, windowEnd, r.medium.startAt, r.medium.endAt)
-    );
-    if (inProgressOnly) rows = rows.filter((r) => r.inProgress);
-    return rows;
-  }, [allRows, windowStart, windowEnd, inProgressOnly]);
-
-  const todayPct = useMemo(
-    () => todayPctInWindow(windowStart, windowEnd),
-    [windowStart, windowEnd]
-  );
-
-  const axisLabels = useMemo(() => {
-    const startLabel = format(windowStart, isZh ? 'M/d' : 'MMM d');
-    const endLabel = format(windowEnd, isZh ? 'M/d' : 'MMM d');
-    const mid = new Date((windowStart.getTime() + windowEnd.getTime()) / 2);
-    const midLabel = format(mid, isZh ? 'M/d' : 'MMM d');
-    return { startLabel, midLabel, endLabel };
-  }, [windowStart, windowEnd, isZh]);
-
   const showTooltip = useCallback((row: GanttRow, el: HTMLElement) => {
     if (hideTimer.current) clearTimeout(hideTimer.current);
     setTooltip({ row, anchorRect: el.getBoundingClientRect() });
@@ -237,6 +312,47 @@ export const LongTermGoalsGanttContent: React.FC<LongTermGoalsGanttContentProps>
   const cancelHideTooltip = useCallback(() => {
     if (hideTimer.current) clearTimeout(hideTimer.current);
   }, []);
+
+  const onTrackWheel = useCallback(
+    (e: React.WheelEvent) => {
+      if (!e.shiftKey) return;
+      e.preventDefault();
+      const step = e.deltaY > 0 || e.deltaX > 0 ? panStep : -panStep;
+      panBy(step);
+    },
+    [panBy, panStep]
+  );
+
+  const onTrackTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0]?.clientX ?? null;
+  }, []);
+
+  const onTrackTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      const start = touchStartX.current;
+      touchStartX.current = null;
+      if (start == null) return;
+      const end = e.changedTouches[0]?.clientX;
+      if (end == null) return;
+      const dx = end - start;
+      if (Math.abs(dx) < SWIPE_THRESHOLD_PX) return;
+      panBy(dx > 0 ? -panStep : panStep);
+    },
+    [panBy, panStep]
+  );
+
+  const onTrackKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        panBy(e.shiftKey ? -7 : -1);
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        panBy(e.shiftKey ? 7 : 1);
+      }
+    },
+    [panBy]
+  );
 
   const renderTooltip = () => {
     if (!tooltip || typeof document === 'undefined') return null;
@@ -279,6 +395,9 @@ export const LongTermGoalsGanttContent: React.FC<LongTermGoalsGanttContentProps>
       document.body
     );
   };
+
+  const btnClass =
+    'text-xs font-medium rounded-lg px-2.5 py-1.5 border transition-colors border-border text-muted-foreground hover:bg-field shrink-0';
 
   return (
     <div className="space-y-3 min-w-0" style={{ color: 'var(--app-text)' }}>
@@ -341,13 +460,49 @@ export const LongTermGoalsGanttContent: React.FC<LongTermGoalsGanttContentProps>
         </div>
       )}
 
-      <div
-        className="flex justify-between text-[10px] tabular-nums px-[7.5rem] sm:px-[8.5rem]"
-        style={{ color: 'var(--app-muted)' }}
-      >
-        <span>{axisLabels.startLabel}</span>
-        <span>{axisLabels.midLabel}</span>
-        <span>{axisLabels.endLabel}</span>
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-xs shrink-0" style={{ color: 'var(--app-muted)' }}>
+          {isZh ? '缩放' : 'Zoom'}
+        </span>
+        <input
+          type="range"
+          min={PPD_MIN}
+          max={PPD_MAX}
+          step={1}
+          value={ppd}
+          onChange={(e) => setPpd(clampPpd(Number(e.target.value)))}
+          className="flex-1 min-w-[8rem] max-w-md accent-[var(--app-accent)]"
+          aria-label={isZh ? '时间轴缩放' : 'Timeline Zoom'}
+        />
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          className={btnClass}
+          onClick={() => panBy(-panStep)}
+          aria-label={isZh ? '上一段' : 'Previous Period'}
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+        <span className="text-xs tabular-nums flex-1 text-center min-w-[10rem]" style={{ color: 'var(--app-text)' }}>
+          {viewRangeLabel}
+        </span>
+        <button
+          type="button"
+          className={btnClass}
+          onClick={() => panBy(panStep)}
+          aria-label={isZh ? '下一段' : 'Next Period'}
+        >
+          <ChevronRight className="w-4 h-4" />
+        </button>
+        <button
+          type="button"
+          className={cn(btnClass, 'text-accent border-accent/40')}
+          onClick={handleGoToCurrentWeek}
+        >
+          {isZh ? '当前周' : 'This Week'}
+        </button>
       </div>
 
       {allRows.length === 0 ? (
@@ -356,43 +511,117 @@ export const LongTermGoalsGanttContent: React.FC<LongTermGoalsGanttContentProps>
             ? '请先在「管理」里为母目标添加中短期区间与里程碑。'
             : 'Add Short-Term Windows And Milestones Under A Vision In Manage First.'}
         </p>
-      ) : visibleRows.length === 0 ? (
-        <p className="text-xs py-2" style={{ color: 'var(--app-muted)' }}>
-          {inProgressOnly
-            ? isZh
-              ? '当前时间窗内没有进行中的中短期目标。'
-              : 'No In-Progress Short-Term Goals In This Window.'
-            : isZh
-              ? '当前时间窗内没有可展示的中短期区间。'
-              : 'No Short-Term Windows Overlap This Time Range.'}
-        </p>
       ) : (
-        <ul className="space-y-2">
-          {visibleRows.map((row) => (
-            <GanttRowView
-              key={row.id}
-              row={row}
-              windowStart={windowStart}
-              windowEnd={windowEnd}
-              todayPct={todayPct}
-              isZh={isZh}
-              tooltipId={tooltipId}
-              onShowTooltip={showTooltip}
-              onHideTooltip={scheduleHideTooltip}
-              onCancelHide={cancelHideTooltip}
-            />
-          ))}
-        </ul>
+        <div className="flex min-w-0 gap-2">
+          <div className={`${LABEL_COL_CLASS} shrink-0`}>
+            <div className="h-5 mb-1" aria-hidden />
+            {visibleRows.length === 0 ? (
+              <p className="text-[10px] leading-snug pr-1" style={{ color: 'var(--app-muted)' }}>
+                {inProgressOnly
+                  ? isZh
+                    ? '无进行中'
+                    : 'None In Progress'
+                  : isZh
+                    ? '本段无数据'
+                    : 'Empty'}
+              </p>
+            ) : (
+              <ul className="space-y-2">
+                {visibleRows.map((row) => (
+                  <li
+                    key={row.id}
+                    className="min-h-[2.25rem] flex items-center text-[10px] leading-tight pr-1"
+                    style={{ color: 'var(--app-text)' }}
+                  >
+                    <span className="line-clamp-2 font-medium" title={row.medium.title}>
+                      {row.medium.title}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div
+            ref={trackScrollRef}
+            className="flex-1 min-w-0 overflow-x-auto overflow-y-visible rounded-lg -mx-1 px-1"
+            tabIndex={0}
+            role="region"
+            aria-label={isZh ? '甘特图时间轨，可左右滑动查看其他时间段' : 'Gantt Timeline, Swipe To See Other Periods'}
+            onWheel={onTrackWheel}
+            onTouchStart={onTrackTouchStart}
+            onTouchEnd={onTrackTouchEnd}
+            onKeyDown={onTrackKeyDown}
+          >
+            <div style={{ width: trackWidthPx, minWidth: trackWidthPx }}>
+              <div className="relative h-5 mb-1 shrink-0" style={{ width: trackWidthPx }}>
+                {axisTicks.map((tick, i) => (
+                  <div
+                    key={`${tick.at.getTime()}-${i}`}
+                    className="absolute top-0 flex flex-col items-center -translate-x-1/2"
+                    style={{ left: `${tick.pct}%` }}
+                  >
+                    <div
+                      className="w-px h-1.5"
+                      style={{ background: 'var(--app-border)' }}
+                      aria-hidden
+                    />
+                    <span
+                      className="text-[9px] tabular-nums whitespace-nowrap mt-0.5"
+                      style={{ color: 'var(--app-muted)' }}
+                    >
+                      {tick.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {visibleRows.length === 0 ? (
+                <p className="text-xs py-2" style={{ color: 'var(--app-muted)' }}>
+                  {inProgressOnly
+                    ? isZh
+                      ? '当前视口内没有进行中的中短期目标。'
+                      : 'No In-Progress Short-Term Goals In This Viewport.'
+                    : isZh
+                      ? '当前视口内没有可展示的中短期区间。'
+                      : 'No Short-Term Windows In This Viewport.'}
+                </p>
+              ) : (
+                <ul className="space-y-2">
+                  {visibleRows.map((row) => (
+                    <GanttBarTrack
+                      key={row.id}
+                      row={row}
+                      viewStart={viewStart}
+                      viewEnd={viewEnd}
+                      trackWidthPx={trackWidthPx}
+                      todayPct={todayPct}
+                      isZh={isZh}
+                      tooltipId={tooltipId}
+                      onShowTooltip={showTooltip}
+                      onHideTooltip={scheduleHideTooltip}
+                      onCancelHide={cancelHideTooltip}
+                    />
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </div>
       )}
 
-      {todayPct != null && visibleRows.length > 0 && (
+      {allRows.length > 0 && (
         <p className="text-[10px] flex items-center gap-1.5" style={{ color: 'var(--app-muted)' }}>
-          <span
-            className="inline-block w-3 h-0.5 rounded-full"
-            style={{ background: 'var(--app-accent)' }}
-            aria-hidden
-          />
-          {isZh ? '竖线为今天' : 'Vertical Line Is Today'}
+          {todayPct != null && (
+            <span
+              className="inline-block w-3 h-0.5 rounded-full shrink-0"
+              style={{ background: 'var(--app-accent)' }}
+              aria-hidden
+            />
+          )}
+          {isZh
+            ? '竖线为今天；左右滑动、Shift+滚轮或箭头可切换时间段'
+            : 'Line Is Today; Swipe, Shift+Scroll Or Arrows To Change Period'}
         </p>
       )}
 

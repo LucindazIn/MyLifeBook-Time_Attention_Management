@@ -564,6 +564,7 @@ function randomAlphaSuffix(len: number): string {
 export function pickUniqueNewVisionTitle(events: ScheduleEvent[], isZh: boolean): string {
   const base = isZh ? DEFAULT_GOAL_TITLE_ZH : DEFAULT_GOAL_TITLE_EN;
   const existing = collectLongTermGoalNameSet(events);
+  loadDeletedLongTermGoalNames().forEach((name) => existing.add(name));
   if (!existing.has(base)) return base;
   const sep = '·';
   for (let attempt = 0; attempt < 96; attempt++) {

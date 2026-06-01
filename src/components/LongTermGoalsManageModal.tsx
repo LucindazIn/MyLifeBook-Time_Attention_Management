@@ -48,23 +48,34 @@ function GoalTitleEditor({
   isZh,
   onCommit,
   onRemoveIfStillPlaceholder,
+  autoFocus,
 }: {
   initial: string;
   isZh: boolean;
   onCommit: (next: string) => void;
   onRemoveIfStillPlaceholder?: () => void;
+  autoFocus?: boolean;
 }) {
   const [val, setVal] = useState(initial);
+  const inputRef = useRef<HTMLInputElement>(null);
   useEffect(() => setVal(initial), [initial]);
+  useEffect(() => {
+    if (!autoFocus) return;
+    requestAnimationFrame(() => {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    });
+  }, [autoFocus]);
 
   return (
     <input
+      ref={inputRef}
       type="text"
       value={val}
       onChange={(e) => setVal(e.target.value)}
       onBlur={() => {
         const t = val.trim();
-        if (isDefaultVisionTitle(initial) && (!t || isDefaultVisionTitle(t))) {
+        if (isDefaultVisionTitle(initial) && !t) {
           onRemoveIfStillPlaceholder?.();
           return;
         }
@@ -540,6 +551,7 @@ export const LongTermGoalsManageModal: React.FC<LongTermGoalsManageModalProps> =
                           onRemoveIfStillPlaceholder={
                             isDefaultVisionTitle(goal) ? () => handleRemovePlaceholderVision(goal) : undefined
                           }
+                          autoFocus={scrollToGoalName === goal}
                         />
                       </div>
                     </div>

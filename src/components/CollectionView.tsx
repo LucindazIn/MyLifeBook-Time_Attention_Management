@@ -24,6 +24,7 @@ export interface CollectionViewProps {
   onMigrateEventTag: (oldTag: string, newTag: string) => void | Promise<void>;
   onClearEventTag: (tag: string) => void | Promise<void>;
   onOpenBatchEditor: () => void;
+  onOpenGoalLinking: () => void;
   chartFilters: Pick<TagAnalysisFilterState, 'range' | 'customStart' | 'customEnd'>;
   onChartFiltersChange: (next: Pick<TagAnalysisFilterState, 'range' | 'customStart' | 'customEnd'>) => void;
   /** Logged-in user: chapter list syncs to Supabase for cross-device consistency. */
@@ -56,6 +57,7 @@ export const CollectionView: React.FC<CollectionViewProps> = ({
   onMigrateEventTag,
   onClearEventTag,
   onOpenBatchEditor,
+  onOpenGoalLinking,
   chartFilters,
   onChartFiltersChange,
   userId = null,
@@ -120,6 +122,7 @@ export const CollectionView: React.FC<CollectionViewProps> = ({
             timeDisplay={timeDisplay}
             onRenameLongTermGoal={onRenameLongTermGoal}
             onDeleteLongTermGoal={onDeleteLongTermGoal}
+            onOpenGoalLinking={onOpenGoalLinking}
             collectionStateRevision={collectionStateRevision}
           />
         </div>

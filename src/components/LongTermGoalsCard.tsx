@@ -32,6 +32,7 @@ export interface LongTermGoalsCardProps {
   timeDisplay: TimeDisplayFormat;
   onRenameLongTermGoal: (oldName: string, newName: string) => void | Promise<void>;
   onDeleteLongTermGoal: (goalName: string) => void | Promise<void>;
+  onOpenGoalLinking?: () => void;
   collectionStateRevision?: number;
 }
 
@@ -66,6 +67,7 @@ export const LongTermGoalsCard: React.FC<LongTermGoalsCardProps> = ({
   language,
   onRenameLongTermGoal,
   onDeleteLongTermGoal,
+  onOpenGoalLinking,
   collectionStateRevision = 0,
 }) => {
   void _timeDisplay;
@@ -188,6 +190,16 @@ export const LongTermGoalsCard: React.FC<LongTermGoalsCardProps> = ({
           {isZh ? '长期目标' : 'Long-Term Goals'}
         </h3>
         <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+          {onOpenGoalLinking && (
+            <button
+              type="button"
+              onClick={onOpenGoalLinking}
+              className="text-[11px] font-medium rounded-lg px-2 py-1 border border-border hover:bg-accent/10 transition-colors"
+              style={{ color: 'var(--app-accent)' }}
+            >
+              {isZh ? '整理目标' : 'Link Goals'}
+            </button>
+          )}
           <button
             type="button"
             onClick={() => setGanttOpen(true)}

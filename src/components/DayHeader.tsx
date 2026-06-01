@@ -18,10 +18,6 @@ interface DayHeaderProps {
   customTags?: CustomTag[];
   onAddCustomTag?: (tag: CustomTag) => void;
   onRemoveCustomTag?: (id: string) => void;
-  unlinkedGoalCount?: number;
-  onOpenGoalLinking?: () => void;
-  untaggedCount?: number;
-  onOpenBatchEditor?: () => void;
 }
 
 export const DayHeader: React.FC<DayHeaderProps> = ({ 
@@ -35,10 +31,6 @@ export const DayHeader: React.FC<DayHeaderProps> = ({
   customTags,
   onAddCustomTag,
   onRemoveCustomTag,
-  unlinkedGoalCount = 0,
-  onOpenGoalLinking,
-  untaggedCount = 0,
-  onOpenBatchEditor,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState(dayName || '');
@@ -102,24 +94,6 @@ export const DayHeader: React.FC<DayHeaderProps> = ({
     >
       <div className="text-sm font-medium text-muted-foreground uppercase tracking-widest mb-1 flex items-center justify-center gap-2 flex-wrap">
         <span>{formattedDate}</span>
-        {onOpenGoalLinking && unlinkedGoalCount > 0 && (
-          <button
-            type="button"
-            onClick={onOpenGoalLinking}
-            className="normal-case tracking-normal text-xs px-2.5 py-1 rounded-full bg-accent/15 text-accent hover:bg-accent/25 transition-colors"
-          >
-            {language === 'zh' ? `整理目标 (${unlinkedGoalCount})` : `Goals (${unlinkedGoalCount})`}
-          </button>
-        )}
-        {onOpenBatchEditor && untaggedCount > 0 && (
-          <button
-            type="button"
-            onClick={onOpenBatchEditor}
-            className="normal-case tracking-normal text-xs px-2.5 py-1 rounded-full bg-accent/10 text-accent hover:bg-accent/20 transition-colors"
-          >
-            {language === 'zh' ? `补标 (${untaggedCount})` : `Tag (${untaggedCount})`}
-          </button>
-        )}
       </div>
       
       <div className="flex w-full justify-center items-center min-h-[3.25rem] px-2">

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Globe, Palette, Check, UserCircle2, LogIn, LogOut, Clock } from 'lucide-react';
+import { X, Globe, Palette, Check, UserCircle2, LogIn, LogOut, Clock, Upload } from 'lucide-react';
 import { AppSettings, AppTheme, AppLanguage, TimeDisplayFormat } from '@/types';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ interface SettingsModalProps {
   user?: { email?: string } | null;
   onSignIn?: () => void;
   onSignOut?: () => void;
+  onOpenRoutineImport?: () => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -23,6 +24,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   user,
   onSignIn,
   onSignOut,
+  onOpenRoutineImport,
 }) => {
   const THEME_TEXT: Record<AppLanguage, Record<AppTheme, { label: string; desc: string }>> = {
     en: {
@@ -133,6 +135,40 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       )}
                     </div>
                   )}
+                </section>
+
+                {/* Data tools */}
+                <section>
+                  <div className="flex items-center gap-2 mb-4 font-medium text-foreground">
+                    <Upload className="w-4 h-4 text-accent" />
+                    {settings.language === 'zh' ? '数据工具' : 'Data Tools'}
+                  </div>
+                  <div className="rounded-xl border border-border bg-field p-3">
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <p className="text-sm font-medium text-foreground">
+                          {settings.language === 'zh' ? '导入 Routine' : 'Import Routine'}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {settings.language === 'zh'
+                            ? '粘贴 JSON 批量新增日程；原始文件不会保存。'
+                            : 'Paste JSON To Batch-Create Events. Source Files Are Not Stored.'}
+                        </p>
+                      </div>
+                      {onOpenRoutineImport && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onOpenRoutineImport();
+                            onClose();
+                          }}
+                          className="shrink-0 rounded-lg border border-border px-3 py-2 text-xs font-medium text-accent transition-colors hover:bg-surface"
+                        >
+                          {settings.language === 'zh' ? '打开' : 'Open'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </section>
 
                 {/* Language Section */}

@@ -13,10 +13,8 @@ import {
   PRESET_EVENT_LABELS_ZH,
   loadSavedCustomEventTags,
 } from '@/lib/customEventTagsStorage';
-import { getEventPersistId } from '@/lib/tagCompleteness';
-import { getEventsInRange, type TagAnalysisFilterState } from '@/lib/tagAnalysisQuery';
-import { getAnalyticsRangeLabel } from '@/lib/analyticsRangeLabel';
-import type { ChapterPeriodKey } from '@/lib/dateRange';
+import { getEventPersistId, isEventUntagged } from '@/lib/tagCompleteness';
+import type { TagAnalysisFilterState } from '@/lib/tagAnalysisQuery';
 
 export interface TagDraft {
   roleId: string;
@@ -30,7 +28,6 @@ interface TagBatchEditorDrawerProps {
   events: ScheduleEvent[];
   allEvents: ScheduleEvent[];
   filters: TagAnalysisFilterState;
-  completedInstances: Record<string, boolean>;
   language: AppLanguage;
   onFiltersChange: (filters: TagAnalysisFilterState) => void;
   onSave: (updates: Map<string, TagDraft>) => Promise<void>;
@@ -59,15 +56,12 @@ function getEventTypeLabel(type: EventType, isZh: boolean): string {
   return isZh ? map[type].zh : map[type].en;
 }
 
-const BATCH_RANGE_OPTIONS: ChapterPeriodKey[] = ['this_week', 'this_month', 'custom'];
-
 export const TagBatchEditorDrawer: React.FC<TagBatchEditorDrawerProps> = ({
   isOpen,
   onClose,
   events,
   allEvents,
   filters,
-  completedInstances,
   language,
   onFiltersChange,
   onSave,
@@ -76,8 +70,13 @@ export const TagBatchEditorDrawer: React.FC<TagBatchEditorDrawerProps> = ({
   const isZh = language === 'zh';
 
   const listEvents = useMemo(
-    () => getEventsInRange(events, filters, completedInstances),
-    [events, filters, completedInstances],
+    () => {
+      const sorted = [...events].sort(
+        (a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime(),
+      );
+      return filters.viewMode === 'all' ? sorted : sorted.filter(isEventUntagged);
+    },
+    [events, filters.viewMode],
   );
 
   const [drafts, setDrafts] = useState<Map<string, TagDraft>>(new Map());
@@ -229,44 +228,9 @@ export const TagBatchEditorDrawer: React.FC<TagBatchEditorDrawerProps> = ({
             </div>
 
             <div className="p-4 space-y-3 border-b border-border bg-field/30">
-              <div className="flex flex-wrap gap-2">
-                {BATCH_RANGE_OPTIONS.map((r) => (
-                  <button
-                    key={r}
-                    type="button"
-                    onClick={() => onFiltersChange({ ...filters, range: r })}
-                    className={cn(
-                      'px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors',
-                      filters.range === r
-                        ? 'border-accent bg-accent/15 text-accent'
-                        : 'border-border text-muted-foreground hover:bg-field',
-                    )}
-                  >
-                    {getAnalyticsRangeLabel(r, isZh)}
-                  </button>
-                ))}
-              </div>
-              {filters.range === 'custom' && (
-                <div className="flex gap-2 items-center">
-                  <input
-                    type="date"
-                    value={filters.customStart || ''}
-                    onChange={(e) =>
-                      onFiltersChange({ ...filters, customStart: e.target.value, range: 'custom' })
-                    }
-                    className="flex-1 rounded-lg border border-border bg-field px-2 py-1.5 text-xs text-foreground"
-                  />
-                  <span className="text-xs text-muted-foreground">{isZh ? '止' : 'To'}</span>
-                  <input
-                    type="date"
-                    value={filters.customEnd || ''}
-                    onChange={(e) =>
-                      onFiltersChange({ ...filters, customEnd: e.target.value, range: 'custom' })
-                    }
-                    className="flex-1 rounded-lg border border-border bg-field px-2 py-1.5 text-xs text-foreground"
-                  />
-                </div>
-              )}
+              <p className="text-xs text-muted-foreground">
+                {isZh ? '显示历史全部日程，按时间倒序排列。' : 'Showing All Historical Events, Newest First.'}
+              </p>
               <div className="flex gap-4 text-xs text-foreground">
                 <label className="flex items-center gap-1.5 cursor-pointer">
                   <input

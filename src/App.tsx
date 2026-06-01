@@ -15,6 +15,7 @@ import { SurpriseWidgets } from '@/components/SurpriseWidgets';
 import { OnboardingModal } from '@/components/OnboardingModal';
 import { PostLoginThemeModal } from '@/components/PostLoginThemeModal';
 import { SettingsModal } from '@/components/SettingsModal';
+import { RoutineImportModal } from '@/components/RoutineImportModal';
 import { DailyJournal } from '@/components/DailyJournal';
 import { AuthModal, type AuthFormMode } from '@/components/AuthModal';
 import { PasswordRecoveryModal } from '@/components/PasswordRecoveryModal';
@@ -36,7 +37,6 @@ import { DayVibes } from '@/components/DayVibes';
 import { CollectionView } from '@/components/CollectionView';
 import { TagBatchEditorDrawer, type TagDraft } from '@/components/TagBatchEditorDrawer';
 import { useTagAnalysisFilters } from '@/hooks/useTagAnalysisFilters';
-import { getEventsInRange } from '@/lib/tagAnalysisQuery';
 import { getThemeAccentHex } from '@/lib/utils';
 import { COLLECTION_SUBTITLES_ZH, COLLECTION_SUBTITLES_EN } from '@/lib/collectionSubtitles';
 import { LifeBookView } from '@/components/LifeBookView';
@@ -63,10 +63,7 @@ import {
   loadLongTermGoalMeta,
   mergeLongTermGoalNames,
 } from '@/lib/longTermGoalMetaStorage';
-import {
-  getUnlinkedMediumTermGoalTasksInRange,
-  type GoalLinkingFilterState,
-} from '@/lib/goalLinkingQuery';
+import type { GoalLinkingFilterState } from '@/lib/goalLinkingQuery';
 
 const AUTH_ERROR_AUTO_DISMISS_MS = 10_000;
 
@@ -133,6 +130,8 @@ export default function App() {
   const [editingEvent, setEditingEvent] = useState<ScheduleEvent | null>(null);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isRoutineImportOpen, setIsRoutineImportOpen] = useState(false);
+  const [isRoutineImporting, setIsRoutineImporting] = useState(false);
   const [searchHighlightDates, setSearchHighlightDates] = useState<Set<string>>(new Set());
   
   // Schedule Generation State
@@ -153,7 +152,7 @@ export default function App() {
   const [yearInputValue, setYearInputValue] = useState('');
   const [isBatchEditorOpen, setIsBatchEditorOpen] = useState(false);
   const [isBatchSaving, setIsBatchSaving] = useState(false);
-  const { filters: tagFilters, setFilters: setTagFilters, resetFilters: resetTagFilters } = useTagAnalysisFilters({
+  const { filters: tagFilters, setFilters: setTagFilters } = useTagAnalysisFilters({
     range: 'this_month',
     viewMode: 'untagged',
   });
@@ -356,14 +355,6 @@ export default function App() {
     [collectionStateTick],
   );
 
-  const validMediumTermGoalIds = React.useMemo(() => {
-    const ids = new Set<string>();
-    Object.keys(longTermGoalMetaMap).forEach((goalName) => {
-      longTermGoalMetaMap[goalName]?.mediumTermGoals?.forEach((medium) => ids.add(medium.id));
-    });
-    return ids;
-  }, [longTermGoalMetaMap]);
-
   const longTermGoalNames = React.useMemo(
     () => mergeLongTermGoalNames(events),
     [events, collectionStateTick],
@@ -380,25 +371,10 @@ export default function App() {
     [tagFilters.range, tagFilters.customStart, tagFilters.customEnd],
   );
 
-  const dayUntaggedCount = React.useMemo(
-    () =>
-      getEventsInRange(
-        events,
-        {
-          range: 'custom',
-          viewMode: 'untagged',
-          customStart: dateKey,
-          customEnd: dateKey,
-        },
-        completedInstances,
-      ).length,
-    [events, dateKey, completedInstances],
-  );
-
   const openBatchEditor = React.useCallback(() => {
-    resetTagFilters({ viewMode: 'untagged' });
+    setTagFilters((prev) => ({ ...prev, viewMode: 'untagged' }));
     setIsBatchEditorOpen(true);
-  }, [resetTagFilters]);
+  }, [setTagFilters]);
   const currentDayName = dayNames[dateKey]?.name || '';
   const currentJournal = journalEntries[dateKey] || '';
 
@@ -541,6 +517,34 @@ export default function App() {
     });
     setIsAddModalOpen(false);
     setEditingEvent(null);
+  };
+
+  const handleImportRoutineEvents = async (importedEvents: ScheduleEvent[]) => {
+    if (importedEvents.length === 0 || isRoutineImporting) return;
+    setIsRoutineImporting(true);
+    try {
+      if (user) {
+        for (const event of importedEvents) {
+          await upsertEventWithTags(supabase, user.id, event, { isNewEvent: true });
+        }
+      }
+      importedEvents.forEach((event) => {
+        const labelText = event.label?.text?.trim();
+        if (labelText && !isPresetEventLabel(labelText)) {
+          touchCustomEventLabel(labelText);
+        }
+      });
+      setEvents((prev) => {
+        const map = new Map(prev.map((event) => [event.id, event]));
+        importedEvents.forEach((event) => map.set(event.id, event));
+        return Array.from(map.values());
+      });
+    } catch (e: unknown) {
+      alert(formatSyncErrorMessage(e, settings.language));
+      throw e;
+    } finally {
+      setIsRoutineImporting(false);
+    }
   };
 
   const handleDeleteEvent = async (eventId: string) => {
@@ -942,22 +946,6 @@ export default function App() {
     setIsGoalLinkingOpen(true);
   };
 
-  const goalUnlinkedCountInView = React.useMemo(() => {
-    if (viewMode === 'collection' || viewMode === 'lifeBook') return 0;
-    const range = viewMode === 'year' ? 'year' : viewMode === 'month' ? 'month' : 'custom';
-    return getUnlinkedMediumTermGoalTasksInRange(
-      events,
-      currentDate,
-      {
-        range,
-        customStart: viewMode === 'day' ? dateKey : undefined,
-        customEnd: viewMode === 'day' ? dateKey : undefined,
-      },
-      completedInstances,
-      validMediumTermGoalIds,
-    ).length;
-  }, [events, currentDate, dateKey, completedInstances, viewMode, validMediumTermGoalIds]);
-
   const handleSaveGoalLinks = async (links: Map<string, MediumTermGoalLinkDraft>) => {
     setIsGoalLinkingSaving(true);
     try {
@@ -1239,6 +1227,15 @@ export default function App() {
           localStorage.removeItem('feather_skipped_auth');
         }}
         onSignOut={signOut}
+        onOpenRoutineImport={() => setIsRoutineImportOpen(true)}
+      />
+
+      <RoutineImportModal
+        isOpen={isRoutineImportOpen}
+        onClose={() => setIsRoutineImportOpen(false)}
+        language={settings.language}
+        onImport={handleImportRoutineEvents}
+        isImporting={isRoutineImporting}
       />
 
       <AuthModal
@@ -1870,17 +1867,6 @@ export default function App() {
                   <span className="inline-flex items-center gap-1"><img src={VIBE_ICON_URL.focus} alt="" className="vibe-kpi-icon w-4 h-4" /> {settings.language === 'zh' ? '专注' : 'Focus'} {monthKpiAvg.focus != null ? monthKpiAvg.focus : '–'}</span>
                 </div>
               )}
-              {(viewMode === 'year' || viewMode === 'month') && goalUnlinkedCountInView > 0 && (
-                <button
-                  type="button"
-                  onClick={() => openGoalLinking(viewMode === 'year' ? 'year' : 'month')}
-                  className="mt-2 rounded-full border border-accent/30 bg-accent/10 px-3 py-1.5 text-xs font-medium text-accent hover:bg-accent/20 transition-colors"
-                >
-                  {settings.language === 'zh'
-                    ? `整理目标 (${goalUnlinkedCountInView})`
-                    : `Link Goals (${goalUnlinkedCountInView})`}
-                </button>
-              )}
             </div>
           )}
         </header>
@@ -1912,6 +1898,7 @@ export default function App() {
                   onMigrateEventTag={handleMigrateEventTag}
                   onClearEventTag={handleClearEventTag}
                   onOpenBatchEditor={openBatchEditor}
+                  onOpenGoalLinking={() => openGoalLinking('month')}
                   chartFilters={chartFilters}
                   onChartFiltersChange={(next) => setTagFilters((prev) => ({ ...prev, ...next }))}
                   userId={user?.id ?? null}
@@ -2015,10 +2002,6 @@ export default function App() {
                   customTags={settings.customTags}
                   onAddCustomTag={handleAddCustomTag}
                   onRemoveCustomTag={handleRemoveCustomTag}
-                  unlinkedGoalCount={goalUnlinkedCountInView}
-                  onOpenGoalLinking={() => openGoalLinking()}
-                  untaggedCount={dayUntaggedCount}
-                  onOpenBatchEditor={openBatchEditor}
                 />
 
                 {/*
@@ -2196,7 +2179,6 @@ export default function App() {
         events={events}
         allEvents={events}
         filters={tagFilters}
-        completedInstances={completedInstances}
         language={settings.language}
         onFiltersChange={setTagFilters}
         onSave={handleBatchSaveTags}

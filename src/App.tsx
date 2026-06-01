@@ -569,6 +569,22 @@ export default function App() {
         importedEvents.forEach((event) => map.set(event.id, event));
         return Array.from(map.values());
       });
+      const mediumGoalCount = Object.values(plan.mediumTermGoalsToCreate).reduce((sum, items) => sum + items.length, 0);
+      const warningCount = plan.warnings.length;
+      const successMessage = settings.language === 'zh'
+        ? [
+            `导入成功：${importedEvents.length} 条日程。`,
+            mediumGoalCount > 0 ? `新建 ${mediumGoalCount} 个中期目标。` : '',
+            warningCount > 0 ? `${warningCount} 条日程的目标关联不完整，已先导入；请后续在「整理目标」里补充。` : '',
+            ...plan.warnings.slice(0, 5),
+          ].filter(Boolean).join('\n')
+        : [
+            `Import Complete: ${importedEvents.length} Events.`,
+            mediumGoalCount > 0 ? `Created ${mediumGoalCount} Medium-Term Goals.` : '',
+            warningCount > 0 ? `${warningCount} Events Have Incomplete Goal Links And Were Imported Anyway. Link Them Later In Goal Cleanup.` : '',
+            ...plan.warnings.slice(0, 5),
+          ].filter(Boolean).join('\n');
+      alert(successMessage);
     } catch (e: unknown) {
       alert(formatSyncErrorMessage(e, settings.language));
       throw e;
@@ -720,26 +736,27 @@ export default function App() {
       const trimmed = newName.trim();
       if (!trimmed || oldName === trimmed) return;
       const affected = events.filter((e) => e.longTermGoals?.includes(oldName));
-      for (const e of affected) {
-        const updated: ScheduleEvent = {
-          ...e,
-          longTermGoals: e.longTermGoals?.map((g) => (g === oldName ? trimmed : g)),
-        };
-        if (user) {
-          try {
-            await upsertEventWithTags(supabase, user.id, updated);
-          } catch (err: unknown) {
-            alert(formatSyncErrorMessage(err, settings.language));
-            throw err;
-          }
-        }
-      }
+
       setEvents((prev) =>
         prev.map((e) => ({
           ...e,
           longTermGoals: e.longTermGoals?.map((g) => (g === oldName ? trimmed : g)),
         }))
       );
+
+      if (user) {
+        try {
+          for (const e of affected) {
+            const updated: ScheduleEvent = {
+              ...e,
+              longTermGoals: e.longTermGoals?.map((g) => (g === oldName ? trimmed : g)),
+            };
+            await upsertEventWithTags(supabase, user.id, updated);
+          }
+        } catch (err: unknown) {
+          alert(formatSyncErrorMessage(err, settings.language));
+        }
+      }
     },
     [events, user, settings.language]
   );
@@ -918,27 +935,7 @@ export default function App() {
         (longTermGoalMetaMap[trimmed]?.mediumTermGoals ?? []).map((medium) => medium.id),
       );
       const affected = events.filter((e) => e.longTermGoals?.includes(trimmed));
-      for (const e of affected) {
-        const nextGoals = e.longTermGoals?.filter((g) => g !== trimmed);
-        const updated: ScheduleEvent = {
-          ...e,
-          longTermGoals: nextGoals && nextGoals.length > 0 ? nextGoals : undefined,
-        };
-        if (
-          updated.mediumTermGoalId &&
-          (deletedGoalMediumIds.has(updated.mediumTermGoalId) || !updated.longTermGoals)
-        ) {
-          delete updated.mediumTermGoalId;
-        }
-        if (user) {
-          try {
-            await upsertEventWithTags(supabase, user.id, updated);
-          } catch (err: unknown) {
-            alert(formatSyncErrorMessage(err, settings.language));
-            throw err;
-          }
-        }
-      }
+
       setEvents((prev) =>
         prev.map((e) => {
           const nextGoals = e.longTermGoals?.filter((g) => g !== trimmed);
@@ -955,6 +952,27 @@ export default function App() {
           return next;
         })
       );
+
+      if (user) {
+        try {
+          for (const e of affected) {
+            const nextGoals = e.longTermGoals?.filter((g) => g !== trimmed);
+            const updated: ScheduleEvent = {
+              ...e,
+              longTermGoals: nextGoals && nextGoals.length > 0 ? nextGoals : undefined,
+            };
+            if (
+              updated.mediumTermGoalId &&
+              (deletedGoalMediumIds.has(updated.mediumTermGoalId) || !updated.longTermGoals)
+            ) {
+              delete updated.mediumTermGoalId;
+            }
+            await upsertEventWithTags(supabase, user.id, updated);
+          }
+        } catch (err: unknown) {
+          alert(formatSyncErrorMessage(err, settings.language));
+        }
+      }
     },
     [events, longTermGoalMetaMap, user, settings.language]
   );

@@ -35,11 +35,13 @@ type ParseResult = {
   events: ScheduleEvent[];
   mediumTermGoalsToCreate: Record<string, MediumTermGoal[]>;
   errors: string[];
+  warnings: string[];
 };
 
 export type RoutineImportPlan = {
   events: ScheduleEvent[];
   mediumTermGoalsToCreate: Record<string, MediumTermGoal[]>;
+  warnings: string[];
 };
 
 interface RoutineImportModalProps {
@@ -154,8 +156,9 @@ function parseRoutineImport(
   longTermGoalMetaMap: LongTermGoalMetaMap
 ): ParseResult {
   const errors: string[] = [];
+  const warnings: string[] = [];
   let parsed: unknown;
-  const empty = { events: [], mediumTermGoalsToCreate: {}, errors };
+  const empty = { events: [], mediumTermGoalsToCreate: {}, errors, warnings };
   try {
     parsed = JSON.parse(raw);
   } catch {
@@ -163,6 +166,7 @@ function parseRoutineImport(
       events: [],
       mediumTermGoalsToCreate: {},
       errors: [language === 'zh' ? 'JSON 格式不合法，请检查逗号、引号和括号。' : 'Invalid JSON. Check commas, quotes, and brackets.'],
+      warnings: [],
     };
   }
 
@@ -171,6 +175,7 @@ function parseRoutineImport(
       events: [],
       mediumTermGoalsToCreate: {},
       errors: [language === 'zh' ? '顶层必须是 JSON 数组。' : 'The top level must be a JSON array.'],
+      warnings: [],
     };
   }
 
@@ -207,14 +212,17 @@ function parseRoutineImport(
     }
 
     const longTermGoals = parseList(row.longTermGoals);
-    if (longTermGoals.length === 0) {
-      errors.push(`${rowLabel}: ${language === 'zh' ? '必须填写至少一个已存在的 longTermGoals。' : 'At least one existing longTermGoals value is required.'}`);
+    const hasInvalidLongTermGoal = longTermGoals.some((goalName) => !allowedGoals.has(goalName));
+    const shouldStripGoals = longTermGoals.length === 0 || hasInvalidLongTermGoal;
+    if (shouldStripGoals) {
+      warnings.push(
+        `${rowLabel}「${title || '-'}」: ${
+          language === 'zh'
+            ? '长期目标缺失或不存在，已导入日程但清空目标关联。'
+            : 'Long-Term Goal Is Missing Or Unknown. Event Imported Without Goal Links.'
+        }`
+      );
     }
-    longTermGoals.forEach((goalName) => {
-      if (!allowedGoals.has(goalName)) {
-        errors.push(`${rowLabel}: ${language === 'zh' ? `长期目标「${goalName}」不存在，请先在时间聚合里创建。` : `Long-Term Goal "${goalName}" does not exist. Create it in Time Synthesis first.`}`);
-      }
-    });
 
     const recurrenceInput = row.recurrence;
     let recurrence: ScheduleEvent['recurrence'];
@@ -245,10 +253,18 @@ function parseRoutineImport(
     const labelText = asTrimmedString(row.label);
     const mediumTermGoalTitle = asTrimmedString(row.mediumTermGoal);
     const explicitMediumTermGoalId = asTrimmedString(row.mediumTermGoalId);
-    let mediumTermGoalId = explicitMediumTermGoalId;
-    if (mediumTermGoalTitle) {
+    const validLongTermGoals = shouldStripGoals ? [] : longTermGoals;
+    let mediumTermGoalId = shouldStripGoals ? '' : explicitMediumTermGoalId;
+    if (mediumTermGoalTitle && !shouldStripGoals) {
       if (longTermGoals.length !== 1) {
-        errors.push(`${rowLabel}: ${language === 'zh' ? '填写 mediumTermGoal 时，longTermGoals 必须且只能有一个。' : 'When mediumTermGoal is set, longTermGoals must contain exactly one goal.'}`);
+        mediumTermGoalId = '';
+        warnings.push(
+          `${rowLabel}「${title || '-'}」: ${
+            language === 'zh'
+              ? '填写 mediumTermGoal 时长期目标必须且只能有一个；已保留长期目标，未关联中期目标。'
+              : 'mediumTermGoal Requires Exactly One Long-Term Goal. Long-Term Goals Kept, Medium-Term Link Removed.'
+          }`
+        );
       } else if (allowedGoals.has(longTermGoals[0]!)) {
         const goalName = longTermGoals[0]!;
         const key = mediumKey(goalName, mediumTermGoalTitle);
@@ -289,7 +305,7 @@ function parseRoutineImport(
       ...(recurrence ? { recurrence } : {}),
       ...(role ? { role } : {}),
       ...(labelText ? { label: { text: labelText, color: '#6366F1' } } : {}),
-      ...(longTermGoals.length > 0 ? { longTermGoals } : {}),
+      ...(validLongTermGoals.length > 0 ? { longTermGoals: validLongTermGoals } : {}),
       ...(mediumTermGoalId ? { mediumTermGoalId } : {}),
       ...(asTrimmedString(row.meaning) ? { meaning: asTrimmedString(row.meaning) } : {}),
       starred: asBoolean(row.starred),
@@ -304,7 +320,7 @@ function parseRoutineImport(
     const goalName = key.split('\u0000')[0]!;
     (mediumTermGoalsToCreate[goalName] ||= []).push(medium);
   });
-  return { events, mediumTermGoalsToCreate, errors };
+  return { events, mediumTermGoalsToCreate, errors, warnings };
 }
 
 const SAMPLE_JSON = `[
@@ -343,7 +359,7 @@ export const RoutineImportModal: React.FC<RoutineImportModalProps> = ({
   const [rawJson, setRawJson] = useState('');
   const [submitError, setSubmitError] = useState('');
   const result = useMemo<ParseResult>(() => {
-    if (!rawJson.trim()) return { events: [], mediumTermGoalsToCreate: {}, errors: [] };
+    if (!rawJson.trim()) return { events: [], mediumTermGoalsToCreate: {}, errors: [], warnings: [] };
     return parseRoutineImport(rawJson, language, longTermGoalNames, longTermGoalMetaMap);
   }, [rawJson, language, longTermGoalNames, longTermGoalMetaMap]);
 
@@ -374,6 +390,7 @@ export const RoutineImportModal: React.FC<RoutineImportModalProps> = ({
       await Promise.resolve(onImport({
         events: result.events,
         mediumTermGoalsToCreate: result.mediumTermGoalsToCreate,
+        warnings: result.warnings,
       }));
       setRawJson('');
       onClose();
@@ -453,6 +470,20 @@ export const RoutineImportModal: React.FC<RoutineImportModalProps> = ({
                     <ul className="space-y-1 list-disc pl-5">
                       {result.errors.slice(0, 8).map((error) => (
                         <li key={error}>{error}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {result.warnings.length > 0 && result.errors.length === 0 && (
+                  <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-700">
+                    <div className="flex items-center gap-2 font-medium mb-2">
+                      <AlertCircle className="w-4 h-4" />
+                      {isZh ? '将导入，但需后续补目标' : 'Will Import, But Needs Goal Cleanup'}
+                    </div>
+                    <ul className="space-y-1 list-disc pl-5">
+                      {result.warnings.slice(0, 8).map((warning) => (
+                        <li key={warning}>{warning}</li>
                       ))}
                     </ul>
                   </div>

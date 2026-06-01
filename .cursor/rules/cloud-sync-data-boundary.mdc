@@ -39,7 +39,7 @@ alwaysApply: true
 
 | 领域 | 载荷字段 / 本地键前缀 |
 |------|------------------------|
-| 长期目标元数据、标签池与展示顺序 | `longTermGoalMeta`、`longTermGoalTagPool`、`longTermGoalDisplayOrder`、`longTermGoalOrderUpdatedAt`（`feather_long_term_goal_meta`、`feather_long_term_goal_tags`、`feather_long_term_goal_display_order`、`feather_long_term_goal_order_updated_at`） |
+| 长期目标元数据、标签池、删除墓碑与展示顺序 | `longTermGoalMeta`、`longTermGoalTagPool`、`deletedLongTermGoalNames`、`longTermGoalDisplayOrder`、`longTermGoalOrderUpdatedAt`（`feather_long_term_goal_meta`、`feather_long_term_goal_tags`、`feather_long_term_goal_deleted_names`、`feather_long_term_goal_display_order`、`feather_long_term_goal_order_updated_at`） |
 | 人生之书封面三行文案 | `lifeBookCover`（`feather_lifebook_line1` 等 + `feather_lifebook_cover_updated_at`） |
 | 自定义事件标签及最近使用 | `customEventTags`、`customEventTagLastUsed` |
 | 人生能量曲线 | `lifeEnergyEntries`（`feather_life_energy_*` 全量 dump） |

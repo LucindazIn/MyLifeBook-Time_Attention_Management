@@ -935,44 +935,37 @@ export default function App() {
         (longTermGoalMetaMap[trimmed]?.mediumTermGoals ?? []).map((medium) => medium.id),
       );
       const affected = events.filter((e) => e.longTermGoals?.includes(trimmed));
-
-      setEvents((prev) =>
-        prev.map((e) => {
-          const nextGoals = e.longTermGoals?.filter((g) => g !== trimmed);
-          const next: ScheduleEvent = {
-            ...e,
-            longTermGoals: nextGoals && nextGoals.length > 0 ? nextGoals : undefined,
-          };
-          if (
-            next.mediumTermGoalId &&
-            (deletedGoalMediumIds.has(next.mediumTermGoalId) || !next.longTermGoals)
-          ) {
-            delete next.mediumTermGoalId;
-          }
-          return next;
-        })
-      );
+      const updatedAffected = affected.map((e) => {
+        const nextGoals = e.longTermGoals?.filter((g) => g !== trimmed);
+        const updated: ScheduleEvent = {
+          ...e,
+          longTermGoals: nextGoals && nextGoals.length > 0 ? nextGoals : undefined,
+        };
+        if (
+          updated.mediumTermGoalId &&
+          (deletedGoalMediumIds.has(updated.mediumTermGoalId) || !updated.longTermGoals)
+        ) {
+          delete updated.mediumTermGoalId;
+        }
+        return updated;
+      });
 
       if (user) {
         try {
-          for (const e of affected) {
-            const nextGoals = e.longTermGoals?.filter((g) => g !== trimmed);
-            const updated: ScheduleEvent = {
-              ...e,
-              longTermGoals: nextGoals && nextGoals.length > 0 ? nextGoals : undefined,
-            };
-            if (
-              updated.mediumTermGoalId &&
-              (deletedGoalMediumIds.has(updated.mediumTermGoalId) || !updated.longTermGoals)
-            ) {
-              delete updated.mediumTermGoalId;
-            }
+          for (const updated of updatedAffected) {
             await upsertEventWithTags(supabase, user.id, updated);
           }
         } catch (err: unknown) {
           alert(formatSyncErrorMessage(err, settings.language));
+          throw err;
         }
       }
+
+      setEvents((prev) => {
+        const map = new Map(prev.map((event) => [event.id, event]));
+        updatedAffected.forEach((event) => map.set(event.id, event));
+        return Array.from(map.values());
+      });
     },
     [events, longTermGoalMetaMap, user, settings.language]
   );

@@ -12,6 +12,7 @@ export const LONG_TERM_GOAL_META_STORAGE_KEY = 'feather_long_term_goal_meta';
 /** Display order (priority, top first) — synced via `user_collection_state` with `longTermGoalOrderUpdatedAt`. */
 export const LONG_TERM_GOAL_DISPLAY_ORDER_KEY = 'feather_long_term_goal_display_order';
 export const LONG_TERM_GOAL_ORDER_UPDATED_AT_KEY = 'feather_long_term_goal_order_updated_at';
+export const LONG_TERM_GOAL_DELETED_NAMES_KEY = 'feather_long_term_goal_deleted_names';
 
 const META_STORAGE_KEY = LONG_TERM_GOAL_META_STORAGE_KEY;
 
@@ -169,6 +170,7 @@ export function ensureMetaForGoals(map: LongTermGoalMetaMap, names: string[]): L
     if (!n.trim()) continue;
     if (!next[n]) {
       next[n] = defaultRecord();
+      unmarkLongTermGoalDeleted(n);
       changed = true;
     }
   }
@@ -308,6 +310,7 @@ export function collectLongTermGoalNameSet(events: ScheduleEvent[]): Set<string>
 
 /** 从元数据与标签池中移除愿景（新建未填写时常用）。不修改日程上的标签引用。 */
 export function removeGoalFromMetaAndPool(goalName: string): LongTermGoalMetaMap {
+  markLongTermGoalDeleted(goalName);
   removeGoalFromDisplayOrder(goalName);
   const map = loadLongTermGoalMeta();
   const next = { ...map };
@@ -463,6 +466,7 @@ export function migrateGoalRename(
 
 export function appendGoalTagPool(goalName: string): void {
   if (typeof localStorage === 'undefined' || !goalName.trim()) return;
+  unmarkLongTermGoalDeleted(goalName);
   try {
     const raw = localStorage.getItem(LONG_TERM_GOALS_TAGS_KEY);
     const tags: string[] = raw ? JSON.parse(raw) : [];
@@ -484,6 +488,43 @@ export function readGoalTagPool(): string[] {
   } catch {
     return [];
   }
+}
+
+export function loadDeletedLongTermGoalNames(): string[] {
+  if (typeof localStorage === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(LONG_TERM_GOAL_DELETED_NAMES_KEY);
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr.filter((x: unknown) => typeof x === 'string' && x.trim()) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveDeletedLongTermGoalNames(names: string[], opts?: { fromSync?: boolean; silent?: boolean }): void {
+  if (typeof localStorage === 'undefined') return;
+  const deduped = Array.from(new Set(names.map((name) => name.trim()).filter(Boolean)));
+  try {
+    localStorage.setItem(LONG_TERM_GOAL_DELETED_NAMES_KEY, JSON.stringify(deduped));
+  } catch (_) {}
+  if (opts?.fromSync || opts?.silent) return;
+  notifyCollectionStateChanged('user');
+}
+
+function markLongTermGoalDeleted(goalName: string): void {
+  const name = goalName.trim();
+  if (!name) return;
+  const names = loadDeletedLongTermGoalNames();
+  if (names.includes(name)) return;
+  saveDeletedLongTermGoalNames([...names, name], { silent: true });
+}
+
+function unmarkLongTermGoalDeleted(goalName: string): void {
+  const name = goalName.trim();
+  if (!name) return;
+  const names = loadDeletedLongTermGoalNames();
+  if (!names.includes(name)) return;
+  saveDeletedLongTermGoalNames(names.filter((x) => x !== name), { silent: true });
 }
 
 const STATUS_ORDER: GoalStatus[] = ['sprout', 'in_progress', 'deviated', 'completed'];

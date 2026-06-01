@@ -2,6 +2,7 @@ import type { LongTermGoalMetaMap } from '@/lib/longTermGoalMetaStorage';
 import {
   LONG_TERM_GOALS_TAGS_KEY,
   LONG_TERM_GOAL_META_STORAGE_KEY,
+  loadDeletedLongTermGoalNames,
   loadLongTermGoalOrder,
   loadLongTermGoalOrderUpdatedAt,
 } from '@/lib/longTermGoalMetaStorage';
@@ -22,6 +23,8 @@ export type CollectionStatePayloadV1 = {
   v: typeof COLLECTION_STATE_VERSION | 1 | 2;
   longTermGoalMeta: LongTermGoalMetaMap;
   longTermGoalTagPool: string[];
+  /** Names intentionally deleted by the user; prevents union-merge sync from resurrecting them. */
+  deletedLongTermGoalNames: string[];
   /** Priority list (top = first); merged with union of names; see `longTermGoalOrderUpdatedAt`. */
   longTermGoalDisplayOrder: string[];
   /** For merging display order across devices (newer array wins, then append missing names). */
@@ -44,6 +47,7 @@ export function emptyCollectionStatePayload(): CollectionStatePayloadV1 {
     v: COLLECTION_STATE_VERSION,
     longTermGoalMeta: {},
     longTermGoalTagPool: [],
+    deletedLongTermGoalNames: [],
     longTermGoalDisplayOrder: [],
     longTermGoalOrderUpdatedAt: 0,
     lifeBookCover: { line1: '', line2: '', line3: '', updatedAt: 0 },
@@ -119,6 +123,7 @@ export function buildCollectionStatePayloadFromLocal(): CollectionStatePayloadV1
     v: COLLECTION_STATE_VERSION,
     longTermGoalMeta,
     longTermGoalTagPool: tagPool,
+    deletedLongTermGoalNames: loadDeletedLongTermGoalNames(),
     longTermGoalDisplayOrder: loadLongTermGoalOrder(),
     longTermGoalOrderUpdatedAt: loadLongTermGoalOrderUpdatedAt(),
     lifeBookCover: {
@@ -282,7 +287,12 @@ export function mergeCollectionStatePayloads(
   local: CollectionStatePayloadV1,
   remote: CollectionStatePayloadV1
 ): CollectionStatePayloadV1 {
-  const pool = [...new Set([...local.longTermGoalTagPool, ...remote.longTermGoalTagPool])];
+  const deletedGoalNames = [
+    ...new Set([...(local.deletedLongTermGoalNames ?? []), ...(remote.deletedLongTermGoalNames ?? [])].map((name) => name.trim()).filter(Boolean)),
+  ];
+  const deletedGoalSet = new Set(deletedGoalNames);
+  const pool = [...new Set([...local.longTermGoalTagPool, ...remote.longTermGoalTagPool])]
+    .filter((name) => !deletedGoalSet.has(name));
   pool.sort((a, b) => a.localeCompare(b));
 
   const lastUsed: Record<string, number> = {};
@@ -311,7 +321,10 @@ export function mergeCollectionStatePayloads(
 
   const roleCatalog = mergeRoleCatalog(local.roleCatalog ?? {}, remote.roleCatalog ?? {});
 
-  const mergedMeta = mergeGoalMeta(local.longTermGoalMeta, remote.longTermGoalMeta);
+  const mergedMetaRaw = mergeGoalMeta(local.longTermGoalMeta, remote.longTermGoalMeta);
+  const mergedMeta = Object.fromEntries(
+    Object.entries(mergedMetaRaw).filter(([name]) => !deletedGoalSet.has(name))
+  ) as LongTermGoalMetaMap;
   const allGoalNames = new Set<string>([...Object.keys(mergedMeta), ...pool]);
   const orderMerged = mergeLongTermGoalDisplayOrderFields(
     local.longTermGoalDisplayOrder,
@@ -325,6 +338,7 @@ export function mergeCollectionStatePayloads(
     v: COLLECTION_STATE_VERSION,
     longTermGoalMeta: mergedMeta,
     longTermGoalTagPool: pool,
+    deletedLongTermGoalNames: deletedGoalNames,
     longTermGoalDisplayOrder: orderMerged.longTermGoalDisplayOrder,
     longTermGoalOrderUpdatedAt: orderMerged.longTermGoalOrderUpdatedAt,
     lifeBookCover,

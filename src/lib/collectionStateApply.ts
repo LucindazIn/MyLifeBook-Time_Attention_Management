@@ -4,6 +4,7 @@ import {
   migrateLegacyGoalRecord,
   saveLongTermGoalMeta,
   saveLongTermGoalDisplayOrder,
+  saveDeletedLongTermGoalNames,
   type LongTermGoalMetaMap,
 } from '@/lib/longTermGoalMetaStorage';
 import { LONG_TERM_GOALS_TAGS_KEY } from '@/lib/longTermGoalMetaStorage';
@@ -26,6 +27,7 @@ export function applyCollectionStatePayloadToLocal(payload: CollectionStatePaylo
     migratedMeta[k] = migrateLegacyGoalRecord(v);
   }
   saveLongTermGoalMeta(migratedMeta, { fromSync: true });
+  saveDeletedLongTermGoalNames(payload.deletedLongTermGoalNames ?? [], { fromSync: true });
   saveLongTermGoalDisplayOrder(payload.longTermGoalDisplayOrder ?? [], {
     fromSync: true,
     updatedAt: payload.longTermGoalOrderUpdatedAt ?? 0,

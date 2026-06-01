@@ -61,10 +61,15 @@ function normalizeTag(tag: string) {
   return tag.trim();
 }
 
-function isMissingMediumTermGoalColumnError(error: unknown): boolean {
-  if (!error || typeof error !== 'object') return false;
+const OPTIONAL_EVENT_COLUMNS = new Set(['role', 'meaning', 'starred', 'highlight', 'medium_term_goal_id']);
+
+function getMissingOptionalEventColumn(error: unknown): keyof DbEventRow | null {
+  if (!error || typeof error !== 'object') return null;
   const message = String((error as { message?: unknown }).message ?? '');
-  return /medium_term_goal_id/i.test(message) && /schema cache|column/i.test(message);
+  const match = message.match(/Could not find the '([^']+)' column/i);
+  const column = match?.[1];
+  if (!column || !OPTIONAL_EVENT_COLUMNS.has(column)) return null;
+  return column as keyof DbEventRow;
 }
 
 export async function listAllEventsWithTags(supabase: SupabaseClient, userId: string): Promise<ScheduleEvent[]> {
@@ -137,10 +142,14 @@ export async function upsertEventWithTags(
     highlight: event.highlight ?? false,
   };
 
-  let { error: upsertErr } = await supabase.from('events').upsert(payload, { onConflict: 'id' });
-  if (upsertErr && isMissingMediumTermGoalColumnError(upsertErr)) {
-    const fallbackPayload = { ...payload };
-    delete fallbackPayload.medium_term_goal_id;
+  const fallbackPayload = { ...payload };
+  let { error: upsertErr } = await supabase.from('events').upsert(fallbackPayload, { onConflict: 'id' });
+  const removedColumns = new Set<string>();
+  while (upsertErr) {
+    const missingColumn = getMissingOptionalEventColumn(upsertErr);
+    if (!missingColumn || removedColumns.has(missingColumn)) break;
+    removedColumns.add(missingColumn);
+    delete fallbackPayload[missingColumn];
     const retry = await supabase.from('events').upsert(fallbackPayload, { onConflict: 'id' });
     upsertErr = retry.error;
   }

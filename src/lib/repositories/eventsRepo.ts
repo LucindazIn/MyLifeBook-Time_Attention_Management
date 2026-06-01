@@ -14,6 +14,7 @@ export type DbEventRow = {
   label_text: string | null;
   label_color: string | null;
   role: string | null;
+  medium_term_goal_id: string | null;
   completed: boolean | null;
   deleted: boolean | null;
   meaning?: string | null;
@@ -52,6 +53,7 @@ function toScheduleEvent(row: DbEventRow, tags: string[], longTermGoals: string[
     starred: row.starred ?? false,
     highlight: row.highlight ?? false,
     ...(longTermGoals.length > 0 ? { longTermGoals } : {}),
+    ...(row.medium_term_goal_id != null && row.medium_term_goal_id !== '' ? { mediumTermGoalId: row.medium_term_goal_id } : {}),
   };
 }
 
@@ -121,6 +123,7 @@ export async function upsertEventWithTags(
     label_text: event.label?.text ?? null,
     label_color: event.label?.color ?? null,
     role: event.role ?? null,
+    medium_term_goal_id: event.mediumTermGoalId ?? null,
     completed: event.completed ?? false,
     deleted: false,
     meaning: event.meaning ?? null,

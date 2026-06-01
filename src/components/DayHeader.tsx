@@ -18,6 +18,10 @@ interface DayHeaderProps {
   customTags?: CustomTag[];
   onAddCustomTag?: (tag: CustomTag) => void;
   onRemoveCustomTag?: (id: string) => void;
+  unlinkedGoalCount?: number;
+  onOpenGoalLinking?: () => void;
+  untaggedCount?: number;
+  onOpenBatchEditor?: () => void;
 }
 
 export const DayHeader: React.FC<DayHeaderProps> = ({ 
@@ -30,15 +34,21 @@ export const DayHeader: React.FC<DayHeaderProps> = ({
   onSelectTag,
   customTags,
   onAddCustomTag,
-  onRemoveCustomTag
+  onRemoveCustomTag,
+  unlinkedGoalCount = 0,
+  onOpenGoalLinking,
+  untaggedCount = 0,
+  onOpenBatchEditor,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState(dayName || '');
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setInputValue(dayName || '');
-  }, [dayName]);
+    if (!isEditing) {
+      setInputValue(dayName || '');
+    }
+  }, [dayName, isEditing]);
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -47,15 +57,23 @@ export const DayHeader: React.FC<DayHeaderProps> = ({
   }, [isEditing]);
 
   const handleSubmit = () => {
+    if (!inputValue.trim()) {
+      inputRef.current?.focus();
+      return;
+    }
+    const nextName = inputValue.trim();
     setIsEditing(false);
-    if (inputValue.trim() !== dayName) {
-      onNameChange?.(inputValue);
+    if (nextName !== dayName) {
+      onNameChange?.(nextName);
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSubmit();
+    } else if (e.key === 'Escape') {
+      setInputValue(dayName || '');
+      setIsEditing(false);
     }
   };
 
@@ -82,8 +100,26 @@ export const DayHeader: React.FC<DayHeaderProps> = ({
       animate={{ opacity: 1, y: 0 }}
       className="mb-8 text-center w-full px-1 group"
     >
-      <div className="text-sm font-medium text-muted-foreground uppercase tracking-widest mb-1">
-        {formattedDate}
+      <div className="text-sm font-medium text-muted-foreground uppercase tracking-widest mb-1 flex items-center justify-center gap-2 flex-wrap">
+        <span>{formattedDate}</span>
+        {onOpenGoalLinking && unlinkedGoalCount > 0 && (
+          <button
+            type="button"
+            onClick={onOpenGoalLinking}
+            className="normal-case tracking-normal text-xs px-2.5 py-1 rounded-full bg-accent/15 text-accent hover:bg-accent/25 transition-colors"
+          >
+            {language === 'zh' ? `整理目标 (${unlinkedGoalCount})` : `Goals (${unlinkedGoalCount})`}
+          </button>
+        )}
+        {onOpenBatchEditor && untaggedCount > 0 && (
+          <button
+            type="button"
+            onClick={onOpenBatchEditor}
+            className="normal-case tracking-normal text-xs px-2.5 py-1 rounded-full bg-accent/10 text-accent hover:bg-accent/20 transition-colors"
+          >
+            {language === 'zh' ? `补标 (${untaggedCount})` : `Tag (${untaggedCount})`}
+          </button>
+        )}
       </div>
       
       <div className="flex w-full justify-center items-center min-h-[3.25rem] px-2">
@@ -116,7 +152,13 @@ export const DayHeader: React.FC<DayHeaderProps> = ({
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              onBlur={handleSubmit}
+              onBlur={() => {
+                if (!inputValue.trim()) {
+                  window.setTimeout(() => inputRef.current?.focus(), 0);
+                  return;
+                }
+                handleSubmit();
+              }}
               onKeyDown={handleKeyDown}
               placeholder={placeholder}
               aria-label={language === 'zh' ? '编辑今日名称' : 'Edit day name'}

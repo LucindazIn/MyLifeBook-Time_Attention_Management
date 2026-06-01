@@ -32,6 +32,8 @@ export interface ScheduleEvent {
   highlight?: boolean;
   /** 长期目标标签，可选，支持多选 */
   longTermGoals?: string[];
+  /** 关联到长期目标下的中短期目标（二级选项） */
+  mediumTermGoalId?: string;
 }
 
 export interface DaySchedule {

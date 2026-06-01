@@ -2,12 +2,12 @@ import React from 'react';
 import { ScheduleEvent, AppLanguage, TimeDisplayFormat } from '@/types';
 import { StatsSummaryView } from '@/components/StatsSummaryView';
 import { LongTermGoalsCard } from '@/components/LongTermGoalsCard';
-import { RoleEnergyCard } from '@/components/RoleEnergyCard';
-import { EventVolumeCard } from '@/components/EventVolumeCard';
 import { RoleBalanceCard } from '@/components/RoleBalanceCard';
 import { ChapterNarrativeCard } from '@/components/ChapterNarrativeCard';
+import { TagAnalysisSection } from '@/components/TagAnalysisSection';
 import { CHAPTER_CARD_ID } from '@/lib/chapterCardIds';
 import { PRESET_ROLES } from '@/lib/constants/roles';
+import type { TagAnalysisFilterState } from '@/lib/tagAnalysisQuery';
 export interface CollectionViewProps {
   events: ScheduleEvent[];
   dayTags: Record<string, string>;
@@ -23,6 +23,9 @@ export interface CollectionViewProps {
   onClearEventRole: (roleId: string) => void | Promise<void>;
   onMigrateEventTag: (oldTag: string, newTag: string) => void | Promise<void>;
   onClearEventTag: (tag: string) => void | Promise<void>;
+  onOpenBatchEditor: () => void;
+  chartFilters: Pick<TagAnalysisFilterState, 'range' | 'customStart' | 'customEnd'>;
+  onChartFiltersChange: (next: Pick<TagAnalysisFilterState, 'range' | 'customStart' | 'customEnd'>) => void;
   /** Logged-in user: chapter list syncs to Supabase for cross-device consistency. */
   userId?: string | null;
   /** Increments when synced local state (长期目标 / 曲线等) updates — refreshes cards that read localStorage. */
@@ -52,6 +55,9 @@ export const CollectionView: React.FC<CollectionViewProps> = ({
   onClearEventRole,
   onMigrateEventTag,
   onClearEventTag,
+  onOpenBatchEditor,
+  chartFilters,
+  onChartFiltersChange,
   userId = null,
   collectionStateRevision = 0,
 }) => {
@@ -80,20 +86,16 @@ export const CollectionView: React.FC<CollectionViewProps> = ({
           />
         </div>
         <div className={cardShell} style={cardStyle}>
-          <RoleEnergyCard
+          <TagAnalysisSection
             events={events}
             completedInstances={completedInstances}
             language={language}
             collectionStateRevision={collectionStateRevision}
+            chartFilters={chartFilters}
+            onChartFiltersChange={onChartFiltersChange}
+            onOpenBatchEditor={onOpenBatchEditor}
             onMigrateEventRole={onMigrateEventRole}
             onClearEventRole={onClearEventRole}
-          />
-        </div>
-        <div className={cardShell} style={cardStyle}>
-          <EventVolumeCard
-            events={events}
-            completedInstances={completedInstances}
-            language={language}
             onMigrateEventTag={onMigrateEventTag}
             onClearEventTag={onClearEventTag}
           />

@@ -7,7 +7,7 @@ import { EventType, ScheduleEvent, AppLanguage } from '@/types';
 import { PRESET_ROLES, getPresetRole } from '@/lib/constants/roles';
 import { v4 as uuidv4 } from 'uuid';
 import { cn, getThemeAccentHex } from '@/lib/utils';
-import { loadLongTermGoalMeta } from '@/lib/longTermGoalMetaStorage';
+import { loadLongTermGoalMeta, type LongTermGoalMetaMap } from '@/lib/longTermGoalMetaStorage';
 import {
   PRESET_EVENT_LABELS_ZH,
   PRESET_EVENT_LABELS_EN,
@@ -71,6 +71,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
   const [highlight, setHighlight] = useState(false);
   const [longTermGoalInput, setLongTermGoalInput] = useState('');
   const [longTermGoals, setLongTermGoals] = useState<string[]>([]);
+  const [selectedMediumTermGoalId, setSelectedMediumTermGoalId] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
@@ -128,6 +129,26 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
     const rest = pool.filter((g) => !recentSet.has(g)).sort((a, b) => a.localeCompare(b));
     return [...recent, ...rest];
   }, [savedLongTermGoals, goalsUsedInLast28Days]);
+
+  const longTermGoalMeta = React.useMemo<LongTermGoalMetaMap>(
+    () => loadLongTermGoalMeta(),
+    [isOpen, collectionStateRevision],
+  );
+
+  const mediumTermGoalChoices = React.useMemo(() => {
+    return longTermGoals.flatMap(goalName =>
+      (longTermGoalMeta[goalName]?.mediumTermGoals ?? []).map(medium => ({
+        goalName,
+        medium,
+      })),
+    );
+  }, [longTermGoalMeta, longTermGoals]);
+
+  useEffect(() => {
+    if (!selectedMediumTermGoalId) return;
+    const stillExists = mediumTermGoalChoices.some(({ medium }) => medium.id === selectedMediumTermGoalId);
+    if (!stillExists) setSelectedMediumTermGoalId('');
+  }, [mediumTermGoalChoices, selectedMediumTermGoalId]);
 
   const CUSTOM_ROLES_USAGE_KEY = 'feather_custom_roles_usage';
   type RoleUsageItem = { id: string; count: number; lastUsed: number };
@@ -245,6 +266,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
         setStarred(initialEvent.starred ?? false);
         setHighlight(initialEvent.highlight ?? false);
         setLongTermGoals(initialEvent.longTermGoals ?? []);
+        setSelectedMediumTermGoalId(initialEvent.mediumTermGoalId ?? '');
       } else {
         const now = new Date();
         setTitle('');
@@ -265,6 +287,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
         setHighlight(false);
         setLongTermGoalInput('');
         setLongTermGoals([]);
+        setSelectedMediumTermGoalId('');
       }
     }
   }, [isOpen, initialEvent, selectedDate]);
@@ -368,6 +391,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
       starred: starred,
       highlight: highlight,
       ...(longTermGoals.length > 0 && { longTermGoals: [...longTermGoals] }),
+      ...(selectedMediumTermGoalId && { mediumTermGoalId: selectedMediumTermGoalId }),
       ...(recurrenceFreq !== 'none' && {
         recurrence: {
           frequency: recurrenceFreq as 'daily' | 'weekly' | 'monthly',
@@ -690,6 +714,25 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                                 {s}
                               </button>
                             ))}
+                          </div>
+                        )}
+                        {mediumTermGoalChoices.length > 0 && (
+                          <div className="mt-3">
+                            <label className="block text-xs font-medium tracking-wider text-muted-foreground mb-1">
+                              {language === 'zh' ? '中短期目标 (可选)' : 'Medium-Term Goal (Optional)'}
+                            </label>
+                            <select
+                              value={selectedMediumTermGoalId}
+                              onChange={(e) => setSelectedMediumTermGoalId(e.target.value)}
+                              className="w-full rounded-md border border-border bg-field px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent"
+                            >
+                              <option value="">{language === 'zh' ? '稍后批量整理' : 'Link later'}</option>
+                              {mediumTermGoalChoices.map(({ goalName, medium }) => (
+                                <option key={medium.id} value={medium.id}>
+                                  {goalName} / {medium.title}
+                                </option>
+                              ))}
+                            </select>
                           </div>
                         )}
                       </div>

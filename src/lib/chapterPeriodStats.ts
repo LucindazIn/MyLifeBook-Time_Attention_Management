@@ -13,7 +13,7 @@ export function parseChapterPeriodBounds(periodStart: string, periodEnd: string)
 
 /**
  * 仅统计日程上的事件标签：展开实例的 label.text + tags[]（与日历日标签 day tag 无关）。
- * 与 EventVolumeCard 内层逻辑一致，供已展开实例复用。
+ * 供标签分析与章节统计复用。
  */
 export function computeEventTagSlicesFromExpanded(
   expanded: ScheduleEvent[]
@@ -49,7 +49,7 @@ export function computeEventTagSlicesForRange(
   return computeEventTagSlicesFromExpanded(expanded);
 }
 
-/** 与 RoleEnergyCard 一致：按事件数占比，分母为周期内全部展开实例数 */
+/** 按事件数占比，分母为周期内全部展开实例数。 */
 export function computeRoleEnergyPercentagesForRange(
   events: ScheduleEvent[],
   rangeStart: Date,

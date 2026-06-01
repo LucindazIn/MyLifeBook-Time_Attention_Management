@@ -82,11 +82,9 @@ export const YearView: React.FC<YearViewProps> = ({
           return (
             <motion.button
               key={monthIndex}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
               onClick={() => onMonthSelect(monthDate)}
               className={cn(
-                "bg-surface rounded-2xl p-3 border border-border shadow-sm hover:shadow-md transition-all text-left flex flex-col h-full",
+                "bg-surface rounded-2xl p-3 border border-border shadow-sm hover:shadow-md transition-shadow text-left flex flex-col h-full",
                 isCurrentMonth && "ring-2 ring-accent",
                 selectedFilterRole && roleFilterMode === 'dim' && hasEvents && !hasMatchingRole && "opacity-50"
               )}

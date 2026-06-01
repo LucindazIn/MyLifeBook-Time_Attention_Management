@@ -34,7 +34,13 @@ import { listAllDailyQuotes, upsertDailyQuote } from '@/lib/repositories/dailyQu
 import { ScheduleSuggestionModal } from '@/components/ScheduleSuggestionModal';
 import { DayVibes } from '@/components/DayVibes';
 import { CollectionView } from '@/components/CollectionView';
+import { TagBatchEditorDrawer, type TagDraft } from '@/components/TagBatchEditorDrawer';
+import { useTagAnalysisFilters } from '@/hooks/useTagAnalysisFilters';
+import { getEventsInRange } from '@/lib/tagAnalysisQuery';
+import { getThemeAccentHex } from '@/lib/utils';
+import { COLLECTION_SUBTITLES_ZH, COLLECTION_SUBTITLES_EN } from '@/lib/collectionSubtitles';
 import { LifeBookView } from '@/components/LifeBookView';
+import { GoalLinkingDrawer, type MediumTermGoalLinkDraft } from '@/components/GoalLinkingDrawer';
 import { getLocalScheduleSuggestions } from '@/lib/scheduleLocalSuggestions';
 import { getChapters, type SavedChapter } from '@/lib/chaptersStorage';
 import { syncLifeBookChapters } from '@/lib/chapterSync';
@@ -51,9 +57,16 @@ import {
   applyTagRenameToEvent,
   stripTagFromEvent,
 } from '@/lib/eventAnalyticsHelpers';
-import { renameCustomTagInPool, removeCustomTagFromPool, isPresetEventLabel } from '@/lib/customEventTagsStorage';
-import { COLLECTION_SUBTITLES_ZH, COLLECTION_SUBTITLES_EN } from '@/lib/collectionSubtitles';
+import { renameCustomTagInPool, removeCustomTagFromPool, isPresetEventLabel, touchCustomEventLabel } from '@/lib/customEventTagsStorage';
 import { createSyncGenerationGuard } from '@/lib/syncGeneration';
+import {
+  loadLongTermGoalMeta,
+  mergeLongTermGoalNames,
+} from '@/lib/longTermGoalMetaStorage';
+import {
+  getUnlinkedMediumTermGoalTasksInRange,
+  type GoalLinkingFilterState,
+} from '@/lib/goalLinkingQuery';
 
 const AUTH_ERROR_AUTO_DISMISS_MS = 10_000;
 
@@ -126,6 +139,9 @@ export default function App() {
   const [generatingMode, setGeneratingMode] = useState<'chill' | 'productive' | null>(null);
   const [suggestedEvents, setSuggestedEvents] = useState<ScheduleEvent[]>([]);
   const [isSuggestionModalOpen, setIsSuggestionModalOpen] = useState(false);
+  const [isGoalLinkingOpen, setIsGoalLinkingOpen] = useState(false);
+  const [isGoalLinkingSaving, setIsGoalLinkingSaving] = useState(false);
+  const [goalLinkingFilters, setGoalLinkingFilters] = useState<GoalLinkingFilterState>({ range: 'month' });
 
   const [viewMode, setViewMode] = useState<'day' | 'month' | 'year' | 'collection' | 'lifeBook'>('day');
   const [viewModeBeforeCollection, setViewModeBeforeCollection] = useState<'day' | 'month' | 'year'>('day');
@@ -135,6 +151,12 @@ export default function App() {
   const [selectedFilterRole, setSelectedFilterRole] = useState<string | null>(null);
   const [roleFilterMode, setRoleFilterMode] = useState<'all' | 'dim' | 'hide'>('dim');
   const [yearInputValue, setYearInputValue] = useState('');
+  const [isBatchEditorOpen, setIsBatchEditorOpen] = useState(false);
+  const [isBatchSaving, setIsBatchSaving] = useState(false);
+  const { filters: tagFilters, setFilters: setTagFilters, resetFilters: resetTagFilters } = useTagAnalysisFilters({
+    range: 'this_month',
+    viewMode: 'untagged',
+  });
   const menuGroupRef = useRef<HTMLDivElement>(null);
   const yearListScrollRef = useRef<HTMLDivElement>(null);
 
@@ -329,7 +351,54 @@ export default function App() {
     return Array.from(set);
   }, [events, completedInstances]);
 
+  const longTermGoalMetaMap = React.useMemo(
+    () => loadLongTermGoalMeta(),
+    [collectionStateTick],
+  );
+
+  const validMediumTermGoalIds = React.useMemo(() => {
+    const ids = new Set<string>();
+    Object.keys(longTermGoalMetaMap).forEach((goalName) => {
+      longTermGoalMetaMap[goalName]?.mediumTermGoals?.forEach((medium) => ids.add(medium.id));
+    });
+    return ids;
+  }, [longTermGoalMetaMap]);
+
+  const longTermGoalNames = React.useMemo(
+    () => mergeLongTermGoalNames(events),
+    [events, collectionStateTick],
+  );
+
   const dateKey = format(currentDate, 'yyyy-MM-dd');
+
+  const chartFilters = React.useMemo(
+    () => ({
+      range: tagFilters.range,
+      customStart: tagFilters.customStart,
+      customEnd: tagFilters.customEnd,
+    }),
+    [tagFilters.range, tagFilters.customStart, tagFilters.customEnd],
+  );
+
+  const dayUntaggedCount = React.useMemo(
+    () =>
+      getEventsInRange(
+        events,
+        {
+          range: 'custom',
+          viewMode: 'untagged',
+          customStart: dateKey,
+          customEnd: dateKey,
+        },
+        completedInstances,
+      ).length,
+    [events, dateKey, completedInstances],
+  );
+
+  const openBatchEditor = React.useCallback(() => {
+    resetTagFilters({ viewMode: 'untagged' });
+    setIsBatchEditorOpen(true);
+  }, [resetTagFilters]);
   const currentDayName = dayNames[dateKey]?.name || '';
   const currentJournal = journalEntries[dateKey] || '';
 
@@ -748,11 +817,72 @@ export default function App() {
     [events, user, settings.language]
   );
 
+  const handleBatchSaveTags = React.useCallback(
+    async (drafts: Map<string, TagDraft>) => {
+      setIsBatchSaving(true);
+      try {
+        const updatedEvents: ScheduleEvent[] = [];
+        for (const [persistId, draft] of drafts.entries()) {
+          const base = events.find((e) => e.id === persistId);
+          if (!base) continue;
+          const updated: ScheduleEvent = { ...base };
+
+          const baseRole = base.role?.trim() || '';
+          const baseEventTag = base.label?.text?.trim() || base.tags?.[0]?.trim() || '';
+          const baseType = base.type || '';
+          const draftEventTag = draft.eventTag.trim();
+
+          if (draft.roleId !== baseRole) {
+            if (draft.roleId) updated.role = draft.roleId;
+            else delete updated.role;
+          }
+
+          if (draftEventTag !== baseEventTag) {
+            if (draftEventTag) {
+              updated.label = { text: draftEventTag, color: base.label?.color || getThemeAccentHex() };
+              if (!isPresetEventLabel(draftEventTag)) touchCustomEventLabel(draftEventTag);
+            } else {
+              delete updated.label;
+            }
+            delete updated.tags;
+          }
+
+          if (draft.type && draft.type !== baseType) {
+            updated.type = draft.type;
+          }
+
+          if (user) {
+            try {
+              await upsertEventWithTags(supabase, user.id, updated);
+            } catch (err: unknown) {
+              alert(formatSyncErrorMessage(err, settings.language));
+              throw err;
+            }
+          }
+          updatedEvents.push(updated);
+        }
+        if (updatedEvents.length > 0) {
+          setEvents((prev) => {
+            const map = new Map(prev.map((e) => [e.id, e]));
+            for (const u of updatedEvents) map.set(u.id, u);
+            return Array.from(map.values());
+          });
+        }
+      } finally {
+        setIsBatchSaving(false);
+      }
+    },
+    [events, user, settings.language],
+  );
+
   /** Removes the goal from meta/tag pool and strips it from events' longTermGoals only — does not delete events. */
   const handleDeleteLongTermGoal = React.useCallback(
     async (goalName: string) => {
       const trimmed = goalName.trim();
       if (!trimmed) return;
+      const deletedGoalMediumIds = new Set(
+        (longTermGoalMetaMap[trimmed]?.mediumTermGoals ?? []).map((medium) => medium.id),
+      );
       const affected = events.filter((e) => e.longTermGoals?.includes(trimmed));
       for (const e of affected) {
         const nextGoals = e.longTermGoals?.filter((g) => g !== trimmed);
@@ -760,6 +890,12 @@ export default function App() {
           ...e,
           longTermGoals: nextGoals && nextGoals.length > 0 ? nextGoals : undefined,
         };
+        if (
+          updated.mediumTermGoalId &&
+          (deletedGoalMediumIds.has(updated.mediumTermGoalId) || !updated.longTermGoals)
+        ) {
+          delete updated.mediumTermGoalId;
+        }
         if (user) {
           try {
             await upsertEventWithTags(supabase, user.id, updated);
@@ -772,15 +908,91 @@ export default function App() {
       setEvents((prev) =>
         prev.map((e) => {
           const nextGoals = e.longTermGoals?.filter((g) => g !== trimmed);
-          return {
+          const next: ScheduleEvent = {
             ...e,
             longTermGoals: nextGoals && nextGoals.length > 0 ? nextGoals : undefined,
           };
+          if (
+            next.mediumTermGoalId &&
+            (deletedGoalMediumIds.has(next.mediumTermGoalId) || !next.longTermGoals)
+          ) {
+            delete next.mediumTermGoalId;
+          }
+          return next;
         })
       );
     },
-    [events, user, settings.language]
+    [events, longTermGoalMetaMap, user, settings.language]
   );
+
+  const openGoalLinking = (range?: GoalLinkingFilterState['range']) => {
+    if (range) {
+      setGoalLinkingFilters({ range });
+    } else if (viewMode === 'year') {
+      setGoalLinkingFilters({ range: 'year' });
+    } else if (viewMode === 'month') {
+      setGoalLinkingFilters({ range: 'month' });
+    } else {
+      setGoalLinkingFilters({
+        range: 'custom',
+        customStart: dateKey,
+        customEnd: dateKey,
+      });
+    }
+    setIsGoalLinkingOpen(true);
+  };
+
+  const goalUnlinkedCountInView = React.useMemo(() => {
+    if (viewMode === 'collection' || viewMode === 'lifeBook') return 0;
+    const range = viewMode === 'year' ? 'year' : viewMode === 'month' ? 'month' : 'custom';
+    return getUnlinkedMediumTermGoalTasksInRange(
+      events,
+      currentDate,
+      {
+        range,
+        customStart: viewMode === 'day' ? dateKey : undefined,
+        customEnd: viewMode === 'day' ? dateKey : undefined,
+      },
+      completedInstances,
+      validMediumTermGoalIds,
+    ).length;
+  }, [events, currentDate, dateKey, completedInstances, viewMode, validMediumTermGoalIds]);
+
+  const handleSaveGoalLinks = async (links: Map<string, MediumTermGoalLinkDraft>) => {
+    setIsGoalLinkingSaving(true);
+    try {
+      const updatedEvents: ScheduleEvent[] = [];
+
+      for (const [persistId, link] of links.entries()) {
+        const base = events.find(e => e.id === persistId);
+        if (!base) continue;
+
+        const nextGoals = Array.from(new Set([...(base.longTermGoals || []), link.goalName].filter(Boolean)));
+        const updated: ScheduleEvent = {
+          ...base,
+          longTermGoals: nextGoals,
+          mediumTermGoalId: link.mediumTermGoalId,
+        };
+        if (user) {
+          await upsertEventWithTags(supabase, user.id, updated);
+        }
+        updatedEvents.push(updated);
+      }
+
+      if (updatedEvents.length > 0) {
+        setEvents(prev => {
+          const map = new Map(prev.map(e => [e.id, e]));
+          for (const event of updatedEvents) map.set(event.id, event);
+          return Array.from(map.values());
+        });
+      }
+    } catch (e: unknown) {
+      alert(formatSyncErrorMessage(e, settings.language));
+      throw e;
+    } finally {
+      setIsGoalLinkingSaving(false);
+    }
+  };
 
   const navigateDate = (direction: 'prev' | 'next') => {
     setCurrentDate(prev => {
@@ -1658,6 +1870,17 @@ export default function App() {
                   <span className="inline-flex items-center gap-1"><img src={VIBE_ICON_URL.focus} alt="" className="vibe-kpi-icon w-4 h-4" /> {settings.language === 'zh' ? '专注' : 'Focus'} {monthKpiAvg.focus != null ? monthKpiAvg.focus : '–'}</span>
                 </div>
               )}
+              {(viewMode === 'year' || viewMode === 'month') && goalUnlinkedCountInView > 0 && (
+                <button
+                  type="button"
+                  onClick={() => openGoalLinking(viewMode === 'year' ? 'year' : 'month')}
+                  className="mt-2 rounded-full border border-accent/30 bg-accent/10 px-3 py-1.5 text-xs font-medium text-accent hover:bg-accent/20 transition-colors"
+                >
+                  {settings.language === 'zh'
+                    ? `整理目标 (${goalUnlinkedCountInView})`
+                    : `Link Goals (${goalUnlinkedCountInView})`}
+                </button>
+              )}
             </div>
           )}
         </header>
@@ -1688,6 +1911,9 @@ export default function App() {
                   onClearEventRole={handleClearEventRole}
                   onMigrateEventTag={handleMigrateEventTag}
                   onClearEventTag={handleClearEventTag}
+                  onOpenBatchEditor={openBatchEditor}
+                  chartFilters={chartFilters}
+                  onChartFiltersChange={(next) => setTagFilters((prev) => ({ ...prev, ...next }))}
                   userId={user?.id ?? null}
                   collectionStateRevision={collectionStateTick}
                 />
@@ -1789,6 +2015,10 @@ export default function App() {
                   customTags={settings.customTags}
                   onAddCustomTag={handleAddCustomTag}
                   onRemoveCustomTag={handleRemoveCustomTag}
+                  unlinkedGoalCount={goalUnlinkedCountInView}
+                  onOpenGoalLinking={() => openGoalLinking()}
+                  untaggedCount={dayUntaggedCount}
+                  onOpenBatchEditor={openBatchEditor}
                 />
 
                 {/*
@@ -1910,6 +2140,22 @@ export default function App() {
         collectionStateRevision={collectionStateTick}
       />
 
+      <GoalLinkingDrawer
+        isOpen={isGoalLinkingOpen}
+        onClose={() => setIsGoalLinkingOpen(false)}
+        events={events}
+        allEvents={events}
+        goalNames={longTermGoalNames}
+        metaMap={longTermGoalMetaMap}
+        anchorDate={currentDate}
+        filters={goalLinkingFilters}
+        completedInstances={completedInstances}
+        language={settings.language}
+        onFiltersChange={setGoalLinkingFilters}
+        onSave={handleSaveGoalLinks}
+        isSaving={isGoalLinkingSaving}
+      />
+
       <ScheduleSuggestionModal
         isOpen={isSuggestionModalOpen}
         onClose={() => setIsSuggestionModalOpen(false)}
@@ -1942,6 +2188,19 @@ export default function App() {
         onRoleFilterModeChange={setRoleFilterMode}
         getRoleColor={getRoleColor}
         getRoleDisplayName={getRoleDisplayName}
+      />
+
+      <TagBatchEditorDrawer
+        isOpen={isBatchEditorOpen}
+        onClose={() => setIsBatchEditorOpen(false)}
+        events={events}
+        allEvents={events}
+        filters={tagFilters}
+        completedInstances={completedInstances}
+        language={settings.language}
+        onFiltersChange={setTagFilters}
+        onSave={handleBatchSaveTags}
+        isSaving={isBatchSaving}
       />
     </div>
   );

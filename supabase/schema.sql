@@ -31,15 +31,28 @@ create table if not exists public.events (
   recurrence jsonb,
   label_text text,
   label_color text,
+  role text,
+  meaning text,
+  starred boolean default false,
+  highlight boolean default false,
+  medium_term_goal_id text,
   completed boolean default false,
   deleted boolean default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
 
+alter table public.events
+add column if not exists role text,
+add column if not exists meaning text,
+add column if not exists starred boolean default false,
+add column if not exists highlight boolean default false,
+add column if not exists medium_term_goal_id text;
+
 create index if not exists events_user_start_time on public.events(user_id, start_time);
 create index if not exists events_user_updated_at on public.events(user_id, updated_at);
 create index if not exists events_user_deleted on public.events(user_id, deleted);
+create index if not exists events_user_medium_term_goal on public.events(user_id, medium_term_goal_id);
 
 drop trigger if exists trg_events_updated_at on public.events;
 create trigger trg_events_updated_at

@@ -139,11 +139,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
               return (
                 <motion.button
                   key={day.toString()}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
                   onClick={() => onDateSelect(day)}
                   className={cn(
-                    "relative h-20 rounded-xl flex flex-col items-start justify-start p-1.5 transition-all text-left group overflow-hidden",
+                    "relative h-20 rounded-xl flex flex-col items-start justify-start p-1.5 transition-colors text-left group overflow-hidden",
                     !isCurrentMonth && "opacity-30",
                     isCurrentMonth && "bg-field hover:bg-surface",
                     isSelected && "ring-2 ring-accent bg-surface",

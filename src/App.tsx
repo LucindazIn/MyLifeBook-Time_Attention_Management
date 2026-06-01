@@ -15,7 +15,7 @@ import { SurpriseWidgets } from '@/components/SurpriseWidgets';
 import { OnboardingModal } from '@/components/OnboardingModal';
 import { PostLoginThemeModal } from '@/components/PostLoginThemeModal';
 import { SettingsModal } from '@/components/SettingsModal';
-import { RoutineImportModal } from '@/components/RoutineImportModal';
+import { RoutineImportModal, type RoutineImportPlan } from '@/components/RoutineImportModal';
 import { DailyJournal } from '@/components/DailyJournal';
 import { AuthModal, type AuthFormMode } from '@/components/AuthModal';
 import { PasswordRecoveryModal } from '@/components/PasswordRecoveryModal';
@@ -62,6 +62,7 @@ import { createSyncGenerationGuard } from '@/lib/syncGeneration';
 import {
   loadLongTermGoalMeta,
   mergeLongTermGoalNames,
+  saveLongTermGoalMeta,
 } from '@/lib/longTermGoalMetaStorage';
 import type { GoalLinkingFilterState } from '@/lib/goalLinkingQuery';
 
@@ -519,10 +520,39 @@ export default function App() {
     setEditingEvent(null);
   };
 
-  const handleImportRoutineEvents = async (importedEvents: ScheduleEvent[]) => {
+  const handleImportRoutineEvents = async (plan: RoutineImportPlan) => {
+    const importedEvents = plan.events;
     if (importedEvents.length === 0 || isRoutineImporting) return;
     setIsRoutineImporting(true);
     try {
+      const mediumEntries = Object.entries(plan.mediumTermGoalsToCreate);
+      if (mediumEntries.length > 0) {
+        const currentMeta = loadLongTermGoalMeta();
+        let nextMeta = currentMeta;
+        let changed = false;
+        const now = new Date().toISOString();
+        for (const [goalName, mediumGoals] of mediumEntries) {
+          const existing = nextMeta[goalName];
+          if (!existing) continue;
+          const currentMedium = existing.mediumTermGoals ?? [];
+          const existingTitles = new Set(currentMedium.map((medium) => medium.title.trim()));
+          const additions = mediumGoals.filter((medium) => !existingTitles.has(medium.title.trim()));
+          if (additions.length === 0) continue;
+          nextMeta = {
+            ...nextMeta,
+            [goalName]: {
+              ...existing,
+              lastAlignedAt: now,
+              mediumTermGoals: [...currentMedium, ...additions],
+            },
+          };
+          changed = true;
+        }
+        if (changed) {
+          saveLongTermGoalMeta(nextMeta);
+        }
+      }
+
       if (user) {
         for (const event of importedEvents) {
           await upsertEventWithTags(supabase, user.id, event, { isNewEvent: true });
@@ -1234,6 +1264,8 @@ export default function App() {
         isOpen={isRoutineImportOpen}
         onClose={() => setIsRoutineImportOpen(false)}
         language={settings.language}
+        longTermGoalNames={longTermGoalNames}
+        longTermGoalMetaMap={longTermGoalMetaMap}
         onImport={handleImportRoutineEvents}
         isImporting={isRoutineImporting}
       />

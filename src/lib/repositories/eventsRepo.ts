@@ -61,6 +61,12 @@ function normalizeTag(tag: string) {
   return tag.trim();
 }
 
+function isMissingMediumTermGoalColumnError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  const message = String((error as { message?: unknown }).message ?? '');
+  return /medium_term_goal_id/i.test(message) && /schema cache|column/i.test(message);
+}
+
 export async function listAllEventsWithTags(supabase: SupabaseClient, userId: string): Promise<ScheduleEvent[]> {
   const events = await fetchAll<DbEventRow>((from, to) =>
     supabase
@@ -131,7 +137,13 @@ export async function upsertEventWithTags(
     highlight: event.highlight ?? false,
   };
 
-  const { error: upsertErr } = await supabase.from('events').upsert(payload, { onConflict: 'id' });
+  let { error: upsertErr } = await supabase.from('events').upsert(payload, { onConflict: 'id' });
+  if (upsertErr && isMissingMediumTermGoalColumnError(upsertErr)) {
+    const fallbackPayload = { ...payload };
+    delete fallbackPayload.medium_term_goal_id;
+    const retry = await supabase.from('events').upsert(fallbackPayload, { onConflict: 'id' });
+    upsertErr = retry.error;
+  }
   if (upsertErr) throw upsertErr;
 
   const tags = Array.from(new Set((event.tags || []).map(normalizeTag).filter(Boolean)));

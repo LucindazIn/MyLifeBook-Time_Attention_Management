@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/button';
 import type { AppLanguage, EventType, ScheduleEvent } from '@/types';
 import { cn } from '@/lib/utils';
+import type { LongTermGoalMetaMap, MediumTermGoal } from '@/lib/longTermGoalMetaStorage';
 
 type ImportRecurrenceInput = {
   frequency?: unknown;
@@ -32,14 +33,22 @@ type RoutineImportInput = {
 
 type ParseResult = {
   events: ScheduleEvent[];
+  mediumTermGoalsToCreate: Record<string, MediumTermGoal[]>;
   errors: string[];
+};
+
+export type RoutineImportPlan = {
+  events: ScheduleEvent[];
+  mediumTermGoalsToCreate: Record<string, MediumTermGoal[]>;
 };
 
 interface RoutineImportModalProps {
   isOpen: boolean;
   onClose: () => void;
   language: AppLanguage;
-  onImport: (events: ScheduleEvent[]) => void | Promise<void>;
+  longTermGoalNames: string[];
+  longTermGoalMetaMap: LongTermGoalMetaMap;
+  onImport: (plan: RoutineImportPlan) => void | Promise<void>;
   isImporting?: boolean;
 }
 
@@ -121,6 +130,12 @@ function parseEndDate(date: unknown): { value?: string; invalid: boolean } {
   return parsed ? { value: parsed.toISOString(), invalid: false } : { invalid: true };
 }
 
+function parseDateOnly(date: unknown): string {
+  const text = asTrimmedString(date);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) return '';
+  return parseLocalDateTime(text, '00:00') ? text : '';
+}
+
 function normalizeRole(value: unknown): string | undefined {
   const text = asTrimmedString(value);
   if (!text) return undefined;
@@ -128,14 +143,25 @@ function normalizeRole(value: unknown): string | undefined {
   return ROLE_ALIASES[text] || ROLE_ALIASES[lower] || (text.startsWith('custom:') ? text : `custom:${text}`);
 }
 
-function parseRoutineImport(raw: string, language: AppLanguage): ParseResult {
+function mediumKey(goalName: string, title: string): string {
+  return `${goalName}\u0000${title}`;
+}
+
+function parseRoutineImport(
+  raw: string,
+  language: AppLanguage,
+  longTermGoalNames: string[],
+  longTermGoalMetaMap: LongTermGoalMetaMap
+): ParseResult {
   const errors: string[] = [];
   let parsed: unknown;
+  const empty = { events: [], mediumTermGoalsToCreate: {}, errors };
   try {
     parsed = JSON.parse(raw);
   } catch {
     return {
       events: [],
+      mediumTermGoalsToCreate: {},
       errors: [language === 'zh' ? 'JSON 格式不合法，请检查逗号、引号和括号。' : 'Invalid JSON. Check commas, quotes, and brackets.'],
     };
   }
@@ -143,11 +169,21 @@ function parseRoutineImport(raw: string, language: AppLanguage): ParseResult {
   if (!Array.isArray(parsed)) {
     return {
       events: [],
+      mediumTermGoalsToCreate: {},
       errors: [language === 'zh' ? '顶层必须是 JSON 数组。' : 'The top level must be a JSON array.'],
     };
   }
 
   const events: ScheduleEvent[] = [];
+  const allowedGoals = new Set(longTermGoalNames.map((goal) => goal.trim()).filter(Boolean));
+  const pendingMediumByKey = new Map<string, MediumTermGoal>();
+  const existingMediumIdByKey = new Map<string, string>();
+  for (const [goalName, record] of Object.entries(longTermGoalMetaMap)) {
+    for (const medium of record.mediumTermGoals ?? []) {
+      existingMediumIdByKey.set(mediumKey(goalName, medium.title.trim()), medium.id);
+    }
+  }
+
   parsed.forEach((item, index) => {
     const row = item as RoutineImportInput;
     const rowLabel = language === 'zh' ? `第 ${index + 1} 条` : `Item ${index + 1}`;
@@ -170,8 +206,19 @@ function parseRoutineImport(raw: string, language: AppLanguage): ParseResult {
       errors.push(`${rowLabel}: ${language === 'zh' ? 'endTime 必须晚于 startTime。' : 'endTime must be after startTime.'}`);
     }
 
+    const longTermGoals = parseList(row.longTermGoals);
+    if (longTermGoals.length === 0) {
+      errors.push(`${rowLabel}: ${language === 'zh' ? '必须填写至少一个已存在的 longTermGoals。' : 'At least one existing longTermGoals value is required.'}`);
+    }
+    longTermGoals.forEach((goalName) => {
+      if (!allowedGoals.has(goalName)) {
+        errors.push(`${rowLabel}: ${language === 'zh' ? `长期目标「${goalName}」不存在，请先在时间聚合里创建。` : `Long-Term Goal "${goalName}" does not exist. Create it in Time Synthesis first.`}`);
+      }
+    });
+
     const recurrenceInput = row.recurrence;
     let recurrence: ScheduleEvent['recurrence'];
+    let recurrenceEndDate = '';
     if (recurrenceInput && typeof recurrenceInput === 'object') {
       const frequency = asTrimmedString(recurrenceInput.frequency);
       const interval = Number(recurrenceInput.interval || 1);
@@ -184,6 +231,7 @@ function parseRoutineImport(raw: string, language: AppLanguage): ParseResult {
         if (endDate.invalid) {
           errors.push(`${rowLabel}: ${language === 'zh' ? 'recurrence.endDate 必须是 YYYY-MM-DD。' : 'recurrence.endDate must use YYYY-MM-DD.'}`);
         }
+        recurrenceEndDate = parseDateOnly(recurrenceInput.endDate);
         recurrence = {
           frequency: frequency as 'daily' | 'weekly' | 'monthly',
           interval,
@@ -195,8 +243,40 @@ function parseRoutineImport(raw: string, language: AppLanguage): ParseResult {
     if (!title || !start || !end || end <= start || !VALID_TYPES.has(typeText as EventType)) return;
 
     const labelText = asTrimmedString(row.label);
-    const longTermGoals = parseList(row.longTermGoals);
-    const mediumTermGoalId = asTrimmedString(row.mediumTermGoalId) || asTrimmedString(row.mediumTermGoal);
+    const mediumTermGoalTitle = asTrimmedString(row.mediumTermGoal);
+    const explicitMediumTermGoalId = asTrimmedString(row.mediumTermGoalId);
+    let mediumTermGoalId = explicitMediumTermGoalId;
+    if (mediumTermGoalTitle) {
+      if (longTermGoals.length !== 1) {
+        errors.push(`${rowLabel}: ${language === 'zh' ? '填写 mediumTermGoal 时，longTermGoals 必须且只能有一个。' : 'When mediumTermGoal is set, longTermGoals must contain exactly one goal.'}`);
+      } else if (allowedGoals.has(longTermGoals[0]!)) {
+        const goalName = longTermGoals[0]!;
+        const key = mediumKey(goalName, mediumTermGoalTitle);
+        const existingId = existingMediumIdByKey.get(key);
+        if (existingId) {
+          mediumTermGoalId = existingId;
+        } else {
+          const startAt = startDate;
+          const endAt = recurrenceEndDate || startDate;
+          const pending = pendingMediumByKey.get(key);
+          if (pending) {
+            pending.startAt = pending.startAt < startAt ? pending.startAt : startAt;
+            pending.endAt = pending.endAt > endAt ? pending.endAt : endAt;
+            mediumTermGoalId = pending.id;
+          } else {
+            const next: MediumTermGoal = {
+              id: uuidv4(),
+              title: mediumTermGoalTitle,
+              startAt,
+              endAt,
+              milestones: [],
+            };
+            pendingMediumByKey.set(key, next);
+            mediumTermGoalId = next.id;
+          }
+        }
+      }
+    }
     const role = normalizeRole(row.role);
     const event: ScheduleEvent = {
       id: uuidv4(),
@@ -218,7 +298,13 @@ function parseRoutineImport(raw: string, language: AppLanguage): ParseResult {
     events.push(event);
   });
 
-  return { events: errors.length > 0 ? [] : events, errors };
+  if (errors.length > 0) return empty;
+  const mediumTermGoalsToCreate: Record<string, MediumTermGoal[]> = {};
+  pendingMediumByKey.forEach((medium, key) => {
+    const goalName = key.split('\u0000')[0]!;
+    (mediumTermGoalsToCreate[goalName] ||= []).push(medium);
+  });
+  return { events, mediumTermGoalsToCreate, errors };
 }
 
 const SAMPLE_JSON = `[
@@ -248,20 +334,35 @@ export const RoutineImportModal: React.FC<RoutineImportModalProps> = ({
   isOpen,
   onClose,
   language,
+  longTermGoalNames,
+  longTermGoalMetaMap,
   onImport,
   isImporting = false,
 }) => {
   const isZh = language === 'zh';
   const [rawJson, setRawJson] = useState('');
   const [submitError, setSubmitError] = useState('');
-  const result = useMemo(() => {
-    if (!rawJson.trim()) return { events: [], errors: [] };
-    return parseRoutineImport(rawJson, language);
-  }, [rawJson, language]);
+  const result = useMemo<ParseResult>(() => {
+    if (!rawJson.trim()) return { events: [], mediumTermGoalsToCreate: {}, errors: [] };
+    return parseRoutineImport(rawJson, language, longTermGoalNames, longTermGoalMetaMap);
+  }, [rawJson, language, longTermGoalNames, longTermGoalMetaMap]);
+
+  const mediumCreateGroups = useMemo(
+    () => Object.entries(result.mediumTermGoalsToCreate) as Array<[string, MediumTermGoal[]]>,
+    [result.mediumTermGoalsToCreate]
+  );
+  const mediumCreateCount = useMemo(
+    () => mediumCreateGroups.reduce((sum, [, items]) => sum + items.length, 0),
+    [mediumCreateGroups]
+  );
+
+  const allowedGoalLine = longTermGoalNames.length > 0
+    ? longTermGoalNames.join(isZh ? '、' : ', ')
+    : (isZh ? '（当前还没有长期目标，请先在时间聚合里创建）' : '(No Long-Term Goals Yet. Create Them In Time Synthesis First.)');
 
   const promptText = isZh
-    ? `请帮我制定一套可批量导入日程 App 的生活 routine。请严格返回 JSON 数组，不要写解释文字。字段必须包含：title、description、startDate、startTime、endTime、type、recurrence、role、label、longTermGoals、mediumTermGoal、meaning、starred、highlight。日期用 YYYY-MM-DD，时间用 24 小时制 HH:mm。type 只能是 todo、meeting、reminder。recurrence 不重复填 null；重复时 frequency 只能是 daily、weekly、monthly，interval 大于等于 1，endDate 用 YYYY-MM-DD。role 从守护者、创作者、学者、探索者、链接者、愿景者、静修者、挑战者、执行者中选择。不要把重复任务展开成多条。`
-    : `Create a life routine that can be imported into a schedule app. Return only a valid JSON array, with no explanation. Each item must include: title, description, startDate, startTime, endTime, type, recurrence, role, label, longTermGoals, mediumTermGoal, meaning, starred, highlight. Dates must use YYYY-MM-DD and times must use 24-hour HH:mm. type must be todo, meeting, or reminder. recurrence must be null for one-off tasks; otherwise frequency must be daily, weekly, or monthly, interval must be at least 1, and endDate must use YYYY-MM-DD. Choose role from Nurturer, Creator, Scholar, Explorer, Connector, Visionary, Retreater, Challenger, Grinder. Do not expand recurring tasks into many rows.`;
+    ? `请帮我制定一套可批量导入日程 App 的生活 routine。请严格返回 JSON 数组，不要写解释文字。字段必须包含：title、description、startDate、startTime、endTime、type、recurrence、role、label、longTermGoals、mediumTermGoal、meaning、starred、highlight。日期用 YYYY-MM-DD，时间用 24 小时制 HH:mm。type 只能是 todo、meeting、reminder。recurrence 不重复填 null；重复时 frequency 只能是 daily、weekly、monthly，interval 大于等于 1，endDate 用 YYYY-MM-DD。longTermGoals 必须且只能从以下已存在长期目标中选择，不允许创造新的长期目标：${allowedGoalLine}。mediumTermGoal 可以填写中期目标名称；如果这个名称在对应长期目标下不存在，导入时会新建。填写 mediumTermGoal 时 longTermGoals 只能填一个。role 从守护者、创作者、学者、探索者、链接者、愿景者、静修者、挑战者、执行者中选择。不要把重复任务展开成多条。`
+    : `Create a life routine that can be imported into a schedule app. Return only a valid JSON array, with no explanation. Each item must include: title, description, startDate, startTime, endTime, type, recurrence, role, label, longTermGoals, mediumTermGoal, meaning, starred, highlight. Dates must use YYYY-MM-DD and times must use 24-hour HH:mm. type must be todo, meeting, or reminder. recurrence must be null for one-off tasks; otherwise frequency must be daily, weekly, or monthly, interval must be at least 1, and endDate must use YYYY-MM-DD. longTermGoals must be selected only from these existing Long-Term Goals. Do not invent new Long-Term Goals: ${allowedGoalLine}. mediumTermGoal can be a Medium-Term Goal name; if it does not exist under that Long-Term Goal, it will be created during import. When mediumTermGoal is set, longTermGoals must contain exactly one item. Choose role from Nurturer, Creator, Scholar, Explorer, Connector, Visionary, Retreater, Challenger, Grinder. Do not expand recurring tasks into many rows.`;
 
   const handleImport = async () => {
     setSubmitError('');
@@ -270,7 +371,10 @@ export const RoutineImportModal: React.FC<RoutineImportModalProps> = ({
       return;
     }
     try {
-      await Promise.resolve(onImport(result.events));
+      await Promise.resolve(onImport({
+        events: result.events,
+        mediumTermGoalsToCreate: result.mediumTermGoalsToCreate,
+      }));
       setRawJson('');
       onClose();
     } catch (err) {
@@ -358,8 +462,19 @@ export const RoutineImportModal: React.FC<RoutineImportModalProps> = ({
                   <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4">
                     <div className="flex items-center gap-2 text-sm font-medium text-emerald-700 mb-3">
                       <CheckCircle2 className="w-4 h-4" />
-                      {isZh ? `可导入 ${result.events.length} 条日程` : `${result.events.length} Events Ready`}
+                      {isZh
+                        ? `可导入 ${result.events.length} 条日程${mediumCreateCount ? `，并新建 ${mediumCreateCount} 个中期目标` : ''}`
+                        : `${result.events.length} Events Ready${mediumCreateCount ? `, ${mediumCreateCount} Medium-Term Goals Will Be Created` : ''}`}
                     </div>
+                    {mediumCreateCount > 0 && (
+                      <div className="mb-3 rounded-xl border border-emerald-500/20 bg-surface/70 p-3 text-xs text-emerald-800">
+                        {mediumCreateGroups.map(([goalName, items]) => (
+                          <div key={goalName}>
+                            <span className="font-medium">{goalName}</span>: {items.map((item) => item.title).join('、')}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     <div className="space-y-2 max-h-48 overflow-y-auto">
                       {result.events.map((event) => (
                         <div key={event.id} className="rounded-xl border border-border bg-surface/80 p-3">

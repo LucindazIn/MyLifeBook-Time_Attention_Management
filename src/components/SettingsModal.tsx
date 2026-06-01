@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Globe, Palette, Check, UserCircle2, LogIn, LogOut, Clock, Upload } from 'lucide-react';
+import { X, Globe, Palette, Check, UserCircle2, LogIn, LogOut, Clock } from 'lucide-react';
 import { AppSettings, AppTheme, AppLanguage, TimeDisplayFormat } from '@/types';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -101,49 +101,42 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <UserCircle2 className="w-4 h-4 text-accent" />
                     {settings.language === 'zh' ? '账号' : 'Account'}
                   </div>
-                  {user ? (
-                    <div className="flex items-center justify-between p-3 bg-field rounded-xl border border-border">
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{user.email}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {settings.language === 'zh' ? '已登录，数据自动同步' : 'Signed in · data syncing'}
-                        </p>
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                    {user ? (
+                      <div className="flex items-center justify-between p-3 bg-field rounded-xl border border-border">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium text-foreground">{user.email}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {settings.language === 'zh' ? '已登录，数据自动同步' : 'Signed In · Data Syncing'}
+                          </p>
+                        </div>
+                        {onSignOut && (
+                          <button
+                            onClick={onSignOut}
+                            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-red-500 transition-colors ml-3"
+                          >
+                            <LogOut className="w-3.5 h-3.5" />
+                            {settings.language === 'zh' ? '退出' : 'Sign Out'}
+                          </button>
+                        )}
                       </div>
-                      {onSignOut && (
-                        <button
-                          onClick={onSignOut}
-                          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-red-500 transition-colors ml-3"
-                        >
-                          <LogOut className="w-3.5 h-3.5" />
-                          {settings.language === 'zh' ? '退出' : 'Sign out'}
-                        </button>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-between p-3 bg-field rounded-xl border border-border">
-                      <p className="text-sm text-muted-foreground">
-                        {settings.language === 'zh' ? '登录以跨设备同步数据' : 'Sign in to sync across devices'}
-                      </p>
-                      {onSignIn && (
-                        <button
-                          onClick={() => { onSignIn(); onClose(); }}
-                          className="flex items-center gap-1.5 text-xs font-medium text-accent hover:opacity-80 transition-colors ml-3 flex-shrink-0"
-                        >
-                          <LogIn className="w-3.5 h-3.5" />
-                          {settings.language === 'zh' ? '登录' : 'Sign in'}
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </section>
-
-                {/* Data tools */}
-                <section>
-                  <div className="flex items-center gap-2 mb-4 font-medium text-foreground">
-                    <Upload className="w-4 h-4 text-accent" />
-                    {settings.language === 'zh' ? '数据工具' : 'Data Tools'}
-                  </div>
-                  <div className="rounded-xl border border-border bg-field p-3">
+                    ) : (
+                      <div className="flex items-center justify-between p-3 bg-field rounded-xl border border-border">
+                        <p className="text-sm text-muted-foreground">
+                          {settings.language === 'zh' ? '登录以跨设备同步数据' : 'Sign In To Sync Across Devices'}
+                        </p>
+                        {onSignIn && (
+                          <button
+                            onClick={() => { onSignIn(); onClose(); }}
+                            className="flex items-center gap-1.5 text-xs font-medium text-accent hover:opacity-80 transition-colors ml-3 flex-shrink-0"
+                          >
+                            <LogIn className="w-3.5 h-3.5" />
+                            {settings.language === 'zh' ? '登录' : 'Sign In'}
+                          </button>
+                        )}
+                      </div>
+                    )}
+                    <div className="rounded-xl border border-border bg-field p-3">
                     <div className="flex items-center justify-between gap-4">
                       <div>
                         <p className="text-sm font-medium text-foreground">
@@ -167,6 +160,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           {settings.language === 'zh' ? '打开' : 'Open'}
                         </button>
                       )}
+                    </div>
                     </div>
                   </div>
                 </section>

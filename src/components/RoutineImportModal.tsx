@@ -371,6 +371,9 @@ export const RoutineImportModal: React.FC<RoutineImportModalProps> = ({
     () => mediumCreateGroups.reduce((sum, [, items]) => sum + items.length, 0),
     [mediumCreateGroups]
   );
+  const importingStatusText = isZh
+    ? `正在导入 ${result.events.length} 条日程${mediumCreateCount ? `，并创建 ${mediumCreateCount} 个中期目标` : ''}。请不要关闭窗口，完成后会自动提示。`
+    : `Importing ${result.events.length} Events${mediumCreateCount ? ` And Creating ${mediumCreateCount} Medium-Term Goals` : ''}. Please Keep This Window Open; You Will See A Confirmation When It Finishes.`;
 
   const allowedGoalLine = longTermGoalNames.length > 0
     ? longTermGoalNames.join(isZh ? '、' : ', ')
@@ -408,7 +411,9 @@ export const RoutineImportModal: React.FC<RoutineImportModalProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onClose}
+            onClick={() => {
+              if (!isImporting) onClose();
+            }}
             className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50"
           />
           <motion.div
@@ -425,7 +430,13 @@ export const RoutineImportModal: React.FC<RoutineImportModalProps> = ({
                     {isZh ? '粘贴 JSON，确认预览后写入日程；不会保存原始文件。' : 'Paste JSON, review it, then save events. The source file is not stored.'}
                   </p>
                 </div>
-                <button type="button" onClick={onClose} className="p-2 rounded-full transition-colors hover:bg-field" aria-label="Close">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  disabled={isImporting}
+                  className="p-2 rounded-full transition-colors hover:bg-field disabled:opacity-40 disabled:pointer-events-none"
+                  aria-label="Close"
+                >
                   <X className="w-5 h-5 text-muted-foreground" />
                 </button>
               </div>
@@ -527,10 +538,20 @@ export const RoutineImportModal: React.FC<RoutineImportModalProps> = ({
                 {submitError && (
                   <p className="text-sm text-red-600">{submitError}</p>
                 )}
+
+                {isImporting && (
+                  <div className="rounded-2xl border border-accent/30 bg-accent/10 p-4 text-sm text-accent">
+                    <div className="flex items-center gap-2 font-medium">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      {isZh ? '导入进行中' : 'Import In Progress'}
+                    </div>
+                    <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{importingStatusText}</p>
+                  </div>
+                )}
               </div>
 
               <div className="p-6 border-t flex flex-wrap items-center justify-between gap-3" style={{ borderColor: 'var(--app-border)' }}>
-                <Button type="button" variant="outline" onClick={onClose} className="rounded-xl border-border">
+                <Button type="button" variant="outline" onClick={onClose} disabled={isImporting} className="rounded-xl border-border">
                   {isZh ? '取消' : 'Cancel'}
                 </Button>
                 <Button
@@ -540,7 +561,9 @@ export const RoutineImportModal: React.FC<RoutineImportModalProps> = ({
                   className={cn('rounded-xl min-w-32', isImporting && 'opacity-80')}
                 >
                   {isImporting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                  {isZh ? '确认导入' : 'Import Events'}
+                  {isImporting
+                    ? (isZh ? `正在导入 ${result.events.length} 条...` : `Importing ${result.events.length}...`)
+                    : (isZh ? '确认导入' : 'Import Events')}
                 </Button>
               </div>
             </div>

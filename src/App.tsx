@@ -1003,9 +1003,14 @@ export default function App() {
           mediumTermGoalId: link.mediumTermGoalId,
         };
         if (user) {
-          await upsertEventWithTags(supabase, user.id, updated);
+          await upsertEventWithTags(supabase, user.id, updated, { requireMediumTermGoalColumn: true });
         }
         updatedEvents.push(updated);
+      }
+
+      if (updatedEvents.length === 0) {
+        alert(settings.language === 'zh' ? '没有找到可保存的目标链接。请重新打开目标整理再试。' : 'No Goal Links Were Saved. Reopen Goal Linking And Try Again.');
+        return;
       }
 
       if (updatedEvents.length > 0) {
@@ -1015,6 +1020,11 @@ export default function App() {
           return Array.from(map.values());
         });
       }
+      alert(
+        settings.language === 'zh'
+          ? `目标链接保存成功：${updatedEvents.length} 条任务已更新。`
+          : `Goal Links Saved: ${updatedEvents.length} Tasks Updated.`
+      );
     } catch (e: unknown) {
       alert(formatSyncErrorMessage(e, settings.language));
       throw e;

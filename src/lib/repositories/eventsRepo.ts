@@ -114,6 +114,11 @@ export type UpsertEventWithTagsOptions = {
    * to save one network round trip (common case: create with no tags).
    */
   isNewEvent?: boolean;
+  /**
+   * Used by goal-linking flows: silently dropping `medium_term_goal_id` would make
+   * the UI look saved while the actual goal link is lost after the next sync.
+   */
+  requireMediumTermGoalColumn?: boolean;
 };
 
 export async function upsertEventWithTags(
@@ -148,6 +153,11 @@ export async function upsertEventWithTags(
   while (upsertErr) {
     const missingColumn = getMissingOptionalEventColumn(upsertErr);
     if (!missingColumn || removedColumns.has(missingColumn)) break;
+    if (missingColumn === 'medium_term_goal_id' && options?.requireMediumTermGoalColumn) {
+      throw new Error(
+        'Supabase events.medium_term_goal_id is missing. Run the latest migration before saving medium-term goal links.'
+      );
+    }
     removedColumns.add(missingColumn);
     delete fallbackPayload[missingColumn];
     const retry = await supabase.from('events').upsert(fallbackPayload, { onConflict: 'id' });

@@ -2,12 +2,13 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import { AnimatePresence, motion } from 'motion/react';
-import { Target, X } from 'lucide-react';
+import { Loader2, Target, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { AppLanguage, ScheduleEvent } from '@/types';
 import type { LongTermGoalMetaMap } from '@/lib/longTermGoalMetaStorage';
 import { getUnlinkedMediumTermGoalTasksInRange, type GoalLinkingFilterState } from '@/lib/goalLinkingQuery';
 import { cn } from '@/lib/utils';
+import { smartMatchGoal } from '@/lib/smartEventMatcher';
 
 export interface MediumTermGoalLinkDraft {
   goalName: string;
@@ -124,6 +125,9 @@ export const GoalLinkingDrawer: React.FC<GoalLinkingDrawerProps> = ({
     save: language === 'zh' ? '保存链接' : 'Save links',
     cancel: language === 'zh' ? '取消' : 'Cancel',
     pending: (n: number) => language === 'zh' ? `待保存 ${n}` : `${n} pending`,
+    smartMatch: language === 'zh' ? '智能匹配' : 'Smart Match',
+    smartMatched: (n: number) => language === 'zh' ? `已智能匹配 ${n} 条，请确认后保存。` : `Smart Matched ${n} Tasks. Review And Save.`,
+    smartNone: language === 'zh' ? '没有找到足够确定的智能匹配。' : 'No Confident Smart Matches Found.',
   };
 
   const handleDrop = (goalName: string, mediumTermGoalId: string) => {
@@ -141,6 +145,24 @@ export const GoalLinkingDrawer: React.FC<GoalLinkingDrawerProps> = ({
     setSelectedTaskId(null);
   };
 
+  const handleSmartMatch = () => {
+    let count = 0;
+    setDrafts(prev => {
+      const next = new Map(prev);
+      for (const { event, persistId } of uniqueTasks) {
+        if (next.has(persistId)) continue;
+        const match = smartMatchGoal(event, goalNames, metaMap);
+        if (!match) continue;
+        next.set(persistId, { goalName: match.goalName, mediumTermGoalId: match.mediumTermGoalId });
+        count += 1;
+      }
+      return next;
+    });
+    window.setTimeout(() => {
+      alert(count > 0 ? t.smartMatched(count) : t.smartNone);
+    }, 0);
+  };
+
   const handleSave = async () => {
     await onSave(drafts);
     onClose();
@@ -155,7 +177,9 @@ export const GoalLinkingDrawer: React.FC<GoalLinkingDrawerProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/25 backdrop-blur-sm z-[60]"
-            onClick={onClose}
+            onClick={() => {
+              if (!isSaving) onClose();
+            }}
           />
           <motion.div
             initial={{ opacity: 0, x: 40 }}
@@ -173,13 +197,26 @@ export const GoalLinkingDrawer: React.FC<GoalLinkingDrawerProps> = ({
                   </span>
                 )}
               </div>
-              <button type="button" onClick={onClose} className="p-2 rounded-full hover:bg-field text-muted-foreground">
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={isSaving}
+                className="p-2 rounded-full hover:bg-field text-muted-foreground disabled:opacity-40 disabled:pointer-events-none"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="p-4 space-y-3 border-b border-border bg-surface/50">
               <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={handleSmartMatch}
+                  disabled={isSaving || uniqueTasks.length === 0 || goalsWithMedium.length === 0}
+                  className="px-3 py-1.5 rounded-full text-xs font-medium border transition-colors bg-accent/15 border-accent/40 text-accent disabled:opacity-45 disabled:pointer-events-none"
+                >
+                  {t.smartMatch}
+                </button>
                 {(['week', 'month', 'year'] as const).map(range => (
                   <button
                     key={range}
@@ -314,8 +351,19 @@ export const GoalLinkingDrawer: React.FC<GoalLinkingDrawerProps> = ({
               </section>
             </div>
 
+            {isSaving && (
+              <div className="border-t border-border bg-accent/10 px-4 py-3 text-xs text-accent">
+                <div className="flex items-center gap-2 font-medium">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {language === 'zh'
+                    ? `正在保存 ${drafts.size} 条目标链接，请不要关闭窗口。`
+                    : `Saving ${drafts.size} Goal Links. Please Keep This Window Open.`}
+                </div>
+              </div>
+            )}
+
             <div className="flex gap-2 border-t border-border bg-surface/50 p-4">
-              <Button type="button" variant="outline" onClick={onClose} className="flex-1 rounded-xl">
+              <Button type="button" variant="outline" onClick={onClose} disabled={isSaving} className="flex-1 rounded-xl">
                 {t.cancel}
               </Button>
               <Button
@@ -324,7 +372,8 @@ export const GoalLinkingDrawer: React.FC<GoalLinkingDrawerProps> = ({
                 disabled={isSaving || drafts.size === 0}
                 className="flex-1 rounded-xl bg-accent hover:bg-accent/90"
               >
-                {t.save}
+                {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isSaving ? (language === 'zh' ? '保存中...' : 'Saving...') : t.save}
               </Button>
             </div>
           </motion.div>

@@ -15,6 +15,7 @@ import {
 } from '@/lib/customEventTagsStorage';
 import { getEventPersistId, isEventUntagged } from '@/lib/tagCompleteness';
 import type { TagAnalysisFilterState } from '@/lib/tagAnalysisQuery';
+import { smartMatchTags } from '@/lib/smartEventMatcher';
 
 export interface TagDraft {
   roleId: string;
@@ -196,6 +197,36 @@ export const TagBatchEditorDrawer: React.FC<TagBatchEditorDrawerProps> = ({
     });
   };
 
+  const handleSmartMatch = () => {
+    let count = 0;
+    setDrafts((prev) => {
+      const next = new Map<string, TagDraft>(prev);
+      for (const { event, persistId } of uniqueListItems) {
+        const current = next.get(persistId) || { roleId: '', eventTag: '', type: '' };
+        const base = allEvents.find((ev) => ev.id === persistId) || event;
+        const match = smartMatchTags(base, roleOptions, eventTagOptions);
+        if (!match) continue;
+        const updated: TagDraft = {
+          roleId: current.roleId || match.roleId || '',
+          eventTag: current.eventTag || match.eventTag || '',
+          type: current.type || match.type || '',
+        };
+        if (!areTagDraftsEqual(current, updated)) {
+          next.set(persistId, updated);
+          count += 1;
+        }
+      }
+      return next;
+    });
+    window.setTimeout(() => {
+      alert(
+        count > 0
+          ? (isZh ? `已智能匹配 ${count} 条，请确认后保存。` : `Smart Matched ${count} Items. Review And Save.`)
+          : (isZh ? '没有找到足够确定的智能匹配。' : 'No Confident Smart Matches Found.')
+      );
+    }, 0);
+  };
+
   const handleSave = async () => {
     await onSave(changedDrafts);
     onClose();
@@ -231,6 +262,14 @@ export const TagBatchEditorDrawer: React.FC<TagBatchEditorDrawerProps> = ({
               <p className="text-xs text-muted-foreground">
                 {isZh ? '显示历史全部日程，按时间倒序排列。' : 'Showing All Historical Events, Newest First.'}
               </p>
+              <button
+                type="button"
+                onClick={handleSmartMatch}
+                disabled={isSaving || uniqueListItems.length === 0}
+                className="rounded-full border border-accent/40 bg-accent/15 px-3 py-1.5 text-xs font-medium text-accent transition-colors hover:bg-accent/20 disabled:opacity-45 disabled:pointer-events-none"
+              >
+                {isZh ? '智能匹配' : 'Smart Match'}
+              </button>
               <div className="flex gap-4 text-xs text-foreground">
                 <label className="flex items-center gap-1.5 cursor-pointer">
                   <input

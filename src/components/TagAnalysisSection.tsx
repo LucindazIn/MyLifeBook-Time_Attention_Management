@@ -7,7 +7,7 @@ import { expandRecurringEvents } from '@/lib/events';
 import { aggregateByRole } from '@/lib/roleAggregation';
 import { computeEventTagSlicesFromExpanded } from '@/lib/chapterPeriodStats';
 import { getRoleColor, getRoleDisplayName } from '@/lib/constants/roles';
-import { getChapterRange, type ChapterPeriodKey } from '@/lib/dateRange';
+import type { ChapterPeriodKey } from '@/lib/dateRange';
 import { getAnalyticsRangeLabel } from '@/lib/analyticsRangeLabel';
 import { PIE_CX, PIE_CY, PIE_R_HOLE, PIE_R_OUTER, pieSectorPath } from '@/lib/pieChartSvg';
 import {
@@ -47,30 +47,78 @@ export interface TagAnalysisSectionProps {
   onClearEventTag: (tag: string) => void | Promise<void>;
 }
 
+type PieSlice = {
+  key: string;
+  d: string;
+  color: string;
+  count: number;
+  label: string;
+};
+
 function MiniPie({
-  paths,
-  centerLabel,
-  centerSub,
+  slices,
+  total,
+  defaultCenterSub,
   ariaLabel,
 }: {
-  paths: { key: string; d: string; color: string }[];
-  centerLabel: string;
-  centerSub: string;
+  slices: PieSlice[];
+  total: number;
+  defaultCenterSub: string;
   ariaLabel: string;
 }) {
+  const [hoveredKey, setHoveredKey] = useState<string | null>(null);
+
+  const hovered = hoveredKey != null ? slices.find((s) => s.key === hoveredKey) : null;
+  const centerLabel = hovered != null ? String(hovered.count) : String(total);
+  const centerSub = hovered != null ? hovered.label : defaultCenterSub;
+
+  const clearHover = useCallback(() => setHoveredKey(null), []);
+
   return (
-    <div className="relative mx-auto w-full max-w-[168px] shrink-0 aspect-square min-h-[128px]">
+    <div
+      className="relative mx-auto w-full max-w-[168px] shrink-0 aspect-square min-h-[128px]"
+      onMouseLeave={clearHover}
+    >
       <svg viewBox="0 0 100 100" className="h-full w-full overflow-visible" role="img" aria-label={ariaLabel}>
-        {paths.map(({ key, d, color }) => (
-          <path key={key} d={d} fill={color} stroke="var(--app-surface)" strokeWidth={0.75} />
-        ))}
-        <circle cx={PIE_CX} cy={PIE_CY} r={PIE_R_HOLE} fill="var(--app-surface)" stroke="var(--app-border)" strokeWidth={0.5} />
+        {slices.map(({ key, d, color, count, label }) => {
+          const pct = total > 0 ? ((count / total) * 100).toFixed(0) : '0';
+          const dimmed = hoveredKey != null && hoveredKey !== key;
+          return (
+            <path
+              key={key}
+              d={d}
+              fill={color}
+              stroke="var(--app-surface)"
+              strokeWidth={0.75}
+              className="cursor-pointer transition-opacity"
+              style={{ opacity: dimmed ? 0.45 : 1 }}
+              title={`${label}: ${count} (${pct}%)`}
+              onMouseEnter={() => setHoveredKey(key)}
+              onFocus={() => setHoveredKey(key)}
+              onBlur={clearHover}
+              tabIndex={0}
+            />
+          );
+        })}
+        <circle
+          cx={PIE_CX}
+          cy={PIE_CY}
+          r={PIE_R_HOLE}
+          fill="var(--app-surface)"
+          stroke="var(--app-border)"
+          strokeWidth={0.5}
+          style={{ pointerEvents: 'none' }}
+        />
       </svg>
-      <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-[26%] text-center">
+      <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-[22%] text-center">
         <span className="text-xl font-bold tabular-nums leading-none" style={{ color: 'var(--app-text)' }}>
           {centerLabel}
         </span>
-        <span className="mt-1 text-[10px] leading-tight" style={{ color: 'var(--app-muted)' }}>
+        <span
+          className="mt-1 text-[10px] leading-tight line-clamp-2 max-w-full"
+          style={{ color: 'var(--app-muted)' }}
+          title={centerSub}
+        >
           {centerSub}
         </span>
       </div>
@@ -139,7 +187,9 @@ export const TagAnalysisSection: React.FC<TagAnalysisSectionProps> = ({
     [expanded],
   );
 
-  const rolePaths = useMemo(() => {
+  const roleLang = isZh ? 'zh' : 'en';
+
+  const rolePieSlices = useMemo((): PieSlice[] => {
     if (roleTotal === 0) return [];
     let acc = 0;
     return roleSlices.map(([roleId, count]) => {
@@ -150,11 +200,13 @@ export const TagAnalysisSection: React.FC<TagAnalysisSectionProps> = ({
         key: roleId,
         d: pieSectorPath(PIE_CX, PIE_CY, PIE_R_OUTER, startAngle, endAngle),
         color: getRoleColor(roleId),
+        count,
+        label: getRoleDisplayName(roleId, roleLang),
       };
     });
-  }, [roleSlices, roleTotal]);
+  }, [roleSlices, roleTotal, roleLang]);
 
-  const tagPaths = useMemo(() => {
+  const tagPieSlices = useMemo((): PieSlice[] => {
     if (tagTotal === 0) return [];
     let acc = 0;
     return tagSlices.map(([tag, count], i) => {
@@ -165,6 +217,8 @@ export const TagAnalysisSection: React.FC<TagAnalysisSectionProps> = ({
         key: tag,
         d: pieSectorPath(PIE_CX, PIE_CY, PIE_R_OUTER, startAngle, endAngle),
         color: getTagSliceColor(i),
+        count,
+        label: tag,
       };
     });
   }, [tagSlices, tagTotal]);
@@ -276,10 +330,10 @@ export const TagAnalysisSection: React.FC<TagAnalysisSectionProps> = ({
         ) : (
           <div className="flex flex-col gap-3 md:flex-row md:items-start">
             <MiniPie
-              paths={rolePaths}
-              centerLabel={String(roleTotal)}
-              centerSub={isZh ? '条身份日程' : 'role events'}
-              ariaLabel={isZh ? '角色分布饼图' : 'Role distribution pie chart'}
+              slices={rolePieSlices}
+              total={roleTotal}
+              defaultCenterSub={isZh ? '条身份日程' : 'Role Events'}
+              ariaLabel={isZh ? '角色分布饼图，悬停扇区查看各角色条数' : 'Role distribution pie chart, hover segments for counts'}
             />
             <ul className="flex-1 space-y-1 text-xs text-muted-foreground min-w-0">
               {roleSlices.slice(0, 6).map(([roleId, count]) => (
@@ -316,10 +370,10 @@ export const TagAnalysisSection: React.FC<TagAnalysisSectionProps> = ({
         ) : (
           <div className="flex flex-col gap-3 md:flex-row md:items-start">
             <MiniPie
-              paths={tagPaths}
-              centerLabel={String(tagTotal)}
-              centerSub={isZh ? '条标签记录' : 'tag entries'}
-              ariaLabel={isZh ? '标签分布饼图' : 'Tag distribution pie chart'}
+              slices={tagPieSlices}
+              total={tagTotal}
+              defaultCenterSub={isZh ? '条标签记录' : 'Tag Entries'}
+              ariaLabel={isZh ? '标签分布饼图，悬停扇区查看各标签条数' : 'Tag distribution pie chart, hover segments for counts'}
             />
             <ul className="flex-1 space-y-1 text-xs text-muted-foreground min-w-0">
               {tagSlices.slice(0, 6).map(([tag, count], i) => (
